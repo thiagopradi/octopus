@@ -1,4 +1,6 @@
 = Octopus
+<html>
+  <blockquote>
                       ___
                    .-'   `'.
                   /         \
@@ -17,6 +19,8 @@
    `--~`   ) )    .-'.'      '.'.  | (
           (/`    ( (`          ) )  '-;
            `      '-;         (-'
+  </blockquote>
+</html>
 
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric), each project has its own limitations. This project will include a Sharding API, master/slave replication support, capistrano and rake tools to manage database state (e.g. migrations, moving data between shards).
 

@@ -25,8 +25,8 @@
 
 <h2>Thanks</h2>
 
-This project is sponsored by the <a href="http://rubysoc.org">Ruby Summer of Code</a>,
-and my mentors <a href="http://http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
+This project is sponsored by the <a href="www.rubysoc.org">Ruby Summer of Code</a>,
+and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
 <h2>Copyright</h2>
 

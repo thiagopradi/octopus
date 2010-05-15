@@ -1,4 +1,4 @@
-<h1> Octopus </h1>
+<h1> Octopus  - Easy Database Sharding for ActiveRecord</h1>
 <pre>
                       ___
                    .-'   `'.

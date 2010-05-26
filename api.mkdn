@@ -1,7 +1,0 @@
-<h1> Api Design </h1>
-
-Octopus provides easy sharding for ActiveRecord. The project allows you to have multiple databases on your ActiveRecord application, moving migrations and data between shards.
-
-The shards will be specified in config/shards.yml, like this:
-
-

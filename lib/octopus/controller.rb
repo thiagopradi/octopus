@@ -1,0 +1,2 @@
+class Octopus::Controller
+end

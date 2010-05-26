@@ -1,0 +1,5 @@
+test:
+  shards:
+    canada:
+      adapter: "sqlite3"
+      database: "/Users/tchandy/Projetos/octopus/spec/db/canada.db"

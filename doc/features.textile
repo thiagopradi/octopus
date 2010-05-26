@@ -1,0 +1,74 @@
+h1. Octopus Features List:
+
+* Support for replicated databases, with one master and multiple slaves. Multi-master support could be added later. The writes will be sended to master and the reads to slave, but this could be modified.
+* Support database sharding, with a nice and clean syntax like:
+  <pre> 
+  User.using(:awesome_shard).all() or User.using_awesome_shard.all()
+  
+  class User < ActiveRecord::Base
+    sharded_by :code
+    
+    def awesome_method
+      #All queries inside the block will go to awesome_shard
+      using(:awesome_shard) do
+        Foo.all
+        Bar.all
+      end
+    end
+  end
+  
+  class ApplicationController < ActionController::Base
+    around_filter :select_shard
+    
+    def select_shard(&block)
+      using(current_user.city) do
+        yield
+      end
+    end
+  end 
+  </pre>
+* Running migrations between shards, example:
+  <pre>
+  class MyAwesomeMigration < ActiveRecord::Migration
+    using :awesome_shard
+    
+    def self.up
+      create_table :users do |t|
+        t.string :name
+      end
+    end
+
+    def self.down
+      drop_table :users
+    end
+  end
+  </pre>
+* The sharding config will be separated from the database.yml file, given a more cleaner and nice configuration file.
+* An initial generator will be integrated in to the project, to help people using octopus, this will generate the config file: db/shards.yml, and a initializer to help the configuration. The example of this configuration is on this directory.
+* Like the others implementation, the sharding will be selected using a Proxy class for ActiveRecord, where the class will require the connection, and the query will be executed in the selected shard.
+* After this essentials feature, I will add a task to capistrano that allows you to generate the configuration and start the replication with one line command, reading the db/shards.yml configuration and running commands on the servers.
+* In replication, all slaves will be trated as shards, but you will have to specify what should be used as slave. For default, replication will balance your read queries between the slaves, and your writes queries will goes to master. if you don't want this feature, just set the load_balancing to false, and specify what queries you want to goes to slaves, and what slave. with replication, you will have methods like:
+<pre>
+# This sends the queries to a random shard (support just read queries, not writes)
+User.using_slaves().all()
+# This sends all queries to master(read/write)
+User.using_master().all()
+# Same thing, but all users queries will be sent to master
+class User < ActiveRecord::Base
+  using_master()
+end
+# Same thing, but all read queries will be sent to slaves
+class User < ActiveRecord::Base
+  using_slaves()
+end
+
+#or 
+
+class User < ActiveRecord::Base
+  using(:master)
+end
+
+#Tip: you cannot name a shard as master or slaves, they are reserved words used for replication.
+</pre>
+
+* If you have multiple slaves, the load balancing will be did using round robin algorithm, sending the queries to the databases available. (This isn't the better algorithm, but it's easy to implement and works)

@@ -29,5 +29,13 @@ describe "Octopus" do
       #clear the database that isn't cleared by DatabaseCleaner
       User.using(:canada).delete_all()
     end
+    
+    it "should allow scoping dinamically" do
+      User.using(:canada).using(:master).using(:canada).create!(:name => 'oi')
+      User.using(:canada).using(:master).count.should == 0
+      User.using(:master).using(:canada).count.should == 1
+      #clear the database that isn't cleared by DatabaseCleaner
+      User.using(:canada).delete_all()      
+    end
   end
 end

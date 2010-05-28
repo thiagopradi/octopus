@@ -1,7 +1,8 @@
 class Octopus::Proxy
   attr_accessor :shards
 
-  delegate :select_value, :quote, :primary_key, :prefetch_primary_key?, :quote_column_name, :quote_table_name,
+  delegate :add_limit_offset!, :select_value, :quote, :primary_key, :prefetch_primary_key?, :quote_column_name, 
+  :quote_table_name, :select_all,
   :decrement_open_transactions, :adapter_name, :initialize_schema_migrations_table, :rollback_db_transaction, 
   :supports_migrations?, :columns, :begin_db_transaction, :increment_open_transactions, 
   :insert, :update, :delete, :create_table, :rename_table, :drop_table, :add_column, :remove_column, 
@@ -25,7 +26,7 @@ class Octopus::Proxy
   def connected?
     true
   end
-  
+
   def shard_name
     current_shard || :master
   end
@@ -43,8 +44,13 @@ class Octopus::Proxy
 
     select_connection.transaction(start_db_transaction, &block) 
   end
-  
+
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
+  end
+ 
+  private
+  def method_missing(method, *args, &block)
+    select_connection().send(method, *args, &block)
   end
 end

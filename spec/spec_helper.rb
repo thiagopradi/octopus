@@ -5,7 +5,7 @@ require 'spec/autorun'
 require "database_connection"
 require "database_cleaner"
 
-Spec::Runner.configure do |config|
+Spec::Runner.configure do |config|  
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
@@ -16,6 +16,7 @@ Spec::Runner.configure do |config|
   end
 
   config.after(:each) do
+    ActiveRecord::Base.current_shard = :master
     DatabaseCleaner.clean
   end
 end

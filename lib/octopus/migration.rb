@@ -6,11 +6,11 @@ module Octopus::Migration
   module ClassMethods
     mattr_accessor :current_shard
     
-    def using(*args)
-      ActiveRecord::Base.send(:subclasses).each { |child| child.current_shard = args  } 
+    def using(args)
+      ActiveRecord::Base.current_shard = args
       return self
     end
   end
 end
 
-#ActiveRecord::Migration.send(:include, Octopus::Migration)
+ActiveRecord::Migration.send(:include, Octopus::Migration)

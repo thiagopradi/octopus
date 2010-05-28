@@ -18,6 +18,7 @@ Spec::Runner.configure do |config|
   config.after(:each) do
     ActiveRecord::Base.current_shard = :master
     DatabaseCleaner.clean
+    User.using(:canada).delete_all()
   end
 end
 

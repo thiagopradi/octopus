@@ -6,36 +6,35 @@ describe "Octopus" do
       Octopus.config().should be_kind_of(Hash)
     end
 
-    it "should support replicated databases" do
-      pending
-    end
-
-    it "should support selecting the shards on controller" do
-      pending
-    end
-
-    it "should allow running code inside blocks " do
-      pending
-    end
-
-    it "should support selecting the shard in a before_filter on controller" do
-      pending
-    end
-
     it "should allow selecting the shards on scope" do
       User.using(:canada).create!(:name => 'oi')
       User.using(:canada).count.should == 1
       User.using(:master).count.should == 0
-      #clear the database that isn't cleared by DatabaseCleaner
-      User.using(:canada).delete_all()
     end
     
     it "should allow scoping dinamically" do
       User.using(:canada).using(:master).using(:canada).create!(:name => 'oi')
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
-      #clear the database that isn't cleared by DatabaseCleaner
-      User.using(:canada).delete_all()      
+    end
+    
+    it "should clean the current_shard after executing the current query" do
+      User.using(:canada).create!(:name => "oi")
+      User.count.should == 0 
+    end
+    
+    it "should allow passing a block to #using" do
+      User.using(:canada) do |u|
+        u.create(:name => "oi")
+      end
+      
+      User.using(:canada).count.should == 1
+    end
+    
+    it "should allow execute queries inside a model" do
+      u = User.new
+      u.awesome_queries()
+      User.using(:canada).count.should == 1
     end
   end
 end

@@ -11,10 +11,10 @@ class Octopus::Proxy
 
   def initialize(config)
     @shards = {}
-    @shards[:master] = ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new({:adapter => "mysql", :database => "teste1", :user => "root", :password => ""}, "mysql_connection"))
+    @shards[:master] = ActiveRecord::Base.connection_pool()
 
     config["test"]["shards"].each do |key, value|
-      @shards[key.to_sym] = ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(value, "mysql_connection"))
+      @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
     end
   end
 
@@ -42,5 +42,9 @@ class Octopus::Proxy
     return yield if in_transaction?
 
     select_connection.transaction(start_db_transaction, &block) 
+  end
+  
+  def connection_pool_for(adapter, config)
+    ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
 end

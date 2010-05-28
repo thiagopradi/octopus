@@ -1,19 +1,23 @@
 require "yaml"
 
 module Octopus
-  def self.file()
-    "/Users/tchandy/Projetos/octopus/spec"
-  end
-  
   def self.config()
-    @@config ||= YAML.load_file(Octopus.file() + "/config/shards.yml")
+    @@config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml")
   end
-  
+
   def self.connect()
     ActiveRecord::Base.cattr_accessor :connection_proxy
     ActiveRecord::Base.cattr_accessor :current_shard
     ActiveRecord::Base.connection_proxy = Octopus::Proxy.new(Octopus.config())  
   end  
+
+  def self.directory()
+    if defined?(Rails)
+      Rails.root.to_s
+    else
+      File.expand_path(File.join(File.dirname(__FILE__), "..", "spec"))
+    end
+  end
 end
 
 require "octopus/migration"

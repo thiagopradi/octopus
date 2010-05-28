@@ -10,10 +10,6 @@ module Octopus::Model
       def connected?
         self.connection_proxy.connected?
       end
-
-      def connection_pool
-        raise "dynamic connection switching means you cannot get direct access to a pool"
-      end
     end
   end
 

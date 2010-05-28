@@ -1,6 +1,8 @@
 module Octopus::Model  
   def self.included(base)
     base.extend ClassMethods
+    base.cattr_accessor :connection_proxy
+    base.connection_proxy = Octopus::Proxy.new(Octopus.config())
     
     class << base
       def connection
@@ -15,12 +17,8 @@ module Octopus::Model
 
   module ClassMethods
     def using(args)
-      ActiveRecord::Base.current_shard = args
+      connection.current_shard = args
       return self
-    end
-    
-    def connection()
-      ActiveRecord::Base.connection_proxy()
     end
   end
 end

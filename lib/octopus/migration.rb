@@ -7,7 +7,7 @@ module Octopus::Migration
     mattr_accessor :current_shard
     
     def using(args)
-      ActiveRecord::Base.current_shard = args
+      self.connection().current_shard = args
       return self
     end
   end

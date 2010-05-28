@@ -1,5 +1,5 @@
 class Octopus::Proxy
-  attr_accessor :shards
+  attr_accessor :shards, :current_shard
 
   delegate :add_limit_offset!, :select_value, :quote, :primary_key, :prefetch_primary_key?, :quote_column_name, 
   :quote_table_name, :select_all,
@@ -35,10 +35,6 @@ class Octopus::Proxy
     current_shard == :master
   end
 
-  def current_shard
-    ActiveRecord::Base.current_shard()
-  end
-
   def transaction(start_db_transaction = true, &block)
     return yield if in_transaction?
 
@@ -49,7 +45,6 @@ class Octopus::Proxy
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
  
-  private
   def method_missing(method, *args, &block)
     select_connection().send(method, *args, &block)
   end

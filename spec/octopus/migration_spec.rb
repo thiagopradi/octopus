@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Octopus::Migration do
   before(:each) do 
-    ActiveRecord::Migrator.up(File.dirname(__FILE__)  + "/../migrations", 1)
+    #ActiveRecord::Migrator.up(File.dirname(__FILE__)  + "/../migrations", 1)
   end
   
   it "should run just in the master shard" do
@@ -10,10 +10,7 @@ describe Octopus::Migration do
   end
   
   it "should run on specific shard" do
-    ActiveRecord::Migrator.up(File.dirname(__FILE__)  + "/../migrations", 2)
-
-    User.using(:canada).column_names.include?("age").should be_true
-    User.column_names.include?("age").should be_false
+    pending()
   end
   
   it "should run on specifieds shards" do

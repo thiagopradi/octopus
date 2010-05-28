@@ -1,5 +1,14 @@
 test:
   shards:
     canada:
-      adapter: "sqlite3"
-      database: "/Users/tchandy/Projetos/octopus/spec/db/canada.db"
+      adapter: mysql
+      host: localhost
+      database: teste2
+    brazil:
+      adapter: mysql
+      host: localhost
+      database: teste2
+    russia:
+      adapter: mysql
+      host: localhost
+      database: teste3

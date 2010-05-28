@@ -9,9 +9,11 @@ module Octopus
     @@config ||= YAML.load_file(Octopus.file() + "/config/shards.yml")
   end
   
-  def self.init()
-
-  end
+  def self.connect()
+    ActiveRecord::Base.cattr_accessor :connection_proxy
+    ActiveRecord::Base.cattr_accessor :current_shard
+    ActiveRecord::Base.connection_proxy = Octopus::Proxy.new(Octopus.config())  
+  end  
 end
 
 require "octopus/migration"
@@ -19,4 +21,4 @@ require "octopus/model"
 require "octopus/controller"
 require "octopus/proxy"
 
-Octopus.init()
+Octopus.connect()

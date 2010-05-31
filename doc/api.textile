@@ -75,5 +75,24 @@ h1. Api Design
     end
   end
 </pre>
+* The default behavior on finds will be: if you find a object from a shard, like: 
+
+# This will find all users in brazil shard and iterate over it, saving all of them in the brazil shard
+<pre>
+User.using(:brazil).find(:all).each do |user|
+  user.name = "Brazil"
+  user.save()
+end
+</pre>
+
+# This will find all users in brazil shard and iterate over it, saving all of them in the canada shard
+<pre>
+User.using(:brazil).find(:all).each do |user|
+  user.name = "Brazil"
+  user.using(:canada).save()
+end
+</pre>
+
+
 
 

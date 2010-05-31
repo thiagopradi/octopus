@@ -1,13 +1,21 @@
 module Octopus::Migration
   def self.included(base)
-    base.extend ClassMethods
+    base.extend(ClassMethods)
+    class << base
+      def connection
+        ActiveRecord::Base.connection_proxy()
+      end
+
+      def connected?
+        ActiveRecord::Base.connection_proxy().connected?
+      end
+    end
   end
 
   module ClassMethods
-    mattr_accessor :current_shard
-    
     def using(args)
-      self.connection().current_shard = args
+      ActiveRecord::Base.connection_proxy().block = true
+      ActiveRecord::Base.connection_proxy().current_shard = args
       return self
     end
   end

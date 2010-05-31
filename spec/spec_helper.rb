@@ -4,6 +4,7 @@ require 'spec'
 require 'spec/autorun'
 require "database_connection"
 require "database_cleaner"
+MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migrations'))
 
 Spec::Runner.configure do |config|  
   config.before(:suite) do

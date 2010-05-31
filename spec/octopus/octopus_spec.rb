@@ -24,17 +24,20 @@ describe "Octopus" do
     end
     
     it "should allow passing a block to #using" do
-      User.using(:canada) do |u|
-        u.create(:name => "oi")
+      User.using_shard(:canada) do
+        User.create(:name => "oi")
       end
       
       User.using(:canada).count.should == 1
+      User.using(:master).count.should == 0
+      User.count.should == 0      
     end
     
     it "should allow execute queries inside a model" do
       u = User.new
       u.awesome_queries()
       User.using(:canada).count.should == 1
+      User.count.should == 0
     end
   end
 end

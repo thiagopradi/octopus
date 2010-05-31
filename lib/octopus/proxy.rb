@@ -1,19 +1,13 @@
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard
+  attr_accessor :shards, :current_shard, :block
 
-  delegate :add_limit_offset!, :select_value, :quote, :primary_key, :prefetch_primary_key?, :quote_column_name, 
-  :quote_table_name, :select_all,
-  :decrement_open_transactions, :adapter_name, :initialize_schema_migrations_table, :rollback_db_transaction, 
-  :supports_migrations?, :columns, :begin_db_transaction, :increment_open_transactions, 
-  :insert, :update, :delete, :create_table, :rename_table, :drop_table, :add_column, :remove_column, 
-  :supports_ddl_transactions?,:select_values, :change_column, :change_column_default, :rename_column, :add_index,
-  :remove_index, :initialize_schema_information, :dump_schema_information, :execute, :execute_ignore_duplicate, 
-  :disable_referential_integrity, :tables, :truncate_table, :to => :select_connection
+  delegate :increment_open_transactions, :decrement_open_transactions, :to => :select_connection
 
   def initialize(config)
     @shards = {}
+    @block = false
     @shards[:master] = ActiveRecord::Base.connection_pool()
-
+    
     config["test"]["shards"].each do |key, value|
       @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
     end
@@ -21,10 +15,6 @@ class Octopus::Proxy
 
   def select_connection()
     @shards[shard_name].connection()
-  end
-
-  def connected?
-    true
   end
 
   def shard_name
@@ -44,8 +34,14 @@ class Octopus::Proxy
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
- 
+
   def method_missing(method, *args, &block)
-    select_connection().send(method, *args, &block)
+    if(method.to_s =~ /begin_db_transaction|insert|select_value/ && !block)
+       conn = select_connection()
+       self.current_shard = :master
+       conn.send(method, *args, &block)
+    else
+      select_connection().send(method, *args, &block)
+    end
   end
 end

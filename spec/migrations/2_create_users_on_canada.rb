@@ -1,4 +1,4 @@
-class CreateUsers < ActiveRecord::Migration
+class CreateUsersOnCanada < ActiveRecord::Migration
   using(:canada)
   
   def self.up

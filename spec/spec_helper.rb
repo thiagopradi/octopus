@@ -7,19 +7,20 @@ require "database_cleaner"
 MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migrations'))
 
 Spec::Runner.configure do |config|  
-  config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
   config.before(:each) do
-    DatabaseCleaner.start
+    clean_all_shards()    
   end
 
   config.after(:each) do
-    DatabaseCleaner.clean
-    User.using(:canada).delete_all()
+    clean_all_shards()
   end
+end
+
+def clean_all_shards()
+  ActiveRecord::Base.using(:master).connection.execute("delete from schema_migrations;")
+  ActiveRecord::Base.using(:master).connection.execute("delete from users;")
+  ActiveRecord::Base.using(:canada).connection.execute("delete from schema_migrations;")
+  ActiveRecord::Base.using(:canada).connection.execute("delete from users;")
 end
 
 require 'octopus'

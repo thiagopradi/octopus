@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'active_record'
+require 'logger'
 
 ActiveRecord::Base.establish_connection({:adapter => "mysql", :database => "teste1", :user => "root", :password => ""})
 

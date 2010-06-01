@@ -15,13 +15,18 @@ module Octopus::Migration
   module ClassMethods
     def using(*args)
       if args.size == 1
-        ActiveRecord::Base.connection_proxy().block = true
-        ActiveRecord::Base.connection_proxy().current_shard = args.first
+        self.connection().block = true
+        self.connection().current_shard = args.first
       else
-        ActiveRecord::Base.connection_proxy().multiple_shards = true
-        ActiveRecord::Base.connection_proxy().current_shard = args        
+        self.connection().multiple_shards = true
+        self.connection().current_shard = args        
       end
       
+      return self
+    end
+    
+    def using_group(*args)
+      self.connection().current_group = args.first
       return self
     end
   end

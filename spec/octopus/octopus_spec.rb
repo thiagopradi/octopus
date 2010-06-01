@@ -5,6 +5,10 @@ describe "Octopus" do
     it "should load the shards.yml file to start working" do
       Octopus.config().should be_kind_of(Hash)
     end
+    
+    it "should return self after calling the #using method" do
+      User.using(:canada).should == User
+    end
 
     it "should allow selecting the shards on scope" do
       User.using(:canada).create!(:name => 'oi')

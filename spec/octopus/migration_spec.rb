@@ -22,10 +22,20 @@ describe Octopus::Migration do
   it "should run on specifieds shards" do
     ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 3)
 
-    User.using(:master).find_by_name("Both").should_not be_nil    
+    User.using(:brazil).find_by_name("Both").should_not be_nil    
     User.using(:canada).find_by_name("Both").should_not be_nil
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 3)
+  end
+  
+  it "should run on specified group" do
+    ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 4)
+
+    User.using(:canada).find_by_name("Group").should_not be_nil
+    User.using(:brazil).find_by_name("Group").should_not be_nil    
+    User.using(:russia).find_by_name("Group").should_not be_nil
+
+    ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 4)
   end
   #  
   #  it "should run on slaves on replication" do

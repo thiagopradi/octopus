@@ -1,14 +1,29 @@
-test:
+production:
   shards:
-    canada:
-      adapter: mysql
-      host: localhost
-      database: teste2
-    brazil:
-      adapter: mysql
-      host: localhost
-      database: teste2
-    russia:
-      adapter: mysql
-      host: localhost
-      database: teste3
+    history_shards:
+      aug2009:
+        adapter: mysql
+        host: localhost
+        database: teste2
+      aug2010:
+        adapter: mysql
+        host: localhost
+        database: teste3
+      aug2011:
+        adapter: mysql
+        host: localhost
+        database: teste4
+    
+    country_shards:
+      canada:
+        adapter: mysql
+        host: localhost
+        database: teste2
+      brazil:
+        adapter: mysql
+        host: localhost
+        database: teste3
+      russia:
+        adapter: mysql
+        host: localhost
+        database: teste4

@@ -16,10 +16,10 @@ Spec::Runner.configure do |config|
 end
 
 def clean_all_shards()
-  ActiveRecord::Base.using(:master).connection.execute("delete from schema_migrations;")
-  ActiveRecord::Base.using(:master).connection.execute("delete from users;")
-  ActiveRecord::Base.using(:canada).connection.execute("delete from schema_migrations;")
-  ActiveRecord::Base.using(:canada).connection.execute("delete from users;")
+  ActiveRecord::Base.connection.shards.keys.each do |shard_symbol|
+    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from schema_migrations;")
+    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from users;")  
+  end
 end
 
 require 'octopus'

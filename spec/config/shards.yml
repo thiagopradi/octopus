@@ -1,5 +1,10 @@
 production:
   shards:
+    alone_shard:
+      adapter: mysql
+      host: localhost
+      database: teste5
+    
     history_shards:
       aug2009:
         adapter: mysql

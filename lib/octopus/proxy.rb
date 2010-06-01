@@ -11,13 +11,15 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool()
 
     config["production"]["shards"].each do |key, value|
-      @groups[key.to_sym] = []
-
-      hash = {}
-
-      value.each do |k, v|
-        @shards[k.to_sym] = connection_pool_for(v, "mysql_connection")
-        @groups[key.to_sym] << k.to_sym
+      if value.has_key?("adapter")
+        @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
+      else
+        @groups[key.to_sym] = []
+        
+        value.each do |k, v|
+          @shards[k.to_sym] = connection_pool_for(v, "mysql_connection")
+          @groups[key.to_sym] << k.to_sym
+        end
       end
     end
   end

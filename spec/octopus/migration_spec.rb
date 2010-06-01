@@ -19,9 +19,14 @@ describe Octopus::Migration do
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 2)
   end
 
-  # it "should run on specifieds shards" do
-  #    pending()
-  #  end
+  it "should run on specifieds shards" do
+    ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 3)
+
+    User.using(:master).find_by_name("Both").should_not be_nil    
+    User.using(:canada).find_by_name("Both").should_not be_nil
+
+    ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 3)
+  end
   #  
   #  it "should run on slaves on replication" do
   #    pending()

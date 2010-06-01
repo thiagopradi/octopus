@@ -37,12 +37,12 @@ class Octopus::Proxy
   end
 
   def transaction(start_db_transaction = true, &block)
-    if(multiple_shards && current_shard.is_a?(Array))
+    if should_send_queries_to_multiple_shards?
       method_return = self.send_transaction_to_shards(current_shard, start_db_transaction, &block)
       self.multiple_shards = false
       self.current_shard = :master
       return method_return
-    elsif !current_group.nil?
+    elsif should_send_queries_to_a_group_of_shards?
       method_return = self.send_transaction_to_shards(@groups[current_group], start_db_transaction, &block)
       self.current_group = nil
       return method_return
@@ -52,13 +52,13 @@ class Octopus::Proxy
   end
 
   def method_missing(method, *args, &block)
-    if(method.to_s =~ /begin_db_transaction|insert|select_value/ && !block && !multiple_shards && !current_group)
+    if should_clean_connection?(method, &block)
       conn = select_connection()
       self.current_shard = :master
       conn.send(method, *args, &block)
-    elsif(multiple_shards && current_shard.is_a?(Array))
+    elsif should_send_queries_to_multiple_shards?
       send_queries_to_shards(current_shard, method, *args, &block)
-    elsif !current_group.nil?
+    elsif should_send_queries_to_a_group_of_shards?
       send_queries_to_shards(@groups[current_group], method, *args, &block)
     else
       select_connection().send(method, *args, &block)
@@ -66,6 +66,18 @@ class Octopus::Proxy
   end
 
   protected
+  def should_clean_connection?(method)
+    method.to_s =~ /begin_db_transaction|insert|select_value/ && !multiple_shards && !current_group
+  end
+  
+  def should_send_queries_to_multiple_shards?
+    multiple_shards && current_shard.is_a?(Array)
+  end
+  
+  def should_send_queries_to_a_group_of_shards?
+    !current_group.nil?
+  end
+  
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end

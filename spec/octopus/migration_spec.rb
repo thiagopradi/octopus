@@ -37,6 +37,16 @@ describe Octopus::Migration do
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 4)
   end
+  
+  it "should run on multiples groups" do
+    ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 5)
+
+    User.using(:canada).where(:name => "MultipleGroup").all.size.should == 2
+    User.using(:brazil).where(:name => "MultipleGroup").all.size.should == 2
+    User.using(:russia).where(:name => "MultipleGroup").all.size.should == 2
+
+    ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 5)
+  end
   #  
   #  it "should run on slaves on replication" do
   #    pending()

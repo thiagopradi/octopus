@@ -18,7 +18,6 @@ module Octopus::Migration
         self.connection().block = true
         self.connection().current_shard = args.first
       else
-        self.connection().multiple_shards = true
         self.connection().current_shard = args        
       end
       

@@ -11,9 +11,8 @@ describe Octopus::Proxy do
       @proxy.groups.should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
     end
     
-    it "should initialize all blocks and multiple shards as false" do
+    it "should initialize the block attribute as false" do
       @proxy.block.should be_false
-      @proxy.multiple_shards.should be_false
     end    
   end
   

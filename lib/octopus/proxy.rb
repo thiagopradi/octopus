@@ -1,5 +1,5 @@
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :multiple_shards, :groups, :current_group
+  attr_accessor :shards, :current_shard, :block, :groups, :current_group
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -7,7 +7,6 @@ class Octopus::Proxy
     @shards = {}
     @groups = {}
     @block = false
-    @multiple_shards = false
     @shards[:master] = ActiveRecord::Base.connection_pool()
 
     config["production"]["shards"].each do |key, value|
@@ -39,7 +38,6 @@ class Octopus::Proxy
   def transaction(start_db_transaction = true, &block)
     if should_send_queries_to_multiple_shards?
       method_return = self.send_transaction_to_shards(current_shard, start_db_transaction, &block)
-      self.multiple_shards = false
       self.current_shard = :master
       return method_return
     elsif should_send_queries_to_a_group_of_shards?
@@ -67,11 +65,11 @@ class Octopus::Proxy
 
   protected
   def should_clean_connection?(method)
-    method.to_s =~ /begin_db_transaction|insert|select_value/ && !multiple_shards && !current_group
+    method.to_s =~ /begin_db_transaction|insert|select_value/ && !should_send_queries_to_multiple_shards? && !self.current_group
   end
   
   def should_send_queries_to_multiple_shards?
-    multiple_shards && current_shard.is_a?(Array)
+    current_shard.is_a?(Array)
   end
   
   def should_send_queries_to_a_group_of_shards?

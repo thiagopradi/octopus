@@ -22,17 +22,27 @@ class Octopus::Proxy
       end
     end
   end
-  
+
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Inexistent Shard Name" if @shards[symbol].nil? } 
     else
       raise "Inexistent Shard Name" if @shards[shard_symbol].nil?    
     end
-    
+
     @current_shard = shard_symbol
   end
+  
+  def current_group=(group_symbol)
+    if group_symbol.is_a?(Array)
+      group_symbol.each {|symbol| raise "Inexistent Group Name" if @groups[symbol].nil? } 
+    else
+      raise "Inexistent Group Name" if @groups[group_symbol].nil? && !group_symbol.nil?
+    end
 
+    @current_group = group_symbol
+  end
+  
   def select_connection()
     @shards[shard_name].connection()
   end
@@ -52,7 +62,7 @@ class Octopus::Proxy
       return method_return
     elsif should_send_queries_to_multiple_groups?
       method_return = nil
-      
+
       current_group.each do |group_symbol|
         method_return = self.send_transaction_to_shards(@groups[group_symbol], start_db_transaction, &block)
       end
@@ -75,7 +85,7 @@ class Octopus::Proxy
       conn.send(method, *args, &block)
     elsif should_send_queries_to_multiple_groups?
       method_return = nil
-      
+
       current_group.each do |group_symbol|
         method_return = self.send_queries_to_shards(@groups[group_symbol], method, *args, &block)
       end

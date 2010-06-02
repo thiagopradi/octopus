@@ -28,18 +28,11 @@ module Octopus::Model
   end
   
   module ClassMethods
+    include InstanceMethods
+    
     def using(args)
       self.connection_proxy.current_shard = args
       return self
-    end
-    
-    def using_shard(shard, &block)
-      older_shard = self.connection_proxy.current_shard
-      self.connection_proxy.block = true
-      self.connection_proxy.current_shard = shard
-      yield
-      self.connection_proxy.block = false
-      self.connection_proxy.current_shard = older_shard      
     end
   end  
 end

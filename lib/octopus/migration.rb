@@ -37,4 +37,5 @@ module Octopus::Migration
   end
 end
 
+
 ActiveRecord::Migration.send(:include, Octopus::Migration)

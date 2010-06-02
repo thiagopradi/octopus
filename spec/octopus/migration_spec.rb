@@ -65,6 +65,7 @@ describe Octopus::Migration do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 9) }.should raise_error("Inexistent Group Name")
     end
   end
+  
   #  
   #  it "should run on slaves on replication" do
   #    pending()

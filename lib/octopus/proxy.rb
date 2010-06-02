@@ -57,22 +57,14 @@ class Octopus::Proxy
 
   def transaction(start_db_transaction = true, &block)
     if should_send_queries_to_multiple_shards?
-      method_return = self.send_transaction_to_shards(current_shard, start_db_transaction, &block)
+      self.send_transaction_to_multiple_shards(current_shard, start_db_transaction, &block)
       self.current_shard = :master
-      return method_return
     elsif should_send_queries_to_multiple_groups?
-      method_return = nil
-
-      current_group.each do |group_symbol|
-        method_return = self.send_transaction_to_shards(@groups[group_symbol], start_db_transaction, &block)
-      end
-
+      self.send_transaction_to_multiple_groups(start_db_transaction, &block)
       self.current_group = nil      
-      return method_return
     elsif should_send_queries_to_a_group_of_shards?
-      method_return = self.send_transaction_to_shards(@groups[current_group], start_db_transaction, &block)
+      self.send_transaction_to_multiple_shards(@groups[current_group], start_db_transaction, &block)
       self.current_group = nil
-      return method_return
     else
       select_connection.transaction(start_db_transaction, &block) 
     end
@@ -84,13 +76,7 @@ class Octopus::Proxy
       self.current_shard = :master
       conn.send(method, *args, &block)
     elsif should_send_queries_to_multiple_groups?
-      method_return = nil
-
-      current_group.each do |group_symbol|
-        method_return = self.send_queries_to_shards(@groups[group_symbol], method, *args, &block)
-      end
-
-      return method_return
+      send_queries_to_multiple_groups(method, *args, &block)
     elsif should_send_queries_to_multiple_shards?
       send_queries_to_shards(current_shard, method, *args, &block)
     elsif should_send_queries_to_a_group_of_shards?
@@ -101,6 +87,10 @@ class Octopus::Proxy
   end
 
   protected
+  def connection_pool_for(adapter, config)
+    ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
+  end
+  
   def should_clean_connection?(method)
     method.to_s =~ /begin_db_transaction|insert|select_value/ && !should_send_queries_to_multiple_shards? && !self.current_group
   end
@@ -116,15 +106,26 @@ class Octopus::Proxy
   def should_send_queries_to_a_group_of_shards?
     !current_group.nil?
   end
+  
+  def send_queries_to_multiple_groups(method, *args, &block)
+    method_return = nil
 
+    current_group.each do |group_symbol|
+      method_return = self.send_queries_to_shards(@groups[group_symbol], method, *args, &block)
+    end
 
-  def connection_pool_for(adapter, config)
-    ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
+    return method_return
   end
-
-  def send_transaction_to_shards(shard_array, start_db_transaction, &block)
+  
+  def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)
     shard_array.each do |shard_symbol|
-      method_return = @shards[shard_symbol].connection().transaction(start_db_transaction, &block)
+      @shards[shard_symbol].connection().transaction(start_db_transaction, &block)
+    end
+  end
+  
+  def send_transaction_to_multiple_groups(start_db_transaction, &block)
+    current_group.each do |group_symbol|
+      self.send_transaction_to_multiple_shards(@groups[group_symbol], start_db_transaction, &block)
     end
   end
 

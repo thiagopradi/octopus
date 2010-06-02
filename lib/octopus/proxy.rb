@@ -22,6 +22,16 @@ class Octopus::Proxy
       end
     end
   end
+  
+  def current_shard=(shard_symbol)
+    if shard_symbol.is_a?(Array)
+      shard_symbol.each {|symbol| raise "Inexistent Shard Name" if @shards[symbol].nil? } 
+    else
+      raise "Inexistent Shard Name" if @shards[shard_symbol].nil?    
+    end
+    
+    @current_shard = shard_symbol
+  end
 
   def select_connection()
     @shards[shard_name].connection()

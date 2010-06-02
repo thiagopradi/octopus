@@ -30,6 +30,10 @@ describe Octopus::Model do
       User.using(:canada).count.should == 0
       User.using(:brazil).count.should == 0
     end
+    
+    it "should raise a error when you specify a shard that doesn't exist" do
+      lambda { User.using(:crazy_shard) }.should raise_error("Inexistent Shard Name")
+    end
   end
 
   describe "#using_shard method" do

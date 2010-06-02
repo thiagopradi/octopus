@@ -47,6 +47,14 @@ describe Octopus::Migration do
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 5)
   end
+  
+  it "should raise a exception when you specify a shard that doesn't exist" do
+    lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Inexistent Shard Name")
+  end
+  
+  it "should raise a exception when you specify a shard that doesn't exist, even if you have multiple shards, and one of them are right" do
+    lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 7) }.should raise_error("Inexistent Shard Name")
+  end
   #  
   #  it "should run on slaves on replication" do
   #    pending()

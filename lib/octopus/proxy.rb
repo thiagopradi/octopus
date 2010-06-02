@@ -117,6 +117,16 @@ class Octopus::Proxy
     return method_return
   end
   
+  def send_queries_to_shards(shard_array, method, *args, &block)
+    method_return = nil
+
+    shard_array.each do |shard_symbol|
+      method_return = @shards[shard_symbol].connection().send(method, *args, &block) 
+    end
+
+    return method_return
+  end
+  
   def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)
     shard_array.each do |shard_symbol|
       @shards[shard_symbol].connection().transaction(start_db_transaction, &block)
@@ -127,15 +137,5 @@ class Octopus::Proxy
     current_group.each do |group_symbol|
       self.send_transaction_to_multiple_shards(@groups[group_symbol], start_db_transaction, &block)
     end
-  end
-
-  def send_queries_to_shards(shard_array, method, *args, &block)
-    method_return = nil
-
-    shard_array.each do |shard_symbol|
-      method_return = @shards[shard_symbol].connection().send(method, *args, &block) 
-    end
-
-    return method_return
   end
 end

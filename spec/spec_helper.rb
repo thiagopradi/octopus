@@ -4,6 +4,7 @@ MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migration
 require 'spec'
 require 'spec/autorun'
 require "database_connection"
+require 'octopus'
 
 Spec::Runner.configure do |config|  
   config.before(:each) do
@@ -19,7 +20,10 @@ def clean_all_shards()
   ActiveRecord::Base.connection.shards.keys.each do |shard_symbol|
     ActiveRecord::Base.using(shard_symbol).connection.execute("delete from schema_migrations;")
     ActiveRecord::Base.using(shard_symbol).connection.execute("delete from users;")  
+    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from clients;")  
   end
 end
 
-require 'octopus'
+class Client < ActiveRecord::Base
+  sharded_by :country
+end

@@ -48,12 +48,22 @@ describe Octopus::Migration do
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 5)
   end
   
-  it "should raise a exception when you specify a shard that doesn't exist" do
-    lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Inexistent Shard Name")
-  end
+  describe "should raise a exception when" do
+    it "you specify a invalid shard name" do
+      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Inexistent Shard Name")
+    end
   
-  it "should raise a exception when you specify a shard that doesn't exist, even if you have multiple shards, and one of them are right" do
-    lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 7) }.should raise_error("Inexistent Shard Name")
+    it "you specify a invalid shard name, even if you have multiple shards, and one of them are right" do
+      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 7) }.should raise_error("Inexistent Shard Name")
+    end
+    
+    it "you specify a invalid group name" do
+      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 8) }.should raise_error("Inexistent Group Name")      
+    end
+    
+    it "you specify a invalid group name, even if you have multiple groups, and one of them are right" do
+      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 9) }.should raise_error("Inexistent Group Name")
+    end
   end
   #  
   #  it "should run on slaves on replication" do

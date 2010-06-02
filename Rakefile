@@ -14,7 +14,6 @@ begin
     gem.homepage = "http://github.com/tchandy/octopus"
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

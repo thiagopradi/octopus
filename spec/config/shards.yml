@@ -32,3 +32,18 @@ production:
         adapter: mysql
         host: localhost
         database: octopus_shard4
+        
+        
+production_raise_error:
+  shards:
+    history_shards:
+      duplicated_shard_name:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard5
+    
+    country_shards:
+      duplicated_shard_name:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard4

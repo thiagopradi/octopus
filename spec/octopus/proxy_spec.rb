@@ -14,6 +14,20 @@ describe Octopus::Proxy do
     it "should initialize the block attribute as false" do
       @proxy.block.should be_false
     end    
+    
+    describe "should raise error if you have duplicated shard names" do
+      before(:each) do
+        ENVIROMENT = "production_raise_error"        
+      end
+      
+      after(:each) do
+        ENVIROMENT = "production"
+      end
+        
+      it "should raise the error" do
+        lambda { Octopus::Proxy.new(Octopus.config()) }.should raise_error("You have duplicated shard names!")        
+      end
+    end
   end
   
   describe "returning the correct connection" do

@@ -1,3 +1,4 @@
+ENVIROMENT = "production"
 class Octopus::Proxy
   attr_accessor :shards, :current_shard, :block, :groups, :current_group
 
@@ -9,13 +10,15 @@ class Octopus::Proxy
     @block = false
     @shards[:master] = ActiveRecord::Base.connection_pool()
 
-    config["production"]["shards"].each do |key, value|
+    config[ENVIROMENT]["shards"].each do |key, value|
+      
       if value.has_key?("adapter")
         @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
       else
         @groups[key.to_sym] = []
 
         value.each do |k, v|
+          raise "You have duplicated shard names!" if @shards.has_key?(k.to_sym)
           @shards[k.to_sym] = connection_pool_for(v, "mysql_connection")
           @groups[key.to_sym] << k.to_sym
         end

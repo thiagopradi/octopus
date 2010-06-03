@@ -28,9 +28,9 @@ class Octopus::Proxy
 
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
-      shard_symbol.each {|symbol| raise "Inexistent Shard Name" if @shards[symbol].nil? } 
+      shard_symbol.each {|symbol| raise "Nonexistent Shard Name" if @shards[symbol].nil? }
     else
-      raise "Inexistent Shard Name" if @shards[shard_symbol].nil?    
+      raise "Nonexistent Shard Name" if @shards[shard_symbol].nil?
     end
 
     @current_shard = shard_symbol
@@ -38,9 +38,9 @@ class Octopus::Proxy
   
   def current_group=(group_symbol)
     if group_symbol.is_a?(Array)
-      group_symbol.each {|symbol| raise "Inexistent Group Name" if @groups[symbol].nil? } 
+      group_symbol.each {|symbol| raise "Nonexistent Group Name" if @groups[symbol].nil? }
     else
-      raise "Inexistent Group Name" if @groups[group_symbol].nil? && !group_symbol.nil?
+      raise "Nonexistent Group Name" if @groups[group_symbol].nil? && !group_symbol.nil?
     end
 
     @current_group = group_symbol

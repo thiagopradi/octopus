@@ -32,7 +32,7 @@ describe Octopus::Model do
     end
     
     it "should raise a error when you specify a shard that doesn't exist" do
-      lambda { User.using(:crazy_shard) }.should raise_error("Inexistent Shard Name")
+      lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name")
     end
   end
 

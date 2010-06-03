@@ -7,9 +7,11 @@ module Octopus
 
   def self.directory()
     if defined?(Rails)
+      # Running in a normal Rails application
       Rails.root.to_s
     else
-      File.expand_path(File.join(File.dirname(__FILE__), "..", "spec"))
+      # Running in a generic Ruby process
+      Dir.pwd
     end
   end
 end

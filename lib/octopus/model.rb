@@ -1,11 +1,13 @@
 module Octopus::Model  
   def self.included(base)
     base.extend(ClassMethods)
-    base.cattr_accessor :connection_proxy
-    base.connection_proxy = Octopus::Proxy.new(Octopus.config())
     base.send(:include, InstanceMethods)
 
     class << base
+      def connection_proxy
+        @@connection_proxy ||= Octopus::Proxy.new(Octopus.config())
+      end
+
       def connection
         self.connection_proxy()
       end
@@ -17,6 +19,9 @@ module Octopus::Model
   end
 
   module InstanceMethods
+    def connection_proxy
+      self.class.connection_proxy
+    end
     def using_shard(shard, &block)
       older_shard = self.connection_proxy.current_shard
       self.connection_proxy.block = true

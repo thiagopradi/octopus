@@ -5,8 +5,11 @@ require "database_connection"
 require 'octopus'
 
 Spec::Runner.configure do |config|  
+  config.mock_with :rspec
+
   config.before(:each) do
-    clean_all_shards()    
+    Octopus.stub!(:directory).and_return(File.dirname(__FILE__))
+    clean_all_shards()
   end
 
   config.after(:each) do

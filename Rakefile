@@ -49,20 +49,16 @@ end
 namespace :db do
   desc 'Build the MySQL test databases'
   task :build_databases do
-    %x( echo "create DATABASE octopus_shard1 DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
-    %x( echo "create DATABASE octopus_shard2 DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
-    %x( echo "create DATABASE octopus_shard3 DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
-    %x( echo "create DATABASE octopus_shard4 DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
-    %x( echo "create DATABASE octopus_shard5 DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
+    (1..5).each do |idx|
+      %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
+    end
   end
 
   desc 'Drop the MySQL test databases'
   task :drop_databases do
-    %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard1 )
-    %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard2 )
-    %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard3 )
-    %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard4 )
-    %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard5 )
+    (1..5).each do |idx|
+      %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard#{idx} )
+    end
   end
 
   desc 'Create tables on mysql databases'

@@ -17,13 +17,9 @@ describe Octopus::Proxy do
     
     describe "should raise error if you have duplicated shard names" do
       before(:each) do
-        ENVIROMENT = "production_raise_error"        
+        Octopus.stub!(:env).and_return("production_raise_error")        
       end
-      
-      after(:each) do
-        ENVIROMENT = "production"
-      end
-        
+              
       it "should raise the error" do
         lambda { Octopus::Proxy.new(Octopus.config()) }.should raise_error("You have duplicated shard names!")        
       end

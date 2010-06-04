@@ -1,4 +1,3 @@
-ENVIROMENT = "production"
 class Octopus::Proxy
   attr_accessor :shards, :current_shard, :block, :groups, :current_group
 
@@ -10,7 +9,7 @@ class Octopus::Proxy
     @block = false
     @shards[:master] = ActiveRecord::Base.connection_pool()
 
-    config[ENVIROMENT]["shards"].each do |key, value|
+    config[Octopus.env()]["shards"].each do |key, value|
       
       if value.has_key?("adapter")
         @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")

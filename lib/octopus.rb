@@ -1,6 +1,15 @@
 require "yaml"
 
 module Octopus
+  
+  def self.env()
+    if defined?(Rails)
+      Rails.env.to_s
+    else
+      "production"
+    end
+  end
+  
   def self.config()
     @@config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml")
   end

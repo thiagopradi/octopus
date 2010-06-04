@@ -24,7 +24,3 @@ def clean_all_shards()
     ActiveRecord::Base.using(shard_symbol).connection.execute("delete from clients;")  
   end
 end
-
-class Client < ActiveRecord::Base
-  sharded_by :country
-end

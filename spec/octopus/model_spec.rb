@@ -57,9 +57,7 @@ describe Octopus::Model do
   
   describe "#sharded_by method" do
     it "should send all queries to the specify shard" do
-      Client.create!(:country => "brazil")
-      Client.using(:brazil).count.should == 1
-      Client.using(:canada).count.should == 0
+      pending()
     end
   end
 end

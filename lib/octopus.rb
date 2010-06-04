@@ -1,7 +1,6 @@
 require "yaml"
 
 module Octopus
-  
   def self.env()
     if defined?(Rails)
       Rails.env.to_s

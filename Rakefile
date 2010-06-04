@@ -1,8 +1,6 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
 require 'rubygems'
 require 'rake'
-#change this if you have a different user
-MYSQL_USER='root'
 
 begin
   require 'jeweler'
@@ -49,15 +47,18 @@ end
 namespace :db do
   desc 'Build the MySQL test databases'
   task :build_databases do
+    mysql_user = ENV['MYSQL_USER'] || "root"
     (1..5).each do |idx|
-      %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{MYSQL_USER})
+      %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{mysql_user})
     end
   end
 
   desc 'Drop the MySQL test databases'
   task :drop_databases do
+    mysql_user = ENV['MYSQL_USER']
+    mysql_user ||= "root"
     (1..5).each do |idx|
-      %x( mysqladmin --user=#{MYSQL_USER} -f drop octopus_shard#{idx} )
+      %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
     end
   end
 
@@ -79,7 +80,7 @@ namespace :db do
       end
     end
   end
-
+  
   desc 'Prepare the MySQL test databases'
   task :prepare => [:drop_databases, :build_databases, :create_tables]
 end

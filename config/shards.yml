@@ -47,3 +47,23 @@ production_raise_error:
         adapter: mysql
         host: localhost
         database: octopus_shard4
+        
+production_replicated:
+  replicated: true
+  shards:
+    slave1:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard2
+    slave2:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard3
+    slave3:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard4
+    slave4:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard5

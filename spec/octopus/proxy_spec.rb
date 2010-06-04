@@ -14,6 +14,9 @@ describe Octopus::Proxy do
     it "should initialize the block attribute as false" do
       @proxy.block.should be_false
     end    
+    it "should initialize replicated attribute as false" do
+      @proxy.replicated.should be_false      
+    end
     
     describe "should raise error if you have duplicated shard names" do
       before(:each) do
@@ -55,7 +58,18 @@ describe Octopus::Proxy do
     end
   end
   
-  describe "acting as a proxy" do
+  describe "when the database is replicated" do
+    before(:each) do
+      Octopus.stub!(:env).and_return("production_replicated")
+      @proxy = Octopus::Proxy.new(Octopus.config())   
+    end
     
+    it "should have the replicated attribute as true" do
+      @proxy.replicated.should be_true
+    end
+    
+    it "should initialize the list of shards" do
+      @proxy.slaves_list.to_set.should == [:slave4, :slave1, :slave2, :slave3].to_set
+    end
   end
 end

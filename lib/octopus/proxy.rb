@@ -1,5 +1,5 @@
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :groups, :current_group
+  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -7,10 +7,10 @@ class Octopus::Proxy
     @shards = {}
     @groups = {}
     @block = false
+    @replicated = config[Octopus.env()]["replicated"] || false
     @shards[:master] = ActiveRecord::Base.connection_pool()
 
     config[Octopus.env()]["shards"].each do |key, value|
-      
       if value.has_key?("adapter")
         @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
       else
@@ -22,6 +22,12 @@ class Octopus::Proxy
           @groups[key.to_sym] << k.to_sym
         end
       end
+    end
+    
+    if @replicated
+      @slaves_list = @shards.keys
+      @slaves_list.delete(:master)
+      @slaves_list.sort_by {|sym| sym.to_s}
     end
   end
 

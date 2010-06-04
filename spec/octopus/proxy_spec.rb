@@ -85,7 +85,6 @@ describe Octopus::Proxy do
     end
 
     it "should send read queries to slaves, using a round robin algorithm" do
-      #create on master
       u = User.create!(:name => "master")
 
       [:slave4, :slave1, :slave2, :slave3].each do |sym|

@@ -91,12 +91,7 @@ class Octopus::Proxy
     elsif should_send_queries_to_a_group_of_shards?
       send_queries_to_shards(@groups[current_group], method, *args, &block)
     elsif should_send_queries_to_replicated_databases?(method)
-      old_shard = self.current_shard
-      self.current_shard = slaves_list.shift.to_sym
-      slaves_list << self.current_shard      
-      sql = select_connection().send(method, *args, &block)     
-      self.current_shard = old_shard 
-      return sql
+      send_queries_to_selected_slave(method, *args, &block)
     else
       select_connection().send(method, *args, &block)
     end
@@ -145,6 +140,15 @@ class Octopus::Proxy
     end
 
     return method_return
+  end
+  
+  def send_queries_to_selected_slave(method, *args, &block)
+    old_shard = self.current_shard
+    self.current_shard = slaves_list.shift.to_sym
+    slaves_list << self.current_shard      
+    sql = select_connection().send(method, *args, &block)     
+    self.current_shard = old_shard 
+    return sql
   end
   
   def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)

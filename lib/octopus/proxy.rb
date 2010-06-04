@@ -27,7 +27,8 @@ class Octopus::Proxy
     if @replicated
       @slaves_list = @shards.keys
       @slaves_list.delete(:master)
-      @slaves_list.sort_by {|sym| sym.to_s}
+      @slaves_list.map! {|sym| sym.to_s}
+      @slaves_list = @slaves_list.sort
     end
   end
 
@@ -89,6 +90,13 @@ class Octopus::Proxy
       send_queries_to_shards(current_shard, method, *args, &block)
     elsif should_send_queries_to_a_group_of_shards?
       send_queries_to_shards(@groups[current_group], method, *args, &block)
+    elsif should_send_queries_to_replicated_databases?(method)
+      old_shard = self.current_shard
+      self.current_shard = slaves_list.shift.to_sym
+      slaves_list << self.current_shard      
+      sql = select_connection().send(method, *args, &block)     
+      self.current_shard = old_shard 
+      return sql
     else
       select_connection().send(method, *args, &block)
     end
@@ -113,6 +121,10 @@ class Octopus::Proxy
 
   def should_send_queries_to_a_group_of_shards?
     !current_group.nil?
+  end
+  
+  def should_send_queries_to_replicated_databases?(method)
+    @replicated && method.to_s == "select_all"
   end
   
   def send_queries_to_multiple_groups(method, *args, &block)

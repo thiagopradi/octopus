@@ -22,6 +22,7 @@ module Octopus::Model
     def connection_proxy
       self.class.connection_proxy
     end
+    
     def using_shard(shard, &block)
       older_shard = self.connection_proxy.current_shard
       self.connection_proxy.block = true

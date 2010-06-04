@@ -65,7 +65,7 @@ namespace :db do
   desc 'Create tables on mysql databases'
   task :create_tables do
     require "spec/database_connection"
-    require "lib/octopus"
+    require "octopus"
     [:master, :brazil, :canada, :russia, :alone_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name

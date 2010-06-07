@@ -22,7 +22,7 @@ module Octopus::Model
     def connection_proxy
       self.class.connection_proxy
     end
-    
+
     def using_shard(shard, &block)
       older_shard = self.connection_proxy.current_shard
       self.connection_proxy.block = true
@@ -35,17 +35,10 @@ module Octopus::Model
       end
     end
   end
-  
+
   module ClassMethods
     include InstanceMethods
-    
-    module HiJackARConnection
-      def connection()
-        self.connection_proxy.current_shard = self.send(self.conn_symbol).to_sym  
-        self.connection_proxy()
-      end
-    end
-    
+
     def using(args)
       self.connection_proxy.current_shard = args
       return self

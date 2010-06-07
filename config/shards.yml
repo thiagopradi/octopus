@@ -5,6 +5,13 @@ production:
       host: localhost
       database: octopus_shard5
     
+    postgresql_shard:
+      adapter: postgresql
+      username: postgres
+      password:
+      database: octopus_shard1
+      encoding: unicode
+    
     history_shards:
       aug2009:
         adapter: mysql

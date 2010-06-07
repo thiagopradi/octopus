@@ -54,6 +54,24 @@ describe Octopus::Model do
       User.count.should == 0
     end
   end
+  describe "using a postgresql shard" do
+    after(:each) do
+      User.using(:postgresql_shard).delete_all
+    end
+    
+    it "should update the Arel Engine" do
+      User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
+      User.using(:alone_shard).arel_engine.connection.adapter_name.should == "MySQL"
+    end
+    
+    it "should works with writes and reads" do
+      pending()
+      # u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
+      #       #User.using(:postgresql_shard).arel_table.columns.should == ""
+      #       User.using(:postgresql_shard).scoped.should ==  ""
+      #       User.using(:alone_shard).find(:all).should == []
+    end
+  end
   
   describe "#sharded_by method" do
     it "should send all queries to the specify shard" do

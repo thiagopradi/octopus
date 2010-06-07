@@ -48,25 +48,30 @@ namespace :db do
   desc 'Build the MySQL test databases'
   task :build_databases do
     mysql_user = ENV['MYSQL_USER'] || "root"
+    postgres_user = ENV['POSTGRES_USER'] || "postgres"
     (1..5).each do |idx|
       %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{mysql_user})
     end
+    
+    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard1 )
   end
 
   desc 'Drop the MySQL test databases'
   task :drop_databases do
-    mysql_user = ENV['MYSQL_USER']
-    mysql_user ||= "root"
+    mysql_user = ENV['MYSQL_USER'] || "root"
+    postgres_user = ENV['POSTGRES_USER'] || "postgres"
     (1..5).each do |idx|
       %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
     end
+    
+    %x( dropdb -U #{postgres_user} octopus_shard1 )
   end
 
   desc 'Create tables on mysql databases'
   task :create_tables do
     require "spec/database_connection"
     require "octopus"
-    [:master, :brazil, :canada, :russia, :alone_shard].each do |shard_symbol|
+    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
       end

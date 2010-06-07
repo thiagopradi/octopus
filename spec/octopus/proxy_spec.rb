@@ -7,7 +7,7 @@ describe Octopus::Proxy do
 
   describe "creating a new instance" do    
     it "should initialize all shards and groups" do
-      @proxy.shards.keys.to_set.should == [:alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master].to_set
+      @proxy.shards.keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master].to_set
       @proxy.groups.should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
     end
 

@@ -12,23 +12,24 @@ class Octopus::Proxy
 
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
-        @shards[key.to_sym] = connection_pool_for(value, "mysql_connection")
+        initialize_adapter(value['adapter'])
+        @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
       else
         @groups[key.to_sym] = []
 
         value.each do |k, v|
           raise "You have duplicated shard names!" if @shards.has_key?(k.to_sym)
-          @shards[k.to_sym] = connection_pool_for(v, "mysql_connection")
+          initialize_adapter(v['adapter'])
+          @shards[k.to_sym] = connection_pool_for(v, "#{v['adapter']}_connection")
           @groups[key.to_sym] << k.to_sym
         end
       end
     end
-    
+
     if @replicated
       @slaves_list = @shards.keys
       @slaves_list.delete(:master)
-      @slaves_list.map! {|sym| sym.to_s}
-      @slaves_list = @slaves_list.sort
+      @slaves_list = @slaves_list.map {|sym| sym.to_s}.sort
     end
   end
 
@@ -41,7 +42,7 @@ class Octopus::Proxy
 
     @current_shard = shard_symbol
   end
-  
+
   def current_group=(group_symbol)
     if group_symbol.is_a?(Array)
       group_symbol.each {|symbol| raise "Nonexistent Group Name" if @groups[symbol].nil? }
@@ -51,7 +52,7 @@ class Octopus::Proxy
 
     @current_group = group_symbol
   end
-  
+
   def select_connection()
     @shards[shard_name].connection()
   end
@@ -101,7 +102,21 @@ class Octopus::Proxy
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
-  
+
+  def initialize_adapter(adapter)
+    begin
+      require 'rubygems'
+      gem "activerecord-#{adapter}-adapter"
+      require "active_record/connection_adapters/#{adapter}_adapter"
+    rescue LoadError
+      begin
+        require "active_record/connection_adapters/#{adapter}_adapter"
+      rescue LoadError
+        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
+      end
+    end
+  end
+
   def should_clean_connection?(method)
     method.to_s =~ /begin_db_transaction|insert|select_value/ && !should_send_queries_to_multiple_shards? && !self.current_group
   end
@@ -117,11 +132,11 @@ class Octopus::Proxy
   def should_send_queries_to_a_group_of_shards?
     !current_group.nil?
   end
-  
+
   def should_send_queries_to_replicated_databases?(method)
     @replicated && method.to_s == "select_all"
   end
-  
+
   def send_queries_to_multiple_groups(method, *args, &block)
     method_return = nil
 
@@ -131,7 +146,7 @@ class Octopus::Proxy
 
     return method_return
   end
-  
+
   def send_queries_to_shards(shard_array, method, *args, &block)
     method_return = nil
 
@@ -141,7 +156,7 @@ class Octopus::Proxy
 
     return method_return
   end
-  
+
   def send_queries_to_selected_slave(method, *args, &block)
     old_shard = self.current_shard
     self.current_shard = slaves_list.shift.to_sym
@@ -150,13 +165,13 @@ class Octopus::Proxy
     self.current_shard = old_shard 
     return sql
   end
-  
+
   def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)
     shard_array.each do |shard_symbol|
       @shards[shard_symbol].connection().transaction(start_db_transaction, &block)
     end
   end
-  
+
   def send_transaction_to_multiple_groups(start_db_transaction, &block)
     current_group.each do |group_symbol|
       self.send_transaction_to_multiple_shards(@groups[group_symbol], start_db_transaction, &block)

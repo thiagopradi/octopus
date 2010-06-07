@@ -19,8 +19,10 @@ end
 
 def clean_all_shards()
   ActiveRecord::Base.connection.shards.keys.each do |shard_symbol|
-    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from schema_migrations;")
-    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from users;")  
-    ActiveRecord::Base.using(shard_symbol).connection.execute("delete from clients;")  
+    if shard_symbol != :postgresql_shard
+      ActiveRecord::Base.using(shard_symbol).connection.execute("delete from schema_migrations;")
+      ActiveRecord::Base.using(shard_symbol).connection.execute("delete from users;")  
+      ActiveRecord::Base.using(shard_symbol).connection.execute("delete from clients;")  
+    end
   end
 end

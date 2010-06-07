@@ -9,7 +9,7 @@ describe Octopus do
 
   describe "#directory method" do
     it "should return the directory that contains the shards.yml file" do
-      Octopus.directory().should == File.expand_path(File.dirname(__FILE__) + "/../../")
+      Octopus.directory().should == File.expand_path(File.dirname(__FILE__) + "/../")
     end
   end
 end

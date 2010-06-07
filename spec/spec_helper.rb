@@ -8,7 +8,7 @@ Spec::Runner.configure do |config|
   config.mock_with :rspec
 
   config.before(:each) do
-    Octopus.stub!(:directory).and_return(File.expand_path(File.join(File.dirname(__FILE__), "..")))
+    Octopus.stub!(:directory).and_return(File.dirname(__FILE__))
     clean_all_shards()
   end
 

@@ -1,18 +1,22 @@
 module Octopus::Model  
   def self.included(base)
-    base.extend(ClassMethods)
+    base.extend(ClassMethods)    
     base.send(:include, InstanceMethods)
-
-    class << base
-      def connection_proxy
+    
+    base.class_eval do 
+      def self.connection_proxy
         @@connection_proxy ||= Octopus::Proxy.new(Octopus.config())
       end
 
-      def connection
+      def self.connection 
+        if self.respond_to?(:replicated)
+          self.connection_proxy().set_replicated_model(self)
+        end
+        
         self.connection_proxy()
       end
 
-      def connected?
+      def self.connected?
         self.connection_proxy().connected?
       end
     end
@@ -48,6 +52,10 @@ module Octopus::Model
       self.cattr_accessor :conn_symbol
       self.conn_symbol = symbol
       self.send(:include, HiJackARConnection)
+    end
+
+    def replicated_model()
+      self.cattr_accessor :replicated
     end
   end  
 end

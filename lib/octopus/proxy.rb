@@ -1,11 +1,12 @@
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list
+  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
   def initialize(config)
     @shards = {}
     @groups = {}
+    @replicated_models = []
     @block = false
     @replicated = config[Octopus.env()]["replicated"] || false
     @shards[:master] = ActiveRecord::Base.connection_pool()
@@ -64,6 +65,10 @@ class Octopus::Proxy
       current_shard || :master
     end
   end
+  
+  def set_replicated_model(model)
+    replicated_models << model if !replicated_models.include?(model)
+  end
 
   def transaction(start_db_transaction = true, &block)
     if should_send_queries_to_multiple_shards?
@@ -85,14 +90,14 @@ class Octopus::Proxy
       conn = select_connection()
       self.current_shard = :master
       conn.send(method, *args, &block)
+    elsif should_send_queries_to_replicated_databases?(method)
+      send_queries_to_selected_slave(method, *args, &block)      
     elsif should_send_queries_to_multiple_groups?
       send_queries_to_multiple_groups(method, *args, &block)
     elsif should_send_queries_to_multiple_shards?
       send_queries_to_shards(current_shard, method, *args, &block)
     elsif should_send_queries_to_a_group_of_shards?
       send_queries_to_shards(@groups[current_group], method, *args, &block)
-    elsif should_send_queries_to_replicated_databases?(method)
-      send_queries_to_selected_slave(method, *args, &block)
     else
       select_connection().send(method, *args, &block)
     end
@@ -118,7 +123,7 @@ class Octopus::Proxy
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /begin_db_transaction|insert|select_value/ && !should_send_queries_to_multiple_shards? && !self.current_group
+    method.to_s =~ /begin_db_transaction|insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !replicated
   end
 
   def should_send_queries_to_multiple_shards?
@@ -157,13 +162,21 @@ class Octopus::Proxy
     return method_return
   end
 
-  def send_queries_to_selected_slave(method, *args, &block)
-    old_shard = self.current_shard
-    self.current_shard = slaves_list.shift.to_sym
-    slaves_list << self.current_shard      
-    sql = select_connection().send(method, *args, &block)     
-    self.current_shard = old_shard 
-    return sql
+  def send_queries_to_selected_slave(method, *args, &block)        
+    if args.last =~ /#{replicated_models.join('|')}/
+      old_shard = self.current_shard
+      self.current_shard = slaves_list.shift.to_sym
+      slaves_list << self.current_shard      
+      sql = select_connection().send(method, *args, &block)     
+      self.current_shard = old_shard 
+      return sql
+    else
+      old_shard = self.current_shard
+      self.current_shard = :master
+      sql = select_connection().send(method, *args, &block)     
+      self.current_shard = old_shard 
+      return sql    
+    end
   end
 
   def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)

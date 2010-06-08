@@ -10,7 +10,7 @@ module Octopus
   end
   
   def self.config()
-    @@config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml")
+    @@config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml") 
   end
 
   def self.directory()

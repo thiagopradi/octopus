@@ -3,13 +3,13 @@ require 'spec'
 require 'spec/autorun'
 require "database_connection"
 require 'octopus'
-require "database_models"
 
 Spec::Runner.configure do |config|  
   config.mock_with :rspec
 
   config.before(:each) do
     Octopus.stub!(:directory).and_return(File.dirname(__FILE__))
+    require "database_models"
     clean_all_shards()
   end
 

@@ -1,7 +1,5 @@
-#The user class is sharded
+#The user class is just sharded, not replicated
 class User < ActiveRecord::Base
-  replicated_model()
-  
   def awesome_queries
     using_shard(:canada) do
       User.create(:name => "teste")
@@ -9,6 +7,11 @@ class User < ActiveRecord::Base
   end
 end
 
-#The client class isn't sharded
+#The client class isn't replicated
 class Client < ActiveRecord::Base
+end
+
+#This class is replicated
+class Cat < ActiveRecord::Base
+  replicated_model()
 end

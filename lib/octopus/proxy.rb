@@ -167,16 +167,14 @@ class Octopus::Proxy
       old_shard = self.current_shard
       self.current_shard = slaves_list.shift.to_sym
       slaves_list << self.current_shard      
-      sql = select_connection().send(method, *args, &block)     
-      self.current_shard = old_shard 
-      return sql
     else
       old_shard = self.current_shard
       self.current_shard = :master
-      sql = select_connection().send(method, *args, &block)     
-      self.current_shard = old_shard 
-      return sql    
     end
+
+    sql = select_connection().send(method, *args, &block)     
+    self.current_shard = old_shard 
+    return sql    
   end
 
   def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)

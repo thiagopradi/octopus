@@ -62,8 +62,11 @@ describe Octopus::Proxy do
     before(:each) do
       Octopus.stub!(:env).and_return("production_replicated")
       @proxy = Octopus::Proxy.new(Octopus.config())
-      ActiveRecord::Base.stub!(:connection_proxy).and_return(@proxy) 
-      User.stub!(:connection_proxy).and_return(@proxy)      
+      #TODO - THIS IS SO UGLY
+      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+      #   ActiveRecord::Base.stub!(:connection_proxy).and_return(@proxy) 
+      #   User.stub!(:connection_proxy).and_return(@proxy)
+      #   Client.stub!(:connection_proxy).and_return(@proxy)
     end
     
     it "should have the replicated attribute as true" do
@@ -86,16 +89,23 @@ describe Octopus::Proxy do
 
     it "should send read queries to slaves, using a round robin algorithm" do
       u = User.create!(:name => "master")
-
+      c = Client.create!(:name => "client_master")
+      
       [:slave4, :slave1, :slave2, :slave3].each do |sym|
         User.using(sym).create!(:name => "Replicated_#{sym}")
       end
-
+      
+      Client.find(:first).should_not be_nil
       User.find(:first).name.should == "Replicated_slave1"
+      Client.find(:first).should_not be_nil
       User.find(:first).name.should == "Replicated_slave2"
+      Client.find(:first).should_not be_nil
       User.find(:first).name.should == "Replicated_slave3"
+      Client.find(:first).should_not be_nil
       User.find(:first).name.should == "Replicated_slave4"
+      Client.find(:first).should_not be_nil
       User.find(:first).name.should == "Replicated_slave1"
+      Client.find(:first).should_not be_nil
       
       [:slave4, :slave1, :slave2, :slave3].each do |sym|
         User.using(sym).find_by_name("master").should be_false

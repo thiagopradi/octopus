@@ -163,6 +163,7 @@ class Octopus::Proxy
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        
+    #TODO: ugly code, needs refactor
     if args.last =~ /#{replicated_models.join('|')}/
       old_shard = self.current_shard
       self.current_shard = slaves_list.shift.to_sym

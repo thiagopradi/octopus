@@ -1,10 +1,77 @@
 <h1> Octopus  - Easy Database Sharding for ActiveRecord</h1>
+
+<p> Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric), each project has its own limitations. This project will include a Sharding API, master/slave replication support, capistrano and rake tools to manage database state (e.g. migrations, moving data between shards).</p>
+
+<h2> Api Design: </h2>
+<p> The design of the api is made to be simple as possible. Octopus support both sharding and replicated databases. Let's  see how this works:</p>
+
+<h3> Sharding </h3>
+<p> To enable shard, you need to create a file named shards.yml in your config directory inside a rails application. If you want to use octopus in a plain ruby application, create a folder named config, and put the file inside them. The shards.yml file looks like this:</p>
+
 <pre>
-                      ___
-                   .-'   `'.
-                  /         \
-                  |         ;
-                  |         |           ___.--,
+  production:
+    shards:
+      shard_five:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard5
+
+      shard_one:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard1
+</pre>
+
+<p> In this example, you have two shards, named shard_five and shard_one. You could also have a group of shards, and your config file will look like this:</p>
+
+<pre>
+  production:
+    shards:
+      history_shards:
+        aug2009:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard2
+        aug2010:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard3
+        aug2011:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard4
+
+      country_shards:
+        canada:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard5
+        brazil:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard6
+        russia:
+          adapter: mysql
+          host: localhost
+          database: octopus_shard7
+</pre>
+<p> So, this enables you to send queries to a group of shards.</p>
+
+
+<h2>Thanks</h2>
+
+This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
+and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
+
+
+<h3>If you are writing code that smells in a project using octopus, the EVIL octopus is going behind you: </h3>
+<pre>
+                                _________________
+                      ___       | I'm so EVIL!  |
+                   .-'   `'.    |______________ |
+                  /         \   /
+                  |         ;  /
+                  |         | /         ___.--,
          _.._     |0) ~ (0) |    _.---'`__.-( (_.
   __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`
  ( ,.--'`   ',__ /./;   ;, '.__.'`    __
@@ -20,13 +87,6 @@
            `      '-;         (-'
 </pre>
 
-<p> Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric), each project has its own limitations. This project will include a Sharding API, master/slave replication support, capistrano and rake tools to manage database state (e.g. migrations, moving data between shards).</p>
-
-
-<h2>Thanks</h2>
-
-This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
-and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
 <h2>Copyright</h2>
 

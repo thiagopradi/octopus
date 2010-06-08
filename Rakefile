@@ -69,7 +69,8 @@ namespace :db do
 
   desc 'Create tables on mysql databases'
   task :create_tables do
-    require "spec/database_connection"
+    Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
+    require "database_connection"
     require "octopus"
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
@@ -78,6 +79,7 @@ namespace :db do
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:clients) do |u|
         u.string :country
+        u.string :name
       end
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:schema_migrations) do |u|

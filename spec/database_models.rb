@@ -1,7 +1,7 @@
 #The user class is just sharded, not replicated
 class User < ActiveRecord::Base
   def awesome_queries
-    using_shard(:canada) do
+    using(:canada) do
       User.create(:name => "teste")
     end
   end

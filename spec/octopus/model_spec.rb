@@ -12,7 +12,7 @@ describe Octopus::Model do
       User.using(:master).count.should == 0
     end
 
-    it "should allow scoping dinamically" do
+    it "should allow scoping dynamically" do
       User.using(:canada).using(:master).using(:canada).create!(:name => 'oi')
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
@@ -38,7 +38,7 @@ describe Octopus::Model do
 
   describe "#using_shard method" do
     it "should allow passing a block to #using" do
-      User.using_shard(:canada) do
+      User.using(:canada) do
         User.create(:name => "oi")
       end
 

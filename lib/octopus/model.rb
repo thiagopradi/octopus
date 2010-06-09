@@ -48,12 +48,6 @@ module Octopus::Model
   module ClassMethods
     include InstanceMethods
 
-    def sharded_by(symbol)
-      self.cattr_accessor :conn_symbol
-      self.conn_symbol = symbol
-      self.send(:include, HiJackARConnection)
-    end
-
     def replicated_model()
       self.cattr_accessor :replicated
     end

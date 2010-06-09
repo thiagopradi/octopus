@@ -32,7 +32,7 @@ describe Octopus::Model do
     end
     
     it "should raise a error when you specify a shard that doesn't exist" do
-      lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name")
+      lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name: crazy_shard")
     end
   end
 
@@ -54,6 +54,7 @@ describe Octopus::Model do
       User.count.should == 0
     end
   end
+  
   describe "using a postgresql shard" do
     after(:each) do
       User.using(:postgresql_shard).delete_all
@@ -66,10 +67,34 @@ describe Octopus::Model do
     
     it "should works with writes and reads" do
       pending()
-      # u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
+      #u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
       #       #User.using(:postgresql_shard).arel_table.columns.should == ""
       #       User.using(:postgresql_shard).scoped.should ==  ""
       #       User.using(:alone_shard).find(:all).should == []
+    end
+  end
+  
+  describe "#replicated_model method" do
+    before(:each) do
+      Octopus.stub!(:env).and_return("production_replicated")
+      @proxy = Octopus::Proxy.new(Octopus.config())
+      #TODO - This is ugly, but is better than mocking
+      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+      #TODO - This is ugly, but is better than mocking
+    end
+    
+    after(:each) do
+      #TODO - One little Kitten dies each time this code is executed.
+      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+    end
+    
+    it "should be replicated" do
+      ActiveRecord::Base.connection_proxy.replicated.should be_true
+    end
+    
+    it "should mark the Cat model as replicated" do
+      Cat.all.should == []
+      ActiveRecord::Base.connection_proxy.replicated_models.first.should == "Cat"
     end
   end
   

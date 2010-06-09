@@ -1,3 +1,5 @@
+require "set"
+
 class Octopus::Proxy
   attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models
 
@@ -6,10 +8,11 @@ class Octopus::Proxy
   def initialize(config)
     @shards = {}
     @groups = {}
-    @replicated_models = []
+    @replicated_models = Set.new
     @block = false
     @replicated = config[Octopus.env()]["replicated"] || false
     @shards[:master] = ActiveRecord::Base.connection_pool()
+    @current_shard = :master
 
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
@@ -36,9 +39,9 @@ class Octopus::Proxy
 
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
-      shard_symbol.each {|symbol| raise "Nonexistent Shard Name" if @shards[symbol].nil? }
+      shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
     else
-      raise "Nonexistent Shard Name" if @shards[shard_symbol].nil?
+      raise "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
     end
 
     @current_shard = shard_symbol
@@ -46,9 +49,9 @@ class Octopus::Proxy
 
   def current_group=(group_symbol)
     if group_symbol.is_a?(Array)
-      group_symbol.each {|symbol| raise "Nonexistent Group Name" if @groups[symbol].nil? }
+      group_symbol.each {|symbol| raise "Nonexistent Group Name: #{symbol}" if @groups[symbol].nil? }
     else
-      raise "Nonexistent Group Name" if @groups[group_symbol].nil? && !group_symbol.nil?
+      raise "Nonexistent Group Name: #{group_symbol}" if @groups[group_symbol].nil? && !group_symbol.nil?
     end
 
     @current_group = group_symbol
@@ -62,12 +65,12 @@ class Octopus::Proxy
     if(current_shard.is_a?(Array))
       current_shard.first
     else
-      current_shard || :master
+      current_shard
     end
   end
   
   def set_replicated_model(model)
-    replicated_models << model if !replicated_models.include?(model)
+    replicated_models << model.to_s
   end
 
   def transaction(start_db_transaction = true, &block)
@@ -164,7 +167,7 @@ class Octopus::Proxy
 
   def send_queries_to_selected_slave(method, *args, &block)        
     #TODO: ugly code, needs refactor
-    if args.last =~ /#{replicated_models.join('|')}/
+    if args.last =~ /#{replicated_models.to_a.join('|')}/
       old_shard = self.current_shard
       self.current_shard = slaves_list.shift.to_sym
       slaves_list << self.current_shard      
@@ -174,7 +177,7 @@ class Octopus::Proxy
     end
 
     sql = select_connection().send(method, *args, &block)     
-    self.current_shard = old_shard 
+    self.current_shard = old_shard
     return sql    
   end
 

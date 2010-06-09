@@ -9,9 +9,15 @@ end
 
 #The client class isn't replicated
 class Client < ActiveRecord::Base
+  has_many :items
 end
 
 #This class is replicated
 class Cat < ActiveRecord::Base
   replicated_model()
+end
+
+#This items belongs to a client
+class Item < ActiveRecord::Base
+  belongs_to :client
 end

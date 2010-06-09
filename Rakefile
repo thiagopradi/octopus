@@ -86,6 +86,11 @@ namespace :db do
         u.string :name
       end
       
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:items) do |u|
+        u.string :name
+        u.integer :client_id
+      end
+      
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:schema_migrations) do |u|
         u.string :version, :unique => true, :null => false
       end

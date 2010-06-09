@@ -6,6 +6,7 @@
 <p> The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3,  but will be soon compatible with Rails 2.x.</p>
 
 <p> Octopus supports: </p>
+
 - Sharding (with multiple shards, and grouped shards).
 - Replication (Master/slave support, with multiple slaves).
 - Moving data between shards with migrations.
@@ -19,7 +20,7 @@ This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of
 and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
 
-<h3>If you are writing code that smells in a project using octopus, the EVIL octopus is going behind you, be careful.</h3>
+<h3>If you are writing code that smells using octopus, the EVIL Octopus is going behind you, be careful.</h3>
 <pre>
                                 _________________
                       ___       | I'm so EVIL!  |

@@ -20,10 +20,8 @@ end
 
 def clean_all_shards()
   ActiveRecord::Base.connection.shards.keys.each do |shard_symbol|
-    if shard_symbol != :postgresql_shard
-      ['schema_migrations', 'users', 'clients', 'cats'].each do |model|
-        ActiveRecord::Base.using(shard_symbol).connection.execute("delete from #{model};") 
-      end
+    ['schema_migrations', 'users', 'clients', 'cats', 'items'].each do |tables|
+      ActiveRecord::Base.using(shard_symbol).connection.execute("DELETE FROM #{tables};") 
     end
   end
 end

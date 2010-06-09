@@ -64,15 +64,14 @@ describe Octopus::Migration do
     it "you specify a invalid group name, even if you have multiple groups, and one of them are right" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 9) }.should raise_error("Nonexistent Group Name: invalid_group")
     end
-  end
-  
-  #  
-  #  it "should run on slaves on replication" do
-  #    pending()
-  #  end
-  #  
-  #  it "should run in all shards, master or another shards" do
-  #    pending()
-  #  end
+  end 
+
+   it "should run on slaves on replication" do
+     pending()
+   end
+   
+   it "should run in all shards, master or another shards" do
+     pending()
+   end
 end
 

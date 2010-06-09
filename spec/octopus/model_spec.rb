@@ -50,8 +50,21 @@ describe Octopus::Model do
        end
     end
     
-    it "should raise a error when you specify a shard that doesn't exist" do
-      lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name: crazy_shard")
+    describe "when you have a relationship" do
+      it "should find all models in the specified shard" do
+        brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
+        master_client = Client.create!(:name => "Master Client")
+        
+        item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
+        item_master = Item.create!(:name => "Master Item", :client => master_client)
+        Client.using(:brazil).find_by_name("Brazil Client").items.should == [item_brazil]
+      end
+    end
+    
+    describe "raising errors" do
+      it "should raise a error when you specify a shard that doesn't exist" do
+        lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name: crazy_shard")
+      end
     end
   end
 

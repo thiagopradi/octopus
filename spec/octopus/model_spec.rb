@@ -31,30 +31,30 @@ describe Octopus::Model do
       User.using(:brazil).count.should == 0
     end
     
+    describe "passing a block" do
+      it "should allow queries be executed inside the block, ponting to a specific shard" do
+         User.using(:canada) do
+           User.create(:name => "oi")
+         end
+
+         User.using(:canada).count.should == 1
+         User.using(:master).count.should == 0
+         User.count.should == 0      
+       end
+
+       it "should allow execute queries inside a model" do
+         u = User.new
+         u.awesome_queries()
+         User.using(:canada).count.should == 1
+         User.count.should == 0
+       end
+    end
+    
     it "should raise a error when you specify a shard that doesn't exist" do
       lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name: crazy_shard")
     end
   end
 
-  describe "#using_shard method" do
-    it "should allow passing a block to #using" do
-      User.using(:canada) do
-        User.create(:name => "oi")
-      end
-
-      User.using(:canada).count.should == 1
-      User.using(:master).count.should == 0
-      User.count.should == 0      
-    end
-
-    it "should allow execute queries inside a model" do
-      u = User.new
-      u.awesome_queries()
-      User.using(:canada).count.should == 1
-      User.count.should == 0
-    end
-  end
-  
   describe "using a postgresql shard" do
     after(:each) do
       User.using(:postgresql_shard).delete_all

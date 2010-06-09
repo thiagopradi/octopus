@@ -27,7 +27,7 @@ describe Octopus::Migration do
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 3)
   end
-  
+
   it "should run on specified group" do
     ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 4)
 
@@ -37,7 +37,7 @@ describe Octopus::Migration do
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 4)
   end
-  
+
   it "should run on multiples groups" do
     ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 5)
 
@@ -47,31 +47,33 @@ describe Octopus::Migration do
 
     ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, 5)
   end
-  
+
   describe "should raise a exception when" do
     it "you specify a invalid shard name" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Nonexistent Shard Name: amazing_shard")
     end
-  
+
     it "you specify a invalid shard name, even if you have multiple shards, and one of them are right" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 7) }.should raise_error("Nonexistent Shard Name: invalid_shard")
     end
-    
+
     it "you specify a invalid group name" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 8) }.should raise_error("Nonexistent Group Name: invalid_group")
     end
-    
+
     it "you specify a invalid group name, even if you have multiple groups, and one of them are right" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 9) }.should raise_error("Nonexistent Group Name: invalid_group")
     end
   end 
 
-   it "should run on slaves on replication" do
-     pending()
-   end
-   
-   it "should run in all shards, master or another shards" do
-     pending()
-   end
+  describe "when using replication" do
+    it "should run writes on master when you use replication" do
+      pending()
+    end
+
+    it "should run in all shards, master or another shards" do
+      pending()
+    end
+  end
 end
 

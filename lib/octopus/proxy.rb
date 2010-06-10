@@ -89,7 +89,7 @@ class Octopus::Proxy
   end
 
   def method_missing(method, *args, &block)
-    if should_clean_connection?(method, &block)
+    if should_clean_connection?(method)
       conn = select_connection()
       self.current_shard = :master
       conn.send(method, *args, &block)

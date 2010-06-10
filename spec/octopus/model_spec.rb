@@ -26,9 +26,9 @@ describe Octopus::Model do
     it "should support both groups and alone shards" do
       User.using(:alone_shard).create!(:name => "Alone")
       User.using(:alone_shard).count.should == 1
-      User.using(:master).count.should == 0
       User.using(:canada).count.should == 0
       User.using(:brazil).count.should == 0
+      User.count.should == 0
     end
     
     describe "passing a block" do

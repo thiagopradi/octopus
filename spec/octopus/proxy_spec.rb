@@ -64,9 +64,6 @@ describe Octopus::Proxy do
       @proxy = Octopus::Proxy.new(Octopus.config())
       #TODO - THIS IS SO UGLY
       ActiveRecord::Base.class_eval("@@connection_proxy = nil")
-      #   ActiveRecord::Base.stub!(:connection_proxy).and_return(@proxy) 
-      #   User.stub!(:connection_proxy).and_return(@proxy)
-      #   Client.stub!(:connection_proxy).and_return(@proxy)
     end
     
     it "should have the replicated attribute as true" do

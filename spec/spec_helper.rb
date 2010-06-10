@@ -19,7 +19,7 @@ Spec::Runner.configure do |config|
 end
 
 def clean_all_shards()
-  ActiveRecord::Base.connection.shards.keys.each do |shard_symbol|
+  ActiveRecord::Base.using(:master).connection.shards.keys.each do |shard_symbol|
     ['schema_migrations', 'users', 'clients', 'cats', 'items'].each do |tables|
       ActiveRecord::Base.using(shard_symbol).connection.execute("DELETE FROM #{tables};") 
     end

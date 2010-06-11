@@ -5,13 +5,14 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "octopus"
+    gem.name = "ar-octopus"
     gem.summary = "Easy Database Sharding for ActiveRecord"
     gem.description = "This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards."
     gem.email = "tchandy@gmail.com"
     gem.homepage = "http://github.com/tchandy/octopus"
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.version = "0.0.1"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

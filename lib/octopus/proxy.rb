@@ -72,19 +72,25 @@ class Octopus::Proxy
   def set_replicated_model(model)
     replicated_models << model.to_s
   end
+  
+  def add_transaction_record(record)
+    if !select_connection().instance_variable_get(:@_current_transaction_records).nil?
+      select_connection().add_transaction_record(record)
+    end
+  end
 
-  def transaction(start_db_transaction = true, &block)
+  def transaction(options = {}, &block)
     if should_send_queries_to_multiple_shards?
-      self.send_transaction_to_multiple_shards(current_shard, start_db_transaction, &block)
+      self.send_transaction_to_multiple_shards(current_shard, options, &block)
       self.current_shard = :master
     elsif should_send_queries_to_multiple_groups?
-      self.send_transaction_to_multiple_groups(start_db_transaction, &block)
+      self.send_transaction_to_multiple_groups(options, &block)
       self.current_group = nil      
     elsif should_send_queries_to_a_group_of_shards?
-      self.send_transaction_to_multiple_shards(@groups[current_group], start_db_transaction, &block)
+      self.send_transaction_to_multiple_shards(@groups[current_group], options, &block)
       self.current_group = nil
     else
-      select_connection.transaction(start_db_transaction, &block) 
+      select_connection.transaction(options, &block) 
     end
   end
 
@@ -181,15 +187,15 @@ class Octopus::Proxy
     return sql    
   end
 
-  def send_transaction_to_multiple_shards(shard_array, start_db_transaction, &block)
+  def send_transaction_to_multiple_shards(shard_array, options, &block)
     shard_array.each do |shard_symbol|
-      @shards[shard_symbol].connection().transaction(start_db_transaction, &block)
+      @shards[shard_symbol].connection().transaction(options, &block)
     end
   end
 
-  def send_transaction_to_multiple_groups(start_db_transaction, &block)
+  def send_transaction_to_multiple_groups(options, &block)
     current_group.each do |group_symbol|
-      self.send_transaction_to_multiple_shards(@groups[group_symbol], start_db_transaction, &block)
+      self.send_transaction_to_multiple_shards(@groups[group_symbol], options, &block)
     end
   end
 end

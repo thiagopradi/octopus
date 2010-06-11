@@ -1,0 +1,15 @@
+development:
+  shards:
+    canada:
+      host: localhost
+      adapter: mysql
+      database: canada_shard
+    brazil:
+      host: localhost
+      adapter: mysql
+      database: brazil_shard
+    mexico:
+      host: localhost
+      adapter: mysql
+      database: mexico_shard
+    

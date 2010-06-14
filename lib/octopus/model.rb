@@ -9,7 +9,7 @@ module Octopus::Model
       self.class.connection_proxy
     end
     
-    def using(shard, &block)
+    def hijack_connection()
       class << self
         def connection_proxy
           @@connection_proxy ||= Octopus::Proxy.new(Octopus.config())
@@ -27,22 +27,22 @@ module Octopus::Model
           self.connection_proxy().connected?
         end
       end
-      
+    end
+    
+    def clean_table_name
       self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
+    end
+    
+    def using(shard, &block)
+      hijack_connection()      
+      clean_table_name()
       
       if block_given?
-        older_shard = self.connection_proxy.current_shard
-        self.connection_proxy.block = true
-        self.connection_proxy.current_shard = shard
-        begin
-          yield
-        ensure
-          self.connection_proxy.block = false
-          self.connection_proxy.current_shard = older_shard
-        end
+        self.connection_proxy.run_query_on_shard(shard, &block)
       else
         self.connection_proxy.current_shard = shard
         self.connection_proxy.using_enabled = true
+        
         return self
       end
     end

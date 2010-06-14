@@ -113,7 +113,20 @@ class Octopus::Proxy
       select_connection().send(method, *args, &block)
     end
   end
-
+  
+  def run_query_on_shard(shard, &block)
+    older_shard = self.current_shard
+    self.block = true
+    self.current_shard = shard
+    begin
+      yield
+    ensure
+      self.block = false
+      self.current_shard = older_shard
+    end
+  end
+  
+  
   protected
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))

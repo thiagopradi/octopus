@@ -28,6 +28,8 @@ module Octopus::Model
         end
       end
       
+      self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
+      
       if block_given?
         older_shard = self.connection_proxy.current_shard
         self.connection_proxy.block = true

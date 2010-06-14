@@ -2,6 +2,8 @@ MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migration
 require 'spec'
 require 'spec/autorun'
 require "database_connection"
+require "action_pack"
+require "action_controller"
 require 'octopus'
 
 Spec::Runner.configure do |config|  

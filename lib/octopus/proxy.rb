@@ -1,7 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models
+  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models, :using_enabled
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -13,6 +13,7 @@ class Octopus::Proxy
     @replicated = config[Octopus.env()]["replicated"] || false
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
+    @using_enabled = false
 
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
@@ -98,6 +99,7 @@ class Octopus::Proxy
     if should_clean_connection?(method)
       conn = select_connection()
       self.current_shard = :master
+      @using_enabled = nil
       conn.send(method, *args, &block)
     elsif should_send_queries_to_replicated_databases?(method)
       send_queries_to_selected_slave(method, *args, &block)      
@@ -172,18 +174,21 @@ class Octopus::Proxy
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        
-    #TODO: ugly code, needs refactor
-    if args.last =~ /#{replicated_models.to_a.join('|')}/
-      old_shard = self.current_shard
+    #TODO: UGLY code, needs refactor
+    old_shard = self.current_shard
+
+    if args.last =~ /#{replicated_models.to_a.join('|')}/ && !using_enabled
       self.current_shard = slaves_list.shift.to_sym
-      slaves_list << self.current_shard      
+      slaves_list << self.current_shard
+    elsif args.last =~ /#{replicated_models.to_a.join('|')}/ && using_enabled
+      #empty
     else
-      old_shard = self.current_shard
       self.current_shard = :master
     end
 
     sql = select_connection().send(method, *args, &block)     
     self.current_shard = old_shard
+    @using_enabled = nil
     return sql    
   end
 

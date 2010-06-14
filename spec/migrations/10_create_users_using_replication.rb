@@ -1,9 +1,9 @@
 class CreateUsersUsingReplication < ActiveRecord::Migration
   def self.up
-    User.create!(:name => "Replication")
+    Cat.create!(:name => "Replication")
   end
 
   def self.down
-    User.delete_all()
+    Cat.delete_all()
   end
 end

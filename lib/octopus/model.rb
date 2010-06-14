@@ -42,6 +42,7 @@ module Octopus::Model
         end
       else
         self.connection_proxy.current_shard = shard
+        self.connection_proxy.using_enabled = true
         return self
       end
     end

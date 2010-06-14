@@ -2,25 +2,17 @@ require "yaml"
 
 module Octopus
   def self.env()
-    if defined?(Rails)
-      Rails.env.to_s
-    else
-      "production"
-    end
+    @@env ||= defined?(Rails) ? Rails.env.to_s : "production"      
   end
   
   def self.config()
     @@config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml") 
   end
 
+  # Returns the Rails.root_to_s when you are using rails
+  # Running the current directory in a generic Ruby process
   def self.directory()
-    if defined?(Rails)
-      # Running in a normal Rails application
-      Rails.root.to_s
-    else
-      # Running in a generic Ruby process
-      Dir.pwd
-    end
+    @@directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd     
   end
 end
 

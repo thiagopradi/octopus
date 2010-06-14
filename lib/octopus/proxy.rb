@@ -9,11 +9,9 @@ class Octopus::Proxy
     @shards = {}
     @groups = {}
     @replicated_models = Set.new
-    @block = false
     @replicated = config[Octopus.env()]["replicated"] || false
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
-    @using_enabled = false
 
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
@@ -32,12 +30,16 @@ class Octopus::Proxy
     end
 
     if @replicated
-      @slaves_list = @shards.keys
-      @slaves_list.delete(:master)
-      @slaves_list = @slaves_list.map {|sym| sym.to_s}.sort
+      initialize_replication()
     end
   end
-
+  
+  def initialize_replication()
+    @slaves_list = @shards.keys
+    @slaves_list.delete(:master)
+    @slaves_list = @slaves_list.map {|sym| sym.to_s}.sort    
+  end
+  
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }

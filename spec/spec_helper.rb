@@ -27,3 +27,23 @@ def clean_all_shards()
     end
   end
 end
+
+def migrating_to_version(version, &block)
+  begin
+    ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, version)
+    yield
+  ensure
+    ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, version)
+  end
+end
+
+def using_enviroment(enviroment, &block)
+  begin
+    Octopus.class_eval("@@env = '#{enviroment.to_s}'")
+    ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+    yield
+  ensure
+    Octopus.class_eval("@@env = 'production'")      
+    ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+  end
+end

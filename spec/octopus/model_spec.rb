@@ -72,10 +72,6 @@ describe Octopus::Model do
   end
 
   describe "using a postgresql shard" do
-    after(:each) do
-      User.using(:postgresql_shard).delete_all
-    end
-
     it "should update the Arel Engine" do
       User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
       User.using(:alone_shard).arel_engine.connection.adapter_name.should == "MySQL"
@@ -89,23 +85,17 @@ describe Octopus::Model do
   end
 
   describe "#replicated_model method" do
-    before(:each) do
-      Octopus.stub!(:env).and_return("production_replicated")
-      @proxy = Octopus::Proxy.new(Octopus.config())
-      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
-    end
-
-    after(:each) do
-      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
-    end
-
     it "should be replicated" do
-      ActiveRecord::Base.connection_proxy.replicated.should be_true
+      using_enviroment :production_replicated do 
+        ActiveRecord::Base.connection_proxy.replicated.should be_true
+      end
     end
 
     it "should mark the Cat model as replicated" do
-      Cat.all.should == []
-      ActiveRecord::Base.connection_proxy.replicated_models.first.should == "Cat"
+      using_enviroment :production_replicated do 
+        Cat.all.should == []
+        ActiveRecord::Base.connection_proxy.replicated_models.first.should == "Cat"
+      end
     end
   end
 end

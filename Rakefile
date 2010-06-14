@@ -12,7 +12,7 @@ begin
     gem.homepage = "http://github.com/tchandy/octopus"
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.version = "0.0.1"
+    gem.version = "0.0.2"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

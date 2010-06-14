@@ -5,20 +5,22 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
-  s.date = %q{2010-06-11}
+  s.date = %q{2010-06-14}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
     "README.mkdn"
   ]
   s.files = [
-    "README.mkdn",
+    ".gitignore",
+     "README.mkdn",
      "Rakefile",
      "VERSION",
+     "ar-octopus.gemspec",
      "doc/api.textile",
      "doc/features.textile",
      "doc/libraries.textile",
@@ -31,6 +33,8 @@ Gem::Specification.new do |s|
      "spec/config/shards.yml",
      "spec/database_connection.rb",
      "spec/database_models.rb",
+     "spec/migrations/10_create_users_using_replication.rb",
+     "spec/migrations/11_add_field_in_all_slaves.rb",
      "spec/migrations/1_create_users_on_master.rb",
      "spec/migrations/2_create_users_on_canada.rb",
      "spec/migrations/3_create_users_on_both_shards.rb",
@@ -56,6 +60,8 @@ Gem::Specification.new do |s|
   s.test_files = [
     "spec/database_connection.rb",
      "spec/database_models.rb",
+     "spec/migrations/10_create_users_using_replication.rb",
+     "spec/migrations/11_add_field_in_all_slaves.rb",
      "spec/migrations/1_create_users_on_master.rb",
      "spec/migrations/2_create_users_on_canada.rb",
      "spec/migrations/3_create_users_on_both_shards.rb",

@@ -12,7 +12,8 @@
 - Moving data between shards with migrations.
 - Tools to manage database configurations. (soon)
 
-<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a> 
+<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
+<p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p> 
   
 <h2>Thanks</h2>
 

@@ -177,11 +177,11 @@ class Octopus::Proxy
     #TODO: UGLY code, needs refactor
     old_shard = self.current_shard
 
-    if args.last =~ /#{replicated_models.to_a.join('|')}/ && !using_enabled
-      self.current_shard = slaves_list.shift.to_sym
-      slaves_list << self.current_shard
-    elsif args.last =~ /#{replicated_models.to_a.join('|')}/ && using_enabled
-      #empty
+    if args.last =~ /#{replicated_models.to_a.join('|')}/
+      if !using_enabled
+        self.current_shard = slaves_list.shift.to_sym
+        slaves_list << self.current_shard
+      end
     else
       self.current_shard = :master
     end

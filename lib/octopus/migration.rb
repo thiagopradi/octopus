@@ -7,7 +7,7 @@ module Octopus::Migration
       end
 
       def connected?
-        ActiveRecord::Base.connection_proxy().connected?
+        connection.connected?
       end
     end
   end

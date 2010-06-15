@@ -24,7 +24,7 @@ module Octopus::Model
         end
 
         def connected?
-          self.connection_proxy().connected?
+          connection.connected?
         end
       end
     end

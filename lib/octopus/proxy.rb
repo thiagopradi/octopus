@@ -9,10 +9,18 @@ class Octopus::Proxy
     @shards = {}
     @groups = {}
     @replicated_models = Set.new
-    @replicated = config[Octopus.env()]["replicated"] || false
+    @replicated = config[Octopus.env()]["replicated"]
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
-
+    
+    initialize_shards(config)
+    
+    if @replicated
+      initialize_replication()
+    end
+  end
+  
+  def initialize_shards(config)
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
         initialize_adapter(value['adapter'])
@@ -27,10 +35,6 @@ class Octopus::Proxy
           @groups[key.to_sym] << k.to_sym
         end
       end
-    end
-
-    if @replicated
-      initialize_replication()
     end
   end
   

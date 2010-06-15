@@ -30,13 +30,23 @@ describe Octopus::Model do
       User.using(:brazil).count.should == 0
       User.count.should == 0
     end
-    
-    it "should store the #current_shard attribute" do
-      u = User.using(:alone_shard).create!(:name => "Alone")
-      u.current_shard.should == :alone_shard
-      User.using(:canada).create!(:name => 'oi')
-      u = User.using(:canada).find_by_name("oi")
-      u.current_shard.should == :canada      
+
+
+    describe "#current_shard attribute" do
+      it "should store the attribute when you create or find an object" do
+        u = User.using(:alone_shard).create!(:name => "Alone")
+        u.current_shard.should == :alone_shard
+        User.using(:canada).create!(:name => 'oi')
+        u = User.using(:canada).find_by_name("oi")
+        u.current_shard.should == :canada      
+      end
+
+      it "should store the attribute when you find multiple instances" do
+        5.times { User.using(:alone_shard).create!(:name => "Alone") }
+        User.using(:alone_shard).all.each do |u|
+          u.current_shard.should == :alone_shard
+        end
+      end
     end
 
     describe "passing a block" do
@@ -62,13 +72,13 @@ describe Octopus::Model do
       it "should find all models in the specified shard" do
         pending()
         # brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
-        # master_client = Client.create!(:name => "Master Client")
+        #         master_client = Client.create!(:name => "Master Client")
         # 
-        # item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
-        # item_master = Item.create!(:name => "Master Item", :client => master_client)
-        # c = Client.using(:brazil).find_by_name("Brazil Client")
-        # Client.using(:master).create!(:name => "teste")
-        # c.items.should == [item_brazil]
+        #         item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
+        #         item_master = Item.create!(:name => "Master Item", :client => master_client)
+        #         c = Client.using(:brazil).find_by_name("Brazil Client")
+        #         Client.using(:master).create!(:name => "teste")
+        #         c.items.should == [item_brazil]
       end
     end
 

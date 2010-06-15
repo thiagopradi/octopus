@@ -7,7 +7,7 @@ require 'active_support/json'
 begin
   require 'metric_fu'
   MetricFu::Configuration.run do |config|
-    config.metrics  = [:churn,:flay, :flog, :reek, :roodi]
+    config.metrics  = [:churn,:flay, :flog, :reek, :roodi, :saikuro]
     config.graphs   = [:flog, :flay, :reek, :roodi]
     config.flay     = { :dirs_to_flay => ['spec', 'lib']  }
     config.flog     = { :dirs_to_flog => ['spec', 'lib']  }

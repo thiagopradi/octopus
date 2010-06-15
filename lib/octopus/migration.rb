@@ -5,10 +5,6 @@ module Octopus::Migration
       def connection
         ActiveRecord::Base.connection_proxy()
       end
-
-      def connected?
-        connection.connected?
-      end
     end
   end
 

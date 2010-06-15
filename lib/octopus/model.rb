@@ -5,10 +5,6 @@ module Octopus::Model
   end
 
   module InstanceMethods
-    def connection_proxy
-      self.class.connection_proxy
-    end
-    
     def hijack_connection()
       class << self
         def connection_proxy
@@ -21,10 +17,6 @@ module Octopus::Model
           end
 
           self.connection_proxy()
-        end
-
-        def connected?
-          connection.connected?
         end
       end
     end

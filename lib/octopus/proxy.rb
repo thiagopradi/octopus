@@ -1,7 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models, :using_enabled
+  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models, :using_enabled, :last_current_shard
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -89,13 +89,11 @@ class Octopus::Proxy
   def transaction(options = {}, &block)
     if should_send_queries_to_multiple_shards?
       self.send_transaction_to_multiple_shards(current_shard, options, &block)
-      self.current_shard = :master
     elsif should_send_queries_to_multiple_groups?
       self.send_transaction_to_multiple_groups(options, &block)
-      self.current_group = nil      
     elsif should_send_queries_to_a_group_of_shards?
       self.send_transaction_to_multiple_shards(@groups[current_group], options, &block)
-      self.current_group = nil
+      self.current_group = nil      
     else
       select_connection.transaction(options, &block) 
     end
@@ -104,6 +102,7 @@ class Octopus::Proxy
   def method_missing(method, *args, &block)
     if should_clean_connection?(method)
       conn = select_connection()
+      self.last_current_shard = self.current_shard
       self.current_shard = :master
       @using_enabled = nil
       conn.send(method, *args, &block)
@@ -153,7 +152,7 @@ class Octopus::Proxy
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /begin_db_transaction|insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !replicated
+    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !replicated
   end
 
   def should_send_queries_to_multiple_shards?

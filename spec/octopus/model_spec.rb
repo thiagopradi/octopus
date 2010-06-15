@@ -24,11 +24,19 @@ describe Octopus::Model do
     end
 
     it "should support both groups and alone shards" do
-      User.using(:alone_shard).create!(:name => "Alone")
+      u = User.using(:alone_shard).create!(:name => "Alone")
       User.using(:alone_shard).count.should == 1
       User.using(:canada).count.should == 0
       User.using(:brazil).count.should == 0
       User.count.should == 0
+    end
+    
+    it "should store the #current_shard attribute" do
+      u = User.using(:alone_shard).create!(:name => "Alone")
+      u.current_shard.should == :alone_shard
+      User.using(:canada).create!(:name => 'oi')
+      u = User.using(:canada).find_by_name("oi")
+      u.current_shard.should == :canada      
     end
 
     describe "passing a block" do

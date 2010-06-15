@@ -39,11 +39,11 @@ end
 
 def using_enviroment(enviroment, &block)
   begin
-    Octopus.class_eval("@@env = '#{enviroment.to_s}'")
+    Octopus.instance_variable_set(:@env, enviroment.to_s)
     ActiveRecord::Base.class_eval("@@connection_proxy = nil")
     yield
   ensure
-    Octopus.class_eval("@@env = 'production'")      
+    Octopus.instance_variable_set(:@env, 'production')
     ActiveRecord::Base.class_eval("@@connection_proxy = nil")
   end
 end

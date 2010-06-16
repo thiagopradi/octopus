@@ -8,8 +8,13 @@ module Octopus::Model
     def hijack_initializer()
       attr_accessor :current_shard
       after_initialize :set_current_shard
-
-      def set_current_shard
+      before_save :set_connection
+      
+      def set_connection()
+        self.class.connection_proxy.current_shard = self.current_shard
+      end
+      
+      def set_current_shard 
         if self.class.respond_to?(:connection_proxy) && self.respond_to?(:current_shard)
           if self.new_record?
             self.current_shard = self.class.connection_proxy.current_shard    
@@ -17,10 +22,9 @@ module Octopus::Model
             self.current_shard = self.class.connection_proxy.last_current_shard  
           end
         end
-      end
+      end    
     end
-
-
+    
     def hijack_connection()
       class << self
         def connection_proxy

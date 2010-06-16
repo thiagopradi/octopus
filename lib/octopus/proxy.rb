@@ -131,7 +131,6 @@ class Octopus::Proxy
     end
   end
   
-  
   protected
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))

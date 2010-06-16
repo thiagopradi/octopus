@@ -31,7 +31,6 @@ describe Octopus::Model do
       User.count.should == 0
     end
 
-
     describe "#current_shard attribute" do
       it "should store the attribute when you create or find an object" do
         u = User.using(:alone_shard).create!(:name => "Alone")
@@ -46,6 +45,15 @@ describe Octopus::Model do
         User.using(:alone_shard).all.each do |u|
           u.current_shard.should == :alone_shard
         end
+      end
+      
+      it "should works when you find, and after that, alter that object" do
+        alone_user = User.using(:alone_shard).create!(:name => "Alone")
+        master_user = User.using(:master).create!(:name => "Master")
+        alone_user.name = "teste"
+        alone_user.save
+        User.using(:master).find(:first).name.should == "Master"
+        User.using(:alone_shard).find(:first).name.should == "teste"
       end
     end
 
@@ -71,14 +79,14 @@ describe Octopus::Model do
     describe "when you have a relationship" do
       it "should find all models in the specified shard" do
         pending()
+
         # brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
-        #         master_client = Client.create!(:name => "Master Client")
-        # 
-        #         item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
-        #         item_master = Item.create!(:name => "Master Item", :client => master_client)
-        #         c = Client.using(:brazil).find_by_name("Brazil Client")
-        #         Client.using(:master).create!(:name => "teste")
-        #         c.items.should == [item_brazil]
+        # master_client = Client.create!(:name => "Master Client")
+        # item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
+        # item_master = Item.create!(:name => "Master Item", :client => master_client)
+        # c = Client.using(:brazil).find_by_name("Brazil Client")
+        # Client.using(:master).create!(:name => "teste")
+        # c.items.should == [item_brazil]
       end
     end
 

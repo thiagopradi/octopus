@@ -46,7 +46,7 @@ describe Octopus::Model do
           u.current_shard.should == :alone_shard
         end
       end
-      
+
       it "should works when you find, and after that, alter that object" do
         alone_user = User.using(:alone_shard).create!(:name => "Alone")
         master_user = User.using(:master).create!(:name => "Master")
@@ -55,7 +55,7 @@ describe Octopus::Model do
         User.using(:master).find(:first).name.should == "Master"
         User.using(:alone_shard).find(:first).name.should == "teste"
       end
-      
+
       it "should work for the reload method" do
         User.using(:alone_shard).create!(:name => "Alone")
         u = User.using(:alone_shard).where(:name => "Alone").first
@@ -92,16 +92,32 @@ describe Octopus::Model do
         @brazil_client = Client.using(:brazil).find_by_name("Brazil Client")
         Client.using(:master).create!(:name => "teste")        
       end
-      
+
       it "should find all models in the specified shard" do
         @brazil_client.item_ids.should == [@item_brazil.id]
         @brazil_client.items().should == [@item_brazil]
       end
-      
-      it "should add the records to database" do
-        item = Item.using(:brazil).create!(:name => "Brazil Item 2")
-        @brazil_client.update_attributes(:item_ids => [item.id, @item_brazil.id])
-        @brazil_client.items.to_set.should == [@item_brazil, item].to_set
+
+      describe "it should works when using" do
+        before(:each) do
+          @item_brazil_2 = Item.using(:brazil).create!(:name => "Brazil Item 2")
+          @brazil_client.items.to_set.should == [@item_brazil].to_set 
+        end
+
+        it "update_attributes" do
+          @brazil_client.update_attributes(:item_ids => [@item_brazil_2.id, @item_brazil.id])
+          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
+
+        it "update_attribute" do
+          @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
+          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
+
+        it "<<" do
+          @brazil_client.items << @item_brazil_2
+          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
       end
     end
 

@@ -85,15 +85,13 @@ describe Octopus::Model do
 
     describe "when you have a relationship" do
       it "should find all models in the specified shard" do
-        pending()
-
-        # brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
-        # master_client = Client.create!(:name => "Master Client")
-        # item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
-        # item_master = Item.create!(:name => "Master Item", :client => master_client)
-        # c = Client.using(:brazil).find_by_name("Brazil Client")
-        # Client.using(:master).create!(:name => "teste")
-        # c.items.should == [item_brazil]
+        brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
+        master_client = Client.create!(:name => "Master Client")
+        item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
+        item_master = Item.create!(:name => "Master Item", :client => master_client)
+        c = Client.using(:brazil).find_by_name("Brazil Client")
+        Client.using(:master).create!(:name => "teste")
+        c.item_ids.should == [item_brazil.id]
       end
     end
 

@@ -3,7 +3,7 @@ module Octopus::Association
     define_method(reflection.name) do |*params|
       if self.respond_to?(:current_shard)
         self.class.connection_proxy.run_query_on_shard self.current_shard do 
-          force_reload = params.first unless params.empty?
+          force_reload = true
           association = association_instance_get(reflection.name)
 
           unless association

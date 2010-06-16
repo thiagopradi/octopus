@@ -92,6 +92,7 @@ describe Octopus::Model do
         c = Client.using(:brazil).find_by_name("Brazil Client")
         Client.using(:master).create!(:name => "teste")
         c.item_ids.should == [item_brazil.id]
+        c.items().should == [item_brazil]
       end
     end
 

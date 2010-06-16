@@ -84,15 +84,24 @@ describe Octopus::Model do
     end
 
     describe "when you have a relationship" do
+      before(:each) do
+        @brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
+        @master_client = Client.create!(:name => "Master Client")
+        @item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => @brazil_client)
+        @item_master = Item.create!(:name => "Master Item", :client => @master_client)
+        @brazil_client = Client.using(:brazil).find_by_name("Brazil Client")
+        Client.using(:master).create!(:name => "teste")        
+      end
+      
       it "should find all models in the specified shard" do
-        brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
-        master_client = Client.create!(:name => "Master Client")
-        item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => brazil_client)
-        item_master = Item.create!(:name => "Master Item", :client => master_client)
-        c = Client.using(:brazil).find_by_name("Brazil Client")
-        Client.using(:master).create!(:name => "teste")
-        c.item_ids.should == [item_brazil.id]
-        c.items().should == [item_brazil]
+        @brazil_client.item_ids.should == [@item_brazil.id]
+        @brazil_client.items().should == [@item_brazil]
+      end
+      
+      it "should add the records to database" do
+        item = Item.using(:brazil).create!(:name => "Brazil Item 2")
+        @brazil_client.update_attributes(:item_ids => [item.id, @item_brazil.id])
+        @brazil_client.items.to_set.should == [@item_brazil, item].to_set
       end
     end
 

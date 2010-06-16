@@ -9,6 +9,7 @@ module Octopus::Model
       attr_accessor :current_shard
       after_initialize :set_current_shard
       before_save :set_connection
+      before_update :set_connection
       
       def set_connection()
         self.class.connection_proxy.current_shard = self.current_shard

@@ -107,4 +107,20 @@ module Octopus::Association
   end
 end
 
+
+class ActiveRecord::Associations::AssociationCollection
+  def build(attributes = {}, &block)
+    if attributes.is_a?(Array)
+      attributes.collect { |attr| build(attr, &block) }
+    else
+      build_record(attributes) do |record|
+        record.current_shard = @owner.current_shard
+        block.call(record) if block_given?
+        set_belongs_to_association_for(record)
+      end
+    end
+  end
+end
+
+
 ActiveRecord::Base.extend(Octopus::Association)

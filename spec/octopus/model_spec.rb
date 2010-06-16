@@ -83,7 +83,7 @@ describe Octopus::Model do
       end
     end
 
-    describe "when you have a relationship" do
+    describe "when you have a 1 x N relationship" do
       before(:each) do
         @brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
         @master_client = Client.create!(:name => "Master Client")
@@ -117,6 +117,12 @@ describe Octopus::Model do
         it "<<" do
           @brazil_client.items << @item_brazil_2
           @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
+        
+        it "build" do
+          item = @brazil_client.items.build(:name => "Builded Item")
+          item.save()
+          @brazil_client.items.to_set.should == [@item_brazil, item].to_set
         end
       end
     end

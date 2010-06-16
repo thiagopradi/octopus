@@ -168,7 +168,7 @@ class Octopus::Proxy
   end
 
   def should_send_queries_to_replicated_databases?(method)
-    @replicated && method.to_s == "select_all"
+    @replicated && method.to_s =~ /select/
   end
 
   def send_queries_to_multiple_groups(method, *args, &block)

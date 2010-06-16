@@ -124,6 +124,16 @@ describe Octopus::Model do
           item.save()
           @brazil_client.items.to_set.should == [@item_brazil, item].to_set
         end
+        
+        it "create" do
+          item = @brazil_client.items.create(:name => "Builded Item")
+          @brazil_client.items.to_set.should == [@item_brazil, item].to_set          
+        end
+        
+        it "create!" do
+          item = @brazil_client.items.create!(:name => "Builded Item")
+          @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
+        end
       end
     end
 

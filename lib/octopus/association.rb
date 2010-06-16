@@ -109,6 +109,26 @@ end
 
 
 class ActiveRecord::Associations::AssociationCollection
+  def create(attrs = {})
+    if attrs.is_a?(Array)
+      attrs.collect { |attr| create(attr) }
+    else
+      create_record(attrs) do |record|
+        yield(record) if block_given?
+        record.current_shard = @owner.current_shard
+        record.save
+      end
+    end
+  end
+
+  def create!(attrs = {})
+    create_record(attrs) do |record|
+      yield(record) if block_given?
+      record.current_shard = @owner.current_shard      
+      record.save!
+    end
+  end
+  
   def build(attributes = {}, &block)
     if attributes.is_a?(Array)
       attributes.collect { |attr| build(attr, &block) }

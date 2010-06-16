@@ -14,7 +14,12 @@ module Octopus::Model
         self.class.connection_proxy.current_shard = self.current_shard
       end
       
-      def set_current_shard 
+      def set_current_shard
+        def reload
+          set_connection()
+          super
+        end
+         
         if self.class.respond_to?(:connection_proxy) && self.respond_to?(:current_shard)
           if self.new_record?
             self.current_shard = self.class.connection_proxy.current_shard    

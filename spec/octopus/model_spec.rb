@@ -55,6 +55,13 @@ describe Octopus::Model do
         User.using(:master).find(:first).name.should == "Master"
         User.using(:alone_shard).find(:first).name.should == "teste"
       end
+      
+      it "should work for the reload method" do
+        User.using(:alone_shard).create!(:name => "Alone")
+        u = User.using(:alone_shard).where(:name => "Alone").first
+        u.reload
+        u.name.should == "Alone"
+      end
     end
 
     describe "passing a block" do

@@ -154,8 +154,15 @@ describe Octopus::Model do
         end
         
         it "count" do
+          @brazil_client.items.count.should == 1
           item = @brazil_client.items.create(:name => "Builded Item")
           @brazil_client.items.count.should == 2
+        end
+        
+        it "size" do
+          @brazil_client.items.size.should == 1          
+          item = @brazil_client.items.create(:name => "Builded Item")
+          @brazil_client.items.size.should == 2          
         end
         
         it "create!" do

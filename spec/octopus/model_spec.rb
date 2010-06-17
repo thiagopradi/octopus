@@ -97,6 +97,20 @@ describe Octopus::Model do
         @brazil_client.item_ids.should == [@item_brazil.id]
         @brazil_client.items().should == [@item_brazil]
       end
+      
+      it "should finds the client that the item belongs" do
+        @item_brazil.client.should == @brazil_client
+      end
+      
+      it "should update the attribute for the item" do
+        new_brazil_client = Client.using(:brazil).create!(:name => "new Client")
+        @item_brazil.client = new_brazil_client
+        @item_brazil.client.should == new_brazil_client
+        @item_brazil.save()
+        @item_brazil.reload
+        @item_brazil.client_id.should == new_brazil_client.id
+        @item_brazil.client().should == new_brazil_client
+      end
 
       describe "it should works when using" do
         before(:each) do

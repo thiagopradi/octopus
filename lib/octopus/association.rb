@@ -73,7 +73,7 @@ module Octopus::Association
   def collection_reader_method(reflection, association_proxy_class)
     define_method(reflection.name) do |*params|
       force_reload = params.first unless params.empty?
-      if self.respond_to?(:current_shard)
+      if self.respond_to?(:current_shard) && self.current_shard != nil
         force_reload = true
         set_connection()
       end
@@ -89,6 +89,62 @@ module Octopus::Association
 
       association
     end
+    
+    def association_accessor_methods(reflection, association_proxy_class)
+      define_method(reflection.name) do |*params|
+        force_reload = params.first unless params.empty?
+        if self.respond_to?(:current_shard) && self.current_shard != nil
+          force_reload = true
+          set_connection()
+        end
+        association = association_instance_get(reflection.name)
+
+        if association.nil? || force_reload
+          association = association_proxy_class.new(self, reflection)
+          retval = force_reload ? reflection.klass.uncached { association.reload } : association.reload
+          if retval.nil? and association_proxy_class == BelongsToAssociation
+            association_instance_set(reflection.name, nil)
+            return nil
+          end
+          association_instance_set(reflection.name, association)
+        end
+
+        association.target.nil? ? nil : association
+      end
+
+      define_method("loaded_#{reflection.name}?") do
+        if self.respond_to?(:current_shard) && self.current_shard != nil
+          set_connection()
+        end
+        association = association_instance_get(reflection.name)
+        association && association.loaded?
+      end
+
+      define_method("#{reflection.name}=") do |new_value|
+        if self.respond_to?(:current_shard) && self.current_shard != nil
+          set_connection()
+        end
+        association = association_instance_get(reflection.name)
+
+        if association.nil? || association.target != new_value
+          association = association_proxy_class.new(self, reflection)
+        end
+
+        association.replace(new_value)
+        association_instance_set(reflection.name, new_value.nil? ? nil : association)
+      end
+
+      define_method("set_#{reflection.name}_target") do |target|
+        return if target.nil? and association_proxy_class == BelongsToAssociation
+        if self.respond_to?(:current_shard) && self.current_shard != nil
+          set_connection()
+        end
+        association = association_proxy_class.new(self, reflection)
+        association.target = target
+        association_instance_set(reflection.name, association)
+      end
+    end
+    
 
     define_method("#{reflection.name.to_s.singularize}_ids") do
       set_connection() if self.respond_to?(:current_shard)        

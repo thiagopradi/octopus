@@ -111,6 +111,15 @@ describe Octopus::Model do
         @item_brazil.client_id.should == new_brazil_client.id
         @item_brazil.client().should == new_brazil_client
       end
+      
+      it "should works for build method" do
+        item2 = Item.using(:brazil).create!(:name => "Brazil Item")
+        c = item2.create_client(:name => "new Client")
+        c.save()
+        item2.save()
+        item2.client.should == c
+        c.items().should == [item2]
+      end
 
       describe "it should works when using" do
         before(:each) do

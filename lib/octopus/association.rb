@@ -89,7 +89,29 @@ module Octopus::Association
 
       association
     end
-    
+
+    def association_constructor_method(constructor, reflection, association_proxy_class)
+      define_method("#{constructor}_#{reflection.name}") do |*params|
+        if self.respond_to?(:current_shard) && self.current_shard != nil
+          set_connection()
+        end
+        attributees      = params.first unless params.empty?
+        replace_existing = params[1].nil? ? true : params[1]
+        association      = association_instance_get(reflection.name)
+
+        unless association
+          association = association_proxy_class.new(self, reflection)
+          association_instance_set(reflection.name, association)
+        end
+
+        if association_proxy_class == ActiveRecord::Associations::HasOneAssociation
+          association.send(constructor, attributees, replace_existing)
+        else
+          association.send(constructor, attributees)
+        end
+      end
+    end
+
     def association_accessor_methods(reflection, association_proxy_class)
       define_method(reflection.name) do |*params|
         force_reload = params.first unless params.empty?
@@ -102,7 +124,7 @@ module Octopus::Association
         if association.nil? || force_reload
           association = association_proxy_class.new(self, reflection)
           retval = force_reload ? reflection.klass.uncached { association.reload } : association.reload
-          if retval.nil? and association_proxy_class == BelongsToAssociation
+          if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
             association_instance_set(reflection.name, nil)
             return nil
           end
@@ -135,7 +157,7 @@ module Octopus::Association
       end
 
       define_method("set_#{reflection.name}_target") do |target|
-        return if target.nil? and association_proxy_class == BelongsToAssociation
+        return if target.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
         if self.respond_to?(:current_shard) && self.current_shard != nil
           set_connection()
         end
@@ -144,7 +166,7 @@ module Octopus::Association
         association_instance_set(reflection.name, association)
       end
     end
-    
+
 
     define_method("#{reflection.name.to_s.singularize}_ids") do
       set_connection() if self.respond_to?(:current_shard)        
@@ -184,7 +206,7 @@ class ActiveRecord::Associations::AssociationCollection
       record.save!
     end
   end
-  
+
   def build(attributes = {}, &block)
     if attributes.is_a?(Array)
       attributes.collect { |attr| build(attr, &block) }

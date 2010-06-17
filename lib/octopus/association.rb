@@ -200,7 +200,11 @@ class ActiveRecord::Associations::AssociationCollection
       end
 
       value = @reflection.klass.send(:with_scope, construct_scope) do 
-        @owner.using @owner.current_shard do 
+        if @owner.current_shard != nil
+          @owner.using @owner.current_shard do 
+            @reflection.klass.count(column_name, options) 
+          end
+        else        
           @reflection.klass.count(column_name, options) 
         end
       end
@@ -216,37 +220,61 @@ class ActiveRecord::Associations::AssociationCollection
     end
   end
 
-  def create(attrs = {})
-    if attrs.is_a?(Array)
-      attrs.collect { |attr| create(attr) }
-    else
-      create_record(attrs) do |record|
-        yield(record) if block_given?
-        record.current_shard = @owner.current_shard
-        record.save
+  def clear
+    return self if length.zero? # forces load_target if it hasn't happened already
+
+    if @reflection.options[:dependent] && @reflection.options[:dependent] == :destroy
+      if @owner.current_shard != nil
+        @owner.using @owner.current_shard do 
+          destroy_all
+        end
+      else        
+        destroy_all
+      end
+    else          
+      if @owner.current_shard != nil
+        @owner.using @owner.current_shard do 
+          delete_all
+        end
+      else        
+        delete_all
       end
     end
+
+    self
   end
 
-  def create!(attrs = {})
+def create(attrs = {})
+  if attrs.is_a?(Array)
+    attrs.collect { |attr| create(attr) }
+  else
     create_record(attrs) do |record|
       yield(record) if block_given?
-      record.current_shard = @owner.current_shard      
-      record.save!
+      record.current_shard = @owner.current_shard
+      record.save
     end
   end
+end
 
-  def build(attributes = {}, &block)
-    if attributes.is_a?(Array)
-      attributes.collect { |attr| build(attr, &block) }
-    else
-      build_record(attributes) do |record|
-        record.current_shard = @owner.current_shard
-        block.call(record) if block_given?
-        set_belongs_to_association_for(record)
-      end
+def create!(attrs = {})
+  create_record(attrs) do |record|
+    yield(record) if block_given?
+    record.current_shard = @owner.current_shard      
+    record.save!
+  end
+end
+
+def build(attributes = {}, &block)
+  if attributes.is_a?(Array)
+    attributes.collect { |attr| build(attr, &block) }
+  else
+    build_record(attributes) do |record|
+      record.current_shard = @owner.current_shard
+      block.call(record) if block_given?
+      set_belongs_to_association_for(record)
     end
   end
+end
 end
 
 

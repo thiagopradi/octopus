@@ -169,6 +169,24 @@ describe Octopus::Model do
           item = @brazil_client.items.create!(:name => "Builded Item")
           @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
         end
+        
+        it "length" do
+          @brazil_client.items.length.should == 1          
+          item = @brazil_client.items.create(:name => "Builded Item")
+          @brazil_client.items.length.should == 2                    
+        end
+        
+        it "empty?" do
+          @brazil_client.items.empty?.should be_false
+          c = Client.create!(:name => "Client1")
+          c.items.empty?.should be_true
+        end
+        
+        it "clear" do
+          @brazil_client.items.empty?.should be_false     
+          @brazil_client.items.clear                
+          @brazil_client.items.empty?.should be_true          
+        end
       end
     end
 

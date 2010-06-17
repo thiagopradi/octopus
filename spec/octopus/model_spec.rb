@@ -97,11 +97,11 @@ describe Octopus::Model do
         @brazil_client.item_ids.should == [@item_brazil.id]
         @brazil_client.items().should == [@item_brazil]
       end
-      
+
       it "should finds the client that the item belongs" do
         @item_brazil.client.should == @brazil_client
       end
-      
+
       it "should update the attribute for the item" do
         new_brazil_client = Client.using(:brazil).create!(:name => "new Client")
         @item_brazil.client = new_brazil_client
@@ -111,7 +111,7 @@ describe Octopus::Model do
         @item_brazil.client_id.should == new_brazil_client.id
         @item_brazil.client().should == new_brazil_client
       end
-      
+
       it "should works for build method" do
         item2 = Item.using(:brazil).create!(:name => "Brazil Item")
         c = item2.create_client(:name => "new Client")
@@ -141,47 +141,85 @@ describe Octopus::Model do
           @brazil_client.items << @item_brazil_2
           @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
         end
-        
+
         it "build" do
           item = @brazil_client.items.build(:name => "Builded Item")
           item.save()
           @brazil_client.items.to_set.should == [@item_brazil, item].to_set
         end
-        
+
         it "create" do
           item = @brazil_client.items.create(:name => "Builded Item")
           @brazil_client.items.to_set.should == [@item_brazil, item].to_set          
         end
-        
+
         it "count" do
           @brazil_client.items.count.should == 1
           item = @brazil_client.items.create(:name => "Builded Item")
           @brazil_client.items.count.should == 2
         end
-        
+
         it "size" do
           @brazil_client.items.size.should == 1          
           item = @brazil_client.items.create(:name => "Builded Item")
           @brazil_client.items.size.should == 2          
         end
-        
+
         it "create!" do
           item = @brazil_client.items.create!(:name => "Builded Item")
           @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
         end
-        
+
         it "length" do
           @brazil_client.items.length.should == 1          
           item = @brazil_client.items.create(:name => "Builded Item")
           @brazil_client.items.length.should == 2                    
         end
-        
+
         it "empty?" do
           @brazil_client.items.empty?.should be_false
           c = Client.create!(:name => "Client1")
           c.items.empty?.should be_true
         end
+
+        it "delete" do
+          @brazil_client.items.empty?.should be_false
+          @brazil_client.items.delete(@item_brazil)
+          @brazil_client.reload
+          @item_brazil.reload
+          @item_brazil.client.should be_nil
+          @brazil_client.items.should == []
+          @brazil_client.items.empty?.should be_true
+        end
         
+        it "delete_all" do
+          @brazil_client.items.empty?.should be_false     
+          @brazil_client.items.delete_all                
+          @brazil_client.items.empty?.should be_true
+        end
+        
+        it "destroy_all" do
+          @brazil_client.items.empty?.should be_false     
+          @brazil_client.items.destroy_all                
+          @brazil_client.items.empty?.should be_true
+        end
+        
+        it "find" do
+          @brazil_client.items.find(:first).should == @item_brazil
+          @brazil_client.items.destroy_all                
+          @brazil_client.items.find(:first).should be_nil
+        end
+
+        it "exists?" do
+          @brazil_client.items.exists?(@item_brazil).should be_true
+          @brazil_client.items.destroy_all                
+          @brazil_client.items.exists?(@item_brazil).should be_false     
+        end
+        
+        it "uniq" do
+          @brazil_client.items.uniq.should == [@item_brazil]                
+        end        
+
         it "clear" do
           @brazil_client.items.empty?.should be_false     
           @brazil_client.items.clear                

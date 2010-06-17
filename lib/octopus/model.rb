@@ -10,6 +10,7 @@ module Octopus::Model
       after_initialize :set_current_shard
       before_save :set_connection
       before_update :set_connection
+      before_destroy :set_connection
       
       def set_connection()
         if(!self.current_shard.nil?)

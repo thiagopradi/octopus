@@ -12,7 +12,9 @@ module Octopus::Model
       before_update :set_connection
       
       def set_connection()
-        self.class.connection_proxy.current_shard = self.current_shard
+        if(!self.current_shard.nil?)
+          self.class.connection_proxy.current_shard = self.current_shard
+        end
       end
       
       def set_current_shard

@@ -65,7 +65,7 @@ module Octopus::Association
     end
 
     def toggle!(attribute)
-      set_connection() if self.respond_to?(:current_shard)
+      set_connection() if self.respond_to?(:current_shard) 
       super(attribute)
     end
   end
@@ -73,7 +73,7 @@ module Octopus::Association
   def collection_reader_method(reflection, association_proxy_class)
     define_method(reflection.name) do |*params|
       force_reload = params.first unless params.empty?
-      if self.respond_to?(:current_shard) && self.current_shard != nil
+      if self.respond_to?(:current_shard) 
         force_reload = true
         set_connection()
       end
@@ -92,7 +92,7 @@ module Octopus::Association
 
     def association_constructor_method(constructor, reflection, association_proxy_class)
       define_method("#{constructor}_#{reflection.name}") do |*params|
-        if self.respond_to?(:current_shard) && self.current_shard != nil
+        if self.respond_to?(:current_shard) 
           set_connection()
         end
         attributees      = params.first unless params.empty?
@@ -115,7 +115,7 @@ module Octopus::Association
     def association_accessor_methods(reflection, association_proxy_class)
       define_method(reflection.name) do |*params|
         force_reload = params.first unless params.empty?
-        if self.respond_to?(:current_shard) && self.current_shard != nil
+        if self.respond_to?(:current_shard)
           force_reload = true
           set_connection()
         end
@@ -135,7 +135,7 @@ module Octopus::Association
       end
 
       define_method("loaded_#{reflection.name}?") do
-        if self.respond_to?(:current_shard) && self.current_shard != nil
+        if self.respond_to?(:current_shard)
           set_connection()
         end
         association = association_instance_get(reflection.name)
@@ -143,7 +143,7 @@ module Octopus::Association
       end
 
       define_method("#{reflection.name}=") do |new_value|
-        if self.respond_to?(:current_shard) && self.current_shard != nil
+        if self.respond_to?(:current_shard) 
           set_connection()
         end
         association = association_instance_get(reflection.name)
@@ -187,6 +187,35 @@ end
 
 
 class ActiveRecord::Associations::AssociationCollection
+  def count(column_name = nil, options = {})
+    if @reflection.options[:counter_sql]
+      @reflection.klass.count_by_sql(@counter_sql)
+    else
+      column_name, options = nil, column_name if column_name.is_a?(Hash)
+
+      if @reflection.options[:uniq]
+        # This is needed because 'SELECT count(DISTINCT *)..' is not valid SQL.
+        column_name = "#{@reflection.quoted_table_name}.#{@reflection.klass.primary_key}" unless column_name
+        options.merge!(:distinct => true)
+      end
+
+      value = @reflection.klass.send(:with_scope, construct_scope) do 
+        @owner.using @owner.current_shard do 
+          @reflection.klass.count(column_name, options) 
+        end
+      end
+
+      limit  = @reflection.options[:limit]
+      offset = @reflection.options[:offset]
+
+      if limit || offset
+        [ [value - offset.to_i, 0].max, limit.to_i ].min
+      else
+        value
+      end
+    end
+  end
+
   def create(attrs = {})
     if attrs.is_a?(Array)
       attrs.collect { |attr| create(attr) }

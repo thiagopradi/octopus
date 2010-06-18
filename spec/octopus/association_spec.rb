@@ -61,9 +61,150 @@ describe Octopus::Association do
   end
 
   describe "when you have a N x N reliationship" do
-    it "should be implemented" do
-      pending()          
+    before(:each) do
+      @brazil_role = Role.using(:brazil).create!(:name => "Brazil Role")
+      @master_role = Role.create!(:name => "Master Role")
+      @permission_brazil = Permission.using(:brazil).create!(:name => "Brazil Permission")
+      @permission_master = Permission.using(:master).create!(:name => "Master Permission")
+      @brazil_role.permissions << @permission_brazil
+      @brazil_role.save()
+      Client.using(:master).create!(:name => "teste")        
     end
+
+    it "should find all models in the specified shard" do
+      @brazil_role.permission_ids().should == [@permission_brazil.id]
+      @brazil_role.permissions().should == [@permission_brazil]
+    end
+
+    it "should finds the client that the item belongs" do
+      @permission_brazil.role_ids.should == [@brazil_role.id]
+      @permission_brazil.roles.should == [@brazil_role]
+    end
+
+    it "should update the attribute for the item" do
+      new_brazil_role = Role.using(:brazil).create!(:name => "new Role")
+      @permission_brazil.roles = [new_brazil_role]
+      @permission_brazil.roles.should == [new_brazil_role]
+      @permission_brazil.save()
+      @permission_brazil.reload
+      @permission_brazil.role_ids.should == [new_brazil_role.id]
+      @permission_brazil.roles().should == [new_brazil_role]
+    end
+    
+    it "should works for build method" do
+      new_brazil_role = Role.using(:brazil).create!(:name => "Brazil Role")
+      c = new_brazil_role.permissions.create(:name => "new Permission")
+      c.save()
+      new_brazil_role.save()
+      c.roles().should == [new_brazil_role]
+      new_brazil_role.permissions.should == [c]
+    end
+    
+    #     describe "it should works when using" do
+    #       before(:each) do
+    #         @item_brazil_2 = Item.using(:brazil).create!(:name => "Brazil Item 2")
+    #         @brazil_client.items.to_set.should == [@item_brazil].to_set 
+    #       end
+    # 
+    #       it "update_attributes" do
+    #         @brazil_client.update_attributes(:item_ids => [@item_brazil_2.id, @item_brazil.id])
+    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+    #       end
+    # 
+    #       it "update_attribute" do
+    #         @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
+    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+    #       end
+    # 
+    #       it "<<" do
+    #         @brazil_client.items << @item_brazil_2
+    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+    #       end
+    # 
+    #       it "build" do
+    #         item = @brazil_client.items.build(:name => "Builded Item")
+    #         item.save()
+    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set
+    #       end
+    # 
+    #       it "create" do
+    #         item = @brazil_client.items.create(:name => "Builded Item")
+    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set          
+    #       end
+    # 
+    #       it "count" do
+    #         @brazil_client.items.count.should == 1
+    #         item = @brazil_client.items.create(:name => "Builded Item")
+    #         @brazil_client.items.count.should == 2
+    #       end
+    # 
+    #       it "size" do
+    #         @brazil_client.items.size.should == 1          
+    #         item = @brazil_client.items.create(:name => "Builded Item")
+    #         @brazil_client.items.size.should == 2          
+    #       end
+    # 
+    #       it "create!" do
+    #         item = @brazil_client.items.create!(:name => "Builded Item")
+    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
+    #       end
+    # 
+    #       it "length" do
+    #         @brazil_client.items.length.should == 1          
+    #         item = @brazil_client.items.create(:name => "Builded Item")
+    #         @brazil_client.items.length.should == 2                    
+    #       end
+    # 
+    #       it "empty?" do
+    #         @brazil_client.items.empty?.should be_false
+    #         c = Client.create!(:name => "Client1")
+    #         c.items.empty?.should be_true
+    #       end
+    # 
+    #       it "delete" do
+    #         @brazil_client.items.empty?.should be_false
+    #         @brazil_client.items.delete(@item_brazil)
+    #         @brazil_client.reload
+    #         @item_brazil.reload
+    #         @item_brazil.client.should be_nil
+    #         @brazil_client.items.should == []
+    #         @brazil_client.items.empty?.should be_true
+    #       end
+    # 
+    #       it "delete_all" do
+    #         @brazil_client.items.empty?.should be_false     
+    #         @brazil_client.items.delete_all                
+    #         @brazil_client.items.empty?.should be_true
+    #       end
+    # 
+    #       it "destroy_all" do
+    #         @brazil_client.items.empty?.should be_false     
+    #         @brazil_client.items.destroy_all                
+    #         @brazil_client.items.empty?.should be_true
+    #       end
+    # 
+    #       it "find" do
+    #         @brazil_client.items.find(:first).should == @item_brazil
+    #         @brazil_client.items.destroy_all                
+    #         @brazil_client.items.find(:first).should be_nil
+    #       end
+    # 
+    #       it "exists?" do
+    #         @brazil_client.items.exists?(@item_brazil).should be_true
+    #         @brazil_client.items.destroy_all                
+    #         @brazil_client.items.exists?(@item_brazil).should be_false     
+    #       end
+    # 
+    #       it "uniq" do
+    #         @brazil_client.items.uniq.should == [@item_brazil]                
+    #       end        
+    # 
+    #       it "clear" do
+    #         @brazil_client.items.empty?.should be_false     
+    #         @brazil_client.items.clear                
+    #         @brazil_client.items.empty?.should be_true          
+    #       end
+    #     end
   end
 
   describe "when you have has_many :through" do

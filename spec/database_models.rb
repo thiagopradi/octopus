@@ -30,7 +30,7 @@ class Computer < ActiveRecord::Base
   has_one :keyboard
 end
 
-class Roles < ActiveRecord::Base
+class Role < ActiveRecord::Base
   has_and_belongs_to_many :permissions
 end
 

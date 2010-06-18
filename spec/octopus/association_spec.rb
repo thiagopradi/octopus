@@ -17,14 +17,24 @@ describe Octopus::Association do
     it "should read correctly the relationed model" do
       new_computer_brazil = Computer.using(:brazil).create!(:name => "New Computer Brazil")
       new_computer_master = Computer.create!(:name => "New Computer Brazil")
-      @keyboard_master.computer = new_computer_brazil
-      @keyboard_master.save()
-      @keyboard_master.reload
-      @keyboard_master.computer_id.should ==  new_computer_brazil.id
-      @keyboard_master.computer.should ==  new_computer_brazil
+      @keyboard_brazil.computer = new_computer_brazil
+      @keyboard_brazil.save()
+      @keyboard_brazil.reload
+      @keyboard_brazil.computer_id.should ==  new_computer_brazil.id
+      @keyboard_brazil.computer.should ==  new_computer_brazil
       new_computer_brazil.save()
       new_computer_brazil.reload      
-      new_computer_brazil.keyboard.should == @keyboard_master
+      new_computer_brazil.keyboard.should == @keyboard_brazil
+    end
+    
+    it "should work when using #build_computer or #build_keyboard" do
+      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+      k = c.build_keyboard(:name => "Building keyboard")
+      c.save()
+      k.save()
+      c.keyboard.should == k
+      k.computer_id.should == c.id
+      k.computer.should == c
     end
   end
 

@@ -115,10 +115,12 @@ module Octopus::Association
     def association_accessor_methods(reflection, association_proxy_class)
       define_method(reflection.name) do |*params|
         force_reload = params.first unless params.empty?
+
         if self.respond_to?(:current_shard)
           force_reload = true
           set_connection()
         end
+
         association = association_instance_get(reflection.name)
 
         if association.nil? || force_reload
@@ -131,7 +133,8 @@ module Octopus::Association
           association_instance_set(reflection.name, association)
         end
 
-        association.target.nil? ? nil : association
+        association
+        #association.target.nil? ? nil : association
       end
 
       define_method("loaded_#{reflection.name}?") do

@@ -21,3 +21,11 @@ end
 class Item < ActiveRecord::Base
   belongs_to :client
 end
+
+class Keyboard < ActiveRecord::Base
+  belongs_to :computer
+end
+
+class Computer < ActiveRecord::Base
+  has_one :keyboard
+end

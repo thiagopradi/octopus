@@ -22,7 +22,7 @@ end
 
 def clean_all_shards()
   ActiveRecord::Base.using(:master).connection.shards.keys.each do |shard_symbol|
-    ['schema_migrations', 'users', 'clients', 'cats', 'items'].each do |tables|
+    ['schema_migrations', 'users', 'clients', 'cats', 'items', 'keyboards', 'computers'].each do |tables|
       ActiveRecord::Base.using(shard_symbol).connection.execute("DELETE FROM #{tables};") 
     end
   end

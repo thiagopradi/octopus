@@ -100,111 +100,122 @@ describe Octopus::Association do
       new_brazil_role.permissions.should == [c]
     end
     
-    #     describe "it should works when using" do
-    #       before(:each) do
-    #         @item_brazil_2 = Item.using(:brazil).create!(:name => "Brazil Item 2")
-    #         @brazil_client.items.to_set.should == [@item_brazil].to_set 
-    #       end
-    # 
-    #       it "update_attributes" do
-    #         @brazil_client.update_attributes(:item_ids => [@item_brazil_2.id, @item_brazil.id])
-    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
-    #       end
-    # 
-    #       it "update_attribute" do
-    #         @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
-    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
-    #       end
-    # 
-    #       it "<<" do
-    #         @brazil_client.items << @item_brazil_2
-    #         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
-    #       end
-    # 
-    #       it "build" do
-    #         item = @brazil_client.items.build(:name => "Builded Item")
-    #         item.save()
-    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set
-    #       end
-    # 
-    #       it "create" do
-    #         item = @brazil_client.items.create(:name => "Builded Item")
-    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set          
-    #       end
-    # 
-    #       it "count" do
-    #         @brazil_client.items.count.should == 1
-    #         item = @brazil_client.items.create(:name => "Builded Item")
-    #         @brazil_client.items.count.should == 2
-    #       end
-    # 
-    #       it "size" do
-    #         @brazil_client.items.size.should == 1          
-    #         item = @brazil_client.items.create(:name => "Builded Item")
-    #         @brazil_client.items.size.should == 2          
-    #       end
-    # 
-    #       it "create!" do
-    #         item = @brazil_client.items.create!(:name => "Builded Item")
-    #         @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
-    #       end
-    # 
-    #       it "length" do
-    #         @brazil_client.items.length.should == 1          
-    #         item = @brazil_client.items.create(:name => "Builded Item")
-    #         @brazil_client.items.length.should == 2                    
-    #       end
-    # 
-    #       it "empty?" do
-    #         @brazil_client.items.empty?.should be_false
-    #         c = Client.create!(:name => "Client1")
-    #         c.items.empty?.should be_true
-    #       end
-    # 
-    #       it "delete" do
-    #         @brazil_client.items.empty?.should be_false
-    #         @brazil_client.items.delete(@item_brazil)
-    #         @brazil_client.reload
-    #         @item_brazil.reload
-    #         @item_brazil.client.should be_nil
-    #         @brazil_client.items.should == []
-    #         @brazil_client.items.empty?.should be_true
-    #       end
-    # 
-    #       it "delete_all" do
-    #         @brazil_client.items.empty?.should be_false     
-    #         @brazil_client.items.delete_all                
-    #         @brazil_client.items.empty?.should be_true
-    #       end
-    # 
-    #       it "destroy_all" do
-    #         @brazil_client.items.empty?.should be_false     
-    #         @brazil_client.items.destroy_all                
-    #         @brazil_client.items.empty?.should be_true
-    #       end
-    # 
-    #       it "find" do
-    #         @brazil_client.items.find(:first).should == @item_brazil
-    #         @brazil_client.items.destroy_all                
-    #         @brazil_client.items.find(:first).should be_nil
-    #       end
-    # 
-    #       it "exists?" do
-    #         @brazil_client.items.exists?(@item_brazil).should be_true
-    #         @brazil_client.items.destroy_all                
-    #         @brazil_client.items.exists?(@item_brazil).should be_false     
-    #       end
-    # 
-    #       it "uniq" do
-    #         @brazil_client.items.uniq.should == [@item_brazil]                
-    #       end        
-    # 
-    #       it "clear" do
-    #         @brazil_client.items.empty?.should be_false     
-    #         @brazil_client.items.clear                
-    #         @brazil_client.items.empty?.should be_true          
-    #       end
-    #     end
+    describe "it should works when using" do
+      before(:each) do
+        @permission_brazil_2 = Permission.using(:brazil).create!(:name => "Brazil Item 2")
+        @role = Role.using(:brazil).create!(:name => "testes")
+      end
+
+      it "update_attributes" do
+        @permission_brazil_2.update_attributes(:role_ids => [@role.id])
+        @permission_brazil_2.roles.to_set.should == [@role].to_set
+      end
+
+      it "update_attribute" do
+        @permission_brazil_2.update_attribute(:role_ids, [@role.id])
+        @permission_brazil_2.roles.to_set.should == [@role].to_set
+      end
+
+      it "<<" do
+        @permission_brazil_2.roles << @role
+        @role.save()
+        @permission_brazil_2.save()
+        @permission_brazil_2.reload
+        @permission_brazil_2.roles.to_set.should == [@role].to_set
+      end
+      
+      it "build" do
+        role = @permission_brazil_2.roles.build(:name => "Builded Role")
+        @permission_brazil_2.save()
+        @permission_brazil_2.roles.to_set.should == [role].to_set
+      end
+      
+      it "create" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.to_set.should == [role].to_set          
+      end
+      
+      it "create" do
+        role = @permission_brazil_2.roles.create!(:name => "Builded Role")
+        @permission_brazil_2.roles.to_set.should == [role].to_set          
+      end
+      
+      it "count" do
+        @permission_brazil_2.roles.count.should == 0
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.count.should == 1
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.count.should == 2
+      end
+
+      it "size" do
+        @permission_brazil_2.roles.size.should == 0
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.size.should == 1
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.size.should == 2
+      end
+
+      it "length" do
+        @permission_brazil_2.roles.length.should == 0
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.length.should == 1
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.length.should == 2
+      end
+
+
+      it "empty?" do
+        @permission_brazil_2.roles.empty?.should be_true
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.empty?.should be_false
+      end
+      
+      it "delete_all" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.empty?.should be_false     
+        @permission_brazil_2.roles.delete_all                
+        @permission_brazil_2.roles.empty?.should be_true
+      end
+
+      it "destroy_all" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.empty?.should be_false     
+        @permission_brazil_2.roles.destroy_all                
+        @permission_brazil_2.roles.empty?.should be_true
+      end
+      
+      it "find" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.find(:first).should == role
+        @permission_brazil_2.roles.destroy_all                
+        @permission_brazil_2.roles.find(:first).should be_nil
+      end
+
+      it "exists?" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.exists?(role).should be_true
+        @permission_brazil_2.roles.destroy_all                
+        @permission_brazil_2.roles.exists?(role).should be_false     
+      end
+      
+      it "clear" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.empty?.should be_false     
+        @permission_brazil_2.roles.clear                
+        @permission_brazil_2.roles.empty?.should be_true          
+      end
+      
+      it "delete" do
+        role = @permission_brazil_2.roles.create(:name => "Builded Role")
+        @permission_brazil_2.roles.empty?.should be_false
+        @permission_brazil_2.roles.delete(role)
+        @permission_brazil_2.reload
+        @role.reload
+        @role.permissions.should == []
+        @permission_brazil_2.roles.should == []
+      end
+    end
   end
 
   describe "when you have has_many :through" do

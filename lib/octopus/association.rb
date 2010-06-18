@@ -109,7 +109,7 @@ module Octopus::Association
         else
           return_val = association.send(constructor, attributees)
         end
-
+        
         if self.respond_to?(:current_shard) 
           return_val.current_shard = self.current_shard
         end

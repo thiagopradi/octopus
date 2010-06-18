@@ -13,7 +13,7 @@ describe Octopus::Association do
       @keyboard_master.computer.should == @computer_master
       @keyboard_brazil.computer.should == @computer_brazil
     end
-    
+
     it "should read correctly the relationed model" do
       new_computer_brazil = Computer.using(:brazil).create!(:name => "New Computer Brazil")
       new_computer_master = Computer.create!(:name => "New Computer Brazil")
@@ -26,12 +26,34 @@ describe Octopus::Association do
       new_computer_brazil.reload      
       new_computer_brazil.keyboard.should == @keyboard_brazil
     end
-    
+
     it "should work when using #build_computer or #build_keyboard" do
       c = Computer.using(:brazil).create!(:name => "Computer Brazil")
       k = c.build_keyboard(:name => "Building keyboard")
       c.save()
       k.save()
+      c.keyboard.should == k
+      k.computer_id.should == c.id
+      k.computer.should == c
+    end
+
+    it "should work when using #create_computer or #create_keyboard" do
+      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+      k = c.create_keyboard(:name => "Building keyboard")
+      c.save()
+      k.save()
+      c.keyboard.should == k
+      k.computer_id.should == c.id
+      k.computer.should == c
+    end
+
+    it "should works when using create!" do
+      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+      k = c.keyboard.create!(:name => "New Keyboard")    
+      c.save()
+      k.save()
+      c.reload()
+      k.reload()  
       c.keyboard.should == k
       k.computer_id.should == c.id
       k.computer.should == c
@@ -44,7 +66,7 @@ describe Octopus::Association do
     end
   end
 
-  describe "when you have has_many through" do
+  describe "when you have has_many :through" do
     it "should be implemented" do
       pending()      
     end

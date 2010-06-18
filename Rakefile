@@ -122,11 +122,11 @@ namespace :db do
       end
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:roles) do |u|
-        u.string :role_name
+        u.string :name
       end
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions) do |u|
-        u.string :role_name
+        u.string :name
       end
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions_roles, :id => false) do |u|

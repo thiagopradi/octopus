@@ -120,6 +120,19 @@ namespace :db do
         u.string :name
         u.integer :computer_id
       end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:roles) do |u|
+        u.string :role_name
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions) do |u|
+        u.string :role_name
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions_roles, :id => false) do |u|
+        u.integer :role_id
+        u.integer :permission_id
+      end
     end
   end
   

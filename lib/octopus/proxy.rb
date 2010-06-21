@@ -1,7 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :shards, :current_shard, :block, :groups, :current_group,  :replicated, :slaves_list, :replicated_models, :using_enabled, :last_current_shard
+  attr_accessor :shards, :block, :groups, :current_group, :replicated, :slaves_list, :replicated_models, :using_enabled, :last_current_shard
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -11,7 +11,7 @@ class Octopus::Proxy
     @replicated_models = Set.new
     @replicated = config[Octopus.env()]["replicated"]
     @shards[:master] = ActiveRecord::Base.connection_pool()
-    @current_shard = :master
+    Thread.current[:current_shard] = :master
     
     initialize_shards(config)
     
@@ -44,6 +44,10 @@ class Octopus::Proxy
     @slaves_list = @slaves_list.map {|sym| sym.to_s}.sort    
   end
   
+  def current_shard
+    Thread.current[:current_shard]
+  end
+  
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
@@ -51,7 +55,7 @@ class Octopus::Proxy
       raise "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
     end
 
-    @current_shard = shard_symbol
+    Thread.current[:current_shard] = shard_symbol
   end
 
   def current_group=(group_symbol)
@@ -63,7 +67,7 @@ class Octopus::Proxy
 
     @current_group = group_symbol
   end
-
+  
   def select_connection()
     @shards[shard_name].connection()
   end

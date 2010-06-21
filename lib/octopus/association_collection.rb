@@ -1,6 +1,6 @@
 class ActiveRecord::Associations::AssociationCollection
   def should_wrap_the_connection?
-    @owner.current_shard != nil
+    @owner.respond_to?(:current_shard) && @owner.current_shard != nil
   end
 
   def count(column_name = nil, options = {})

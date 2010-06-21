@@ -1,4 +1,8 @@
 class ActiveRecord::Associations::HasAndBelongsToManyAssociation
+  def should_wrap_the_connection?
+    @owner.respond_to?(:current_shard) && @owner.current_shard != nil
+  end
+  
   def insert_record(record, force = true, validate = true)
     if record.new_record?
       if force
@@ -27,7 +31,11 @@ class ActiveRecord::Associations::HasAndBelongsToManyAssociation
         attrs
       end
       
-      @owner.class.connection_proxy.run_query_on_shard(@owner.current_shard) { relation.insert(attributes) }
+      if should_wrap_the_connection?
+        @owner.using(@owner.current_shard) { relation.insert(attributes) } 
+      else
+        relation.insert(attributes)
+      end
     end
 
     return true

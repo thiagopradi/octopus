@@ -4,8 +4,12 @@ module Octopus::Association
   end
 
   module InstanceMethods
+    def have_a_valid_shard?
+      self.respond_to?(:current_shard) && self.current_shard != nil
+    end
+    
     def reload_connection()
-      set_connection() if self.respond_to?(:current_shard)      
+      set_connection() if have_a_valid_shard?
     end
     
     def save(*)
@@ -109,7 +113,7 @@ module Octopus::Association
           return_val = association.send(constructor, attributees)
         end
         
-        if self.respond_to?(:current_shard) 
+        if have_a_valid_shard?
           return_val.current_shard = self.current_shard
         end
 
@@ -124,10 +128,8 @@ module Octopus::Association
         association = association_instance_get(reflection.name)
 
         if association.nil? || force_reload
-          association =  self.class.connection_proxy.run_query_on_shard(self.current_shard) { association_proxy_class.new(self, reflection) }
-          retval = if self.respond_to?(:current_shard) && self.current_shard != nil
-            force_reload ? reflection.klass.uncached { self.class.connection_proxy.run_query_on_shard(self.current_shard) { association.reload } } : association.reload
-          end
+          association = association_proxy_class.new(self, reflection)
+          retval = have_a_valid_shard? ? reflection.klass.uncached { self.class.connection_proxy.run_query_on_shard(self.current_shard) { association.reload } } : association.reload
           if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
             association_instance_set(reflection.name, nil)
             return nil

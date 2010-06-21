@@ -9,7 +9,7 @@ end
 
 #The client class isn't replicated
 class Client < ActiveRecord::Base
-  has_many :items, :before_remove => :set_connection
+  has_many :items, :before_remove => :set_connection, :before_add => :set_connection
 end
 
 #This class is replicated
@@ -31,9 +31,9 @@ class Computer < ActiveRecord::Base
 end
 
 class Role < ActiveRecord::Base
-  has_and_belongs_to_many :permissions, :before_remove => :set_connection
+  has_and_belongs_to_many :permissions, :before_remove => :set_connection, :before_add => :set_connection
 end
 
 class Permission < ActiveRecord::Base
-  has_and_belongs_to_many :roles, :before_remove => :set_connection
+  has_and_belongs_to_many :roles, :before_remove => :set_connection, :before_add => :set_connection
 end

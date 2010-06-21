@@ -4,68 +4,72 @@ module Octopus::Association
   end
 
   module InstanceMethods
+    def reload_connection()
+      set_connection() if self.respond_to?(:current_shard)      
+    end
+    
     def save(*)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super
     end
 
     def save!(*)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super
     end
 
     def delete
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super
     end
 
     def destroy
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super
     end
 
     def update_attribute(name, value)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(name, value)
     end
 
     def update_attributes(attributes)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attributes)
     end
 
     def update_attributes!(attributes)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attributes)
     end
 
     def increment(attribute, by=1)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attribute, by)
     end
 
     def increment!(attribute, by=1)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attribute, by)
     end
 
     def decrement(attribute, by=1)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attribute, by)
     end
 
     def decrement!(attribute, by=1)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attribute, by)
     end
 
     def toggle(attribute)
-      set_connection() if self.respond_to?(:current_shard)
+      reload_connection()
       super(attribute)
     end
 
     def toggle!(attribute)
-      set_connection() if self.respond_to?(:current_shard) 
+      reload_connection() 
       super(attribute)
     end
   end
@@ -73,10 +77,7 @@ module Octopus::Association
   def collection_reader_method(reflection, association_proxy_class)
     define_method(reflection.name) do |*params|
       force_reload = params.first unless params.empty?
-      if self.respond_to?(:current_shard) 
-        force_reload = true
-        set_connection()
-      end
+      reload_connection() 
 
       association = association_instance_get(reflection.name)
 
@@ -92,9 +93,7 @@ module Octopus::Association
 
     def association_constructor_method(constructor, reflection, association_proxy_class)
       define_method("#{constructor}_#{reflection.name}") do |*params|
-        if self.respond_to?(:current_shard) 
-          set_connection()
-        end
+        reload_connection() 
         attributees      = params.first unless params.empty?
         replace_existing = params[1].nil? ? true : params[1]
         association      = association_instance_get(reflection.name)
@@ -121,12 +120,7 @@ module Octopus::Association
     def association_accessor_methods(reflection, association_proxy_class)
       define_method(reflection.name) do |*params|
         force_reload = true
-
-        if self.respond_to?(:current_shard)
-          force_reload = true
-          set_connection()
-        end
-
+        reload_connection() 
         association = association_instance_get(reflection.name)
 
         if association.nil? || force_reload
@@ -146,17 +140,13 @@ module Octopus::Association
       end
 
       define_method("loaded_#{reflection.name}?") do
-        if self.respond_to?(:current_shard)
-          set_connection()
-        end
+        reload_connection() 
         association = association_instance_get(reflection.name)
         association && association.loaded?
       end
 
       define_method("#{reflection.name}=") do |new_value|
-        if self.respond_to?(:current_shard) 
-          set_connection()
-        end
+        reload_connection() 
         association = association_instance_get(reflection.name)
 
         if association.nil? || association.target != new_value
@@ -169,9 +159,7 @@ module Octopus::Association
 
       define_method("set_#{reflection.name}_target") do |target|
         return if target.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
-        if self.respond_to?(:current_shard) && self.current_shard != nil
-          set_connection()
-        end
+        reload_connection() 
         association = association_proxy_class.new(self, reflection)
         association.target = target
         association_instance_set(reflection.name, association)
@@ -180,7 +168,7 @@ module Octopus::Association
 
 
     define_method("#{reflection.name.to_s.singularize}_ids") do
-      set_connection() if self.respond_to?(:current_shard)        
+      reload_connection()        
       if send(reflection.name).loaded? || reflection.options[:finder_sql]
         send(reflection.name).map(&:id)
       else

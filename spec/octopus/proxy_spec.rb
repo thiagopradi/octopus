@@ -62,7 +62,7 @@ describe Octopus::Proxy do
     before(:each) do
       Octopus.stub!(:env).and_return("production_replicated")
       @proxy = Octopus::Proxy.new(Octopus.config())
-      ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+      clean_connection_proxy()
     end
     
     it "should have the replicated attribute as true" do

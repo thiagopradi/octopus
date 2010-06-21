@@ -37,7 +37,7 @@ module Octopus::Model
     def hijack_connection()
       class << self
         def connection_proxy
-          @@connection_proxy ||= Octopus::Proxy.new(Octopus.config())
+          Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
         end
 
         def connection 

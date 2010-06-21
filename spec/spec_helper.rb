@@ -37,13 +37,17 @@ def migrating_to_version(version, &block)
   end
 end
 
+def clean_connection_proxy()
+  Thread.current[:connection_proxy] = nil  
+end
+
 def using_enviroment(enviroment, &block)
   begin
     Octopus.instance_variable_set(:@env, enviroment.to_s)
-    ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+    clean_connection_proxy()
     yield
   ensure
     Octopus.instance_variable_set(:@env, 'production')
-    ActiveRecord::Base.class_eval("@@connection_proxy = nil")
+    clean_connection_proxy()
   end
 end

@@ -1,9 +1,8 @@
 class ActiveRecord::Associations::AssociationCollection
-  
   def should_wrap_the_connection?
     @owner.current_shard != nil
   end
-  
+
   def count(column_name = nil, options = {})
     if @reflection.options[:counter_sql]
       @reflection.klass.count_by_sql(@counter_sql)
@@ -36,20 +35,6 @@ class ActiveRecord::Associations::AssociationCollection
   end
 
 
-  def delete(*records)
-    remove_records(records) do |records, old_records|
-      if should_wrap_the_connection?
-        @owner.using(@owner.current_shard) { delete_records(old_records) if old_records.any? }
-      else
-        delete_records(old_records) if old_records.any?      
-      end
-
-      records.each do |record| 
-        @target.delete(record) 
-      end
-    end
-  end
-
   def clear
     return self if length.zero? # forces load_target if it hasn't happened already
 
@@ -70,23 +55,17 @@ class ActiveRecord::Associations::AssociationCollection
     self
   end
 
-  def create(attrs = {})
-    if attrs.is_a?(Array)
-      attrs.collect { |attr| create(attr) }
-    else
-      create_record(attrs) do |record|
-        yield(record) if block_given?
-        record.current_shard = @owner.current_shard if should_wrap_the_connection?
-        record.save
-      end
+  def create_record(attrs)
+    attrs.update(@reflection.options[:conditions]) if @reflection.options[:conditions].is_a?(Hash)
+    ensure_owner_is_not_new
+    record = @reflection.klass.send(:with_scope, :create => construct_scope[:create]) do
+      @reflection.build_association(attrs)
     end
-  end
-
-  def create!(attrs = {})
-    create_record(attrs) do |record|
-      yield(record) if block_given?
-      record.current_shard = @owner.current_shard if should_wrap_the_connection?
-      record.save!
+    record.current_shard = @owner.current_shard if should_wrap_the_connection?
+    if block_given?
+      add_record_to_target_with_callbacks(record) { |*block_args| yield(*block_args) }
+    else
+      add_record_to_target_with_callbacks(record)
     end
   end
 

@@ -11,7 +11,7 @@ module Octopus::Model
       before_save :set_connection
       before_destroy :set_connection
       
-      def set_connection()
+      def set_connection(*args)
         if(!self.current_shard.nil?)
           self.class.connection_proxy.current_shard = self.current_shard
         end

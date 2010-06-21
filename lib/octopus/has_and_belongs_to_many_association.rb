@@ -32,12 +32,4 @@ class ActiveRecord::Associations::HasAndBelongsToManyAssociation
 
     return true
   end
-
-  def create(attributes = {})
-    create_record(attributes) { |record| insert_record(record) }
-  end
-
-  def create!(attributes = {})
-    create_record(attributes) { |record| insert_record(record, true) }
-  end
 end

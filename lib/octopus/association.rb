@@ -4,10 +4,6 @@ module Octopus::Association
   end
 
   module InstanceMethods
-    def have_a_valid_shard?
-      self.respond_to?(:current_shard) && self.current_shard != nil
-    end
-
     def reload_connection()
       set_connection() if have_a_valid_shard?
     end
@@ -25,6 +21,11 @@ module Octopus::Association
     def update_attributes!(attributes)
       reload_connection()
       super(attributes)
+    end
+    
+    def reload
+      set_connection()
+      super
     end
   end
 

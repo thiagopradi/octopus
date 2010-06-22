@@ -12,11 +12,6 @@ module Octopus::Model
       before_destroy :set_connection
       
       def set_current_shard
-        def reload
-          set_connection()
-          super
-        end
-         
         if self.class.respond_to?(:connection_proxy) && self.respond_to?(:current_shard)
           if self.new_record?
             self.current_shard = self.class.connection_proxy.current_shard    
@@ -43,15 +38,17 @@ module Octopus::Model
       end
     end
     
+    def have_a_valid_shard?
+      self.respond_to?(:current_shard) && self.current_shard != nil
+    end
+    
     def set_connection(*args)
       if(args.size == 1)
         arg = args.first
-        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && self.respond_to?(:current_shard) && self.current_shard != nil
+        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && have_a_valid_shard?
       end
 
-      if(!self.current_shard.nil?)
-        self.class.connection_proxy.current_shard = self.current_shard if self.respond_to?(:current_shard) && self.current_shard != nil
-      end
+      self.class.connection_proxy.current_shard = self.current_shard if have_a_valid_shard?
     end
 
     def clean_table_name

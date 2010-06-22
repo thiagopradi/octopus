@@ -1,6 +1,7 @@
 module Octopus::Model  
   def self.extended(base) 
     base.send(:include, InstanceMethods)
+    base.hijack_connection()
   end
 
   module InstanceMethods

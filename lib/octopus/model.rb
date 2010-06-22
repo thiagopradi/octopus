@@ -24,7 +24,7 @@ module Octopus::Model
     end
 
     def reload
-      set_connection()
+      reload_connection()
       super
     end
 
@@ -93,7 +93,6 @@ module Octopus::Model
       self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
     end
   end
-  
   
   include InstanceMethods
 

@@ -1,16 +1,39 @@
 module Octopus::Model  
-  def self.included(base)
-    base.extend(ClassMethods)    
+  def self.extended(base) 
     base.send(:include, InstanceMethods)
   end
-
+  
   module InstanceMethods
+    def reload_connection()
+      set_connection() if have_a_valid_shard?
+    end
+
+    def update_attribute(name, value)
+      reload_connection()
+      super(name, value)
+    end
+
+    def update_attributes(attributes)
+      reload_connection()
+      super(attributes)
+    end
+
+    def update_attributes!(attributes)
+      reload_connection()
+      super(attributes)
+    end
+
+    def reload
+      set_connection()
+      super
+    end
+
     def hijack_initializer()
       attr_accessor :current_shard
       after_initialize :set_current_shard
       before_save :set_connection
       before_destroy :set_connection
-      
+
       def set_current_shard
         if self.class.respond_to?(:connection_proxy) && self.respond_to?(:current_shard)
           if self.new_record?
@@ -21,7 +44,7 @@ module Octopus::Model
         end
       end    
     end
-    
+
     def hijack_connection()
       class << self
         def connection_proxy
@@ -36,23 +59,6 @@ module Octopus::Model
           self.connection_proxy()
         end
       end
-    end
-    
-    def have_a_valid_shard?
-      self.respond_to?(:current_shard) && self.current_shard != nil
-    end
-    
-    def set_connection(*args)
-      if(args.size == 1)
-        arg = args.first
-        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && have_a_valid_shard?
-      end
-
-      self.class.connection_proxy.current_shard = self.current_shard if have_a_valid_shard?
-    end
-
-    def clean_table_name
-      self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
     end
 
     def using(shard, &block)
@@ -69,15 +75,31 @@ module Octopus::Model
         return self
       end
     end
-  end
 
-  module ClassMethods
-    include InstanceMethods
-
-    def replicated_model()
-      self.cattr_accessor :replicated
+    def have_a_valid_shard?
+      self.respond_to?(:current_shard) && self.current_shard != nil
     end
-  end  
+
+    def set_connection(*args)
+      if(args.size == 1)
+        arg = args.first
+        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && have_a_valid_shard?
+      end
+
+      self.class.connection_proxy.current_shard = self.current_shard if have_a_valid_shard?
+    end
+
+    def clean_table_name
+      self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
+    end
+  end
+  
+  
+  include InstanceMethods
+
+  def replicated_model()
+    self.cattr_accessor :replicated
+  end
 end
 
-ActiveRecord::Base.send(:include, Octopus::Model)
+ActiveRecord::Base.extend(Octopus::Model)

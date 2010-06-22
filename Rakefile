@@ -92,6 +92,8 @@ namespace :db do
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
+        u.integer :number
+        u.boolean :admin
       end
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:clients) do |u|

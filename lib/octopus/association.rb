@@ -7,29 +7,9 @@ module Octopus::Association
     def have_a_valid_shard?
       self.respond_to?(:current_shard) && self.current_shard != nil
     end
-    
+
     def reload_connection()
       set_connection() if have_a_valid_shard?
-    end
-    
-    def save(*)
-      reload_connection()
-      super
-    end
-
-    def save!(*)
-      reload_connection()
-      super
-    end
-
-    def delete
-      reload_connection()
-      super
-    end
-
-    def destroy
-      reload_connection()
-      super
     end
 
     def update_attribute(name, value)
@@ -45,36 +25,6 @@ module Octopus::Association
     def update_attributes!(attributes)
       reload_connection()
       super(attributes)
-    end
-
-    def increment(attribute, by=1)
-      reload_connection()
-      super(attribute, by)
-    end
-
-    def increment!(attribute, by=1)
-      reload_connection()
-      super(attribute, by)
-    end
-
-    def decrement(attribute, by=1)
-      reload_connection()
-      super(attribute, by)
-    end
-
-    def decrement!(attribute, by=1)
-      reload_connection()
-      super(attribute, by)
-    end
-
-    def toggle(attribute)
-      reload_connection()
-      super(attribute)
-    end
-
-    def toggle!(attribute)
-      reload_connection() 
-      super(attribute)
     end
   end
 
@@ -112,7 +62,7 @@ module Octopus::Association
         else
           return_val = association.send(constructor, attributees)
         end
-        
+
         if have_a_valid_shard?
           return_val.current_shard = self.current_shard
         end

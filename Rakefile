@@ -62,7 +62,7 @@ Rake::RDocTask.new do |rdoc|
 end
 
 namespace :db do
-  desc 'Build the MySQL test databases'
+  desc 'Build the databases for tests'
   task :build_databases do
     mysql_user = ENV['MYSQL_USER'] || "root"
     postgres_user = ENV['POSTGRES_USER'] || "postgres"
@@ -73,7 +73,7 @@ namespace :db do
     %x( createdb -E UTF8 -U #{postgres_user} octopus_shard1 )
   end
 
-  desc 'Drop the MySQL test databases'
+  desc 'Drop the tests databases'
   task :drop_databases do
     mysql_user = ENV['MYSQL_USER'] || "root"
     postgres_user = ENV['POSTGRES_USER'] || "postgres"
@@ -84,7 +84,7 @@ namespace :db do
     %x( dropdb -U #{postgres_user} octopus_shard1 )
   end
 
-  desc 'Create tables on mysql databases'
+  desc 'Create tables on tests databases'
   task :create_tables do
     Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
     require "database_connection"
@@ -151,7 +151,7 @@ namespace :db do
     end
   end
   
-  desc 'Prepare the MySQL test databases'
+  desc 'Prepare the test databases'
   task :prepare => [:drop_databases, :build_databases, :create_tables]
 end
 

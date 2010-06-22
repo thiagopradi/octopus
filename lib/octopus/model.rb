@@ -99,6 +99,18 @@ module Octopus::Model
   def replicated_model()
     self.cattr_accessor :replicated
   end
+  
+  def has_many(association_id, options = {}, &extension)
+    options[:before_add] = :set_connection
+    options[:before_remove] = :set_connection
+    super(association_id, options, &extension)
+  end
+  
+  def has_and_belongs_to_many(association_id, options = {}, &extension)
+    options[:before_add] = :set_connection
+    options[:before_remove] = :set_connection
+    super(association_id, options, &extension)    
+  end
 end
 
 ActiveRecord::Base.extend(Octopus::Model)

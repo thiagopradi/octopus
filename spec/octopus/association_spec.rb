@@ -225,6 +225,7 @@ describe Octopus::Association do
       @project2 = Project.using(:brazil).create!(:name => "Cobol Application")
       @programmer.projects << @project
       @programmer.save()
+      Project.using(:master).create!(:name => "Project Master")
     end
 
     it "should find all models in the specified shard" do

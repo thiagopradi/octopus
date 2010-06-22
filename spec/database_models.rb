@@ -9,7 +9,7 @@ end
 
 #The client class isn't replicated
 class Client < ActiveRecord::Base
-  has_many :items, :before_remove => :set_connection, :before_add => :set_connection
+  has_many :items
 end
 
 #This class is replicated
@@ -31,11 +31,11 @@ class Computer < ActiveRecord::Base
 end
 
 class Role < ActiveRecord::Base
-  has_and_belongs_to_many :permissions, :before_remove => :set_connection, :before_add => :set_connection
+  has_and_belongs_to_many :permissions
 end
 
 class Permission < ActiveRecord::Base
-  has_and_belongs_to_many :roles, :before_remove => :set_connection, :before_add => :set_connection
+  has_and_belongs_to_many :roles
 end
 
 class Assignment < ActiveRecord::Base
@@ -44,11 +44,11 @@ class Assignment < ActiveRecord::Base
 end
 
 class Programmer < ActiveRecord::Base
-  has_many :assignments, :before_remove => :set_connection, :before_add => :set_connection
-  has_many :projects, :through => :assignments, :before_remove => :set_connection, :before_add => :set_connection
+  has_many :assignments 
+  has_many :projects, :through => :assignments
 end
 
 class Project < ActiveRecord::Base
-  has_many :assignments, :before_remove => :set_connection, :before_add => :set_connection
-  has_many :programmers, :through => :assignments, :before_remove => :set_connection, :before_add => :set_connection
+  has_many :assignments
+  has_many :programmers, :through => :assignments
 end

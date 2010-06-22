@@ -2,7 +2,7 @@ module Octopus::Model
   def self.extended(base) 
     base.send(:include, InstanceMethods)
   end
-  
+
   module InstanceMethods
     def reload_connection()
       set_connection() if have_a_valid_shard?
@@ -93,23 +93,35 @@ module Octopus::Model
       self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
     end
   end
-  
+
   include InstanceMethods
 
   def replicated_model()
     self.cattr_accessor :replicated
   end
-  
+
   def has_many(association_id, options = {}, &extension)
-    options[:before_add] = :set_connection
-    options[:before_remove] = :set_connection
+    default_octopus_opts(options)
     super(association_id, options, &extension)
   end
-  
+
   def has_and_belongs_to_many(association_id, options = {}, &extension)
-    options[:before_add] = :set_connection
-    options[:before_remove] = :set_connection
+    default_octopus_opts(options)
     super(association_id, options, &extension)    
+  end
+
+  def default_octopus_opts(options)
+    if options[:before_add].is_a?(Array)
+      options[:before_add] << :set_connection
+    else
+      options[:before_add] = :set_connection
+    end
+
+    if options[:before_remove].is_a?(Array)
+      options[:before_remove] << :set_connection
+    else
+      options[:before_remove] = :set_connection
+    end
   end
 end
 

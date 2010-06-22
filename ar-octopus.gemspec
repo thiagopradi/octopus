@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
-  s.date = %q{2010-06-14}
+  s.date = %q{2010-06-22}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
@@ -26,7 +26,10 @@ Gem::Specification.new do |s|
      "doc/libraries.textile",
      "doc/shards.yml",
      "lib/octopus.rb",
+     "lib/octopus/association.rb",
+     "lib/octopus/association_collection.rb",
      "lib/octopus/controller.rb",
+     "lib/octopus/has_and_belongs_to_many_association.rb",
      "lib/octopus/migration.rb",
      "lib/octopus/model.rb",
      "lib/octopus/proxy.rb",
@@ -44,6 +47,7 @@ Gem::Specification.new do |s|
      "spec/migrations/7_raise_exception_with_invalid_multiple_shard_names.rb",
      "spec/migrations/8_raise_exception_with_invalid_group_name.rb",
      "spec/migrations/9_raise_exception_with_multiple_invalid_group_names.rb",
+     "spec/octopus/association_spec.rb",
      "spec/octopus/controller_spec.rb",
      "spec/octopus/migration_spec.rb",
      "spec/octopus/model_spec.rb",
@@ -55,7 +59,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/tchandy/octopus}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{Easy Database Sharding for ActiveRecord}
   s.test_files = [
     "spec/database_connection.rb",
@@ -71,6 +75,7 @@ Gem::Specification.new do |s|
      "spec/migrations/7_raise_exception_with_invalid_multiple_shard_names.rb",
      "spec/migrations/8_raise_exception_with_invalid_group_name.rb",
      "spec/migrations/9_raise_exception_with_multiple_invalid_group_names.rb",
+     "spec/octopus/association_spec.rb",
      "spec/octopus/controller_spec.rb",
      "spec/octopus/migration_spec.rb",
      "spec/octopus/model_spec.rb",
@@ -83,7 +88,7 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
     else
       s.add_dependency(%q<rspec>, [">= 1.2.9"])

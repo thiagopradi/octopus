@@ -37,3 +37,18 @@ end
 class Permission < ActiveRecord::Base
   has_and_belongs_to_many :roles, :before_remove => :set_connection, :before_add => :set_connection
 end
+
+class Assignment < ActiveRecord::Base
+  belongs_to :programmer
+  belongs_to :project
+end
+
+class Programmer < ActiveRecord::Base
+  has_many :assignments, :before_remove => :set_connection, :before_add => :set_connection
+  has_many :projects, :through => :assignments, :before_remove => :set_connection, :before_add => :set_connection
+end
+
+class Project < ActiveRecord::Base
+  has_many :assignments, :before_remove => :set_connection, :before_add => :set_connection
+  has_many :programmers, :through => :assignments, :before_remove => :set_connection, :before_add => :set_connection
+end

@@ -102,7 +102,39 @@ describe Octopus::Model do
       User.using(:alone_shard).find(:all).should == []
     end
   end
+  
+  describe "AR basic methods" do
+    it "increment" do
+      u = User.using(:brazil).create!(:name => "Teste", :number => 10)
+      u = User.using(:brazil).find_by_number(10)
+      u.increment(:number)
+      u.save()
+      u = User.using(:brazil).find_by_number(11).should_not be_nil        
+    end
 
+    it "increment!" do
+      u = User.using(:brazil).create!(:name => "Teste", :number => 10)
+      u = User.using(:brazil).find_by_number(10)
+      u.increment!(:number)
+      u = User.using(:brazil).find_by_number(11).should_not be_nil
+    end
+
+    it "toggle" do
+      u = User.using(:brazil).create!(:name => "Teste", :admin => false)
+      u = User.using(:brazil).find_by_name('Teste')
+      u.toggle(:admin)
+      u.save()
+      u = User.using(:brazil).find_by_name('Teste').admin.should be_true
+    end
+
+    it "toggle!" do
+      u = User.using(:brazil).create!(:name => "Teste", :admin => false)
+      u = User.using(:brazil).find_by_name('Teste')
+      u.toggle!(:admin)
+      u = User.using(:brazil).find_by_name('Teste').admin.should be_true
+    end
+  end
+  
   describe "#replicated_model method" do
     it "should be replicated" do
       using_enviroment :production_replicated do 

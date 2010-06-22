@@ -90,7 +90,7 @@ describe Octopus::Association do
       @permission_brazil.role_ids.should == [new_brazil_role.id]
       @permission_brazil.roles().should == [new_brazil_role]
     end
-    
+
     it "should works for build method" do
       new_brazil_role = Role.using(:brazil).create!(:name => "Brazil Role")
       c = new_brazil_role.permissions.create(:name => "new Permission")
@@ -99,7 +99,7 @@ describe Octopus::Association do
       c.roles().should == [new_brazil_role]
       new_brazil_role.permissions.should == [c]
     end
-    
+
     describe "it should works when using" do
       before(:each) do
         @permission_brazil_2 = Permission.using(:brazil).create!(:name => "Brazil Item 2")
@@ -115,36 +115,6 @@ describe Octopus::Association do
         @permission_brazil_2.update_attribute(:role_ids, [@role.id])
         @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
-      
-      it "increment" do
-        u = User.using(:brazil).create!(:name => "Teste", :number => 10)
-        u = User.using(:brazil).find_by_number(10)
-        u.increment(:number)
-        u.save()
-        u = User.using(:brazil).find_by_number(11).should_not be_nil        
-      end
-      
-      it "increment!" do
-        u = User.using(:brazil).create!(:name => "Teste", :number => 10)
-        u = User.using(:brazil).find_by_number(10)
-        u.increment!(:number)
-        u = User.using(:brazil).find_by_number(11).should_not be_nil
-      end
-      
-      it "toggle" do
-        u = User.using(:brazil).create!(:name => "Teste", :admin => false)
-        u = User.using(:brazil).find_by_name('Teste')
-        u.toggle(:admin)
-        u.save()
-        u = User.using(:brazil).find_by_name('Teste').admin.should be_true
-      end
-
-      it "toggle!" do
-        u = User.using(:brazil).create!(:name => "Teste", :admin => false)
-        u = User.using(:brazil).find_by_name('Teste')
-        u.toggle!(:admin)
-        u = User.using(:brazil).find_by_name('Teste').admin.should be_true
-      end
 
       it "<<" do
         @permission_brazil_2.roles << @role
@@ -153,23 +123,23 @@ describe Octopus::Association do
         @permission_brazil_2.reload
         @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
-      
+
       it "build" do
         role = @permission_brazil_2.roles.build(:name => "Builded Role")
         @permission_brazil_2.save()
         @permission_brazil_2.roles.to_set.should == [role].to_set
       end
-      
+
       it "create" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.to_set.should == [role].to_set          
       end
-      
+
       it "create" do
         role = @permission_brazil_2.roles.create!(:name => "Builded Role")
         @permission_brazil_2.roles.to_set.should == [role].to_set          
       end
-      
+
       it "count" do
         @permission_brazil_2.roles.count.should == 0
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
@@ -200,7 +170,7 @@ describe Octopus::Association do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.empty?.should be_false
       end
-      
+
       it "delete_all" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.empty?.should be_false     
@@ -214,7 +184,7 @@ describe Octopus::Association do
         @permission_brazil_2.roles.destroy_all                
         @permission_brazil_2.roles.empty?.should be_true
       end
-      
+
       it "find" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.find(:first).should == role
@@ -228,14 +198,14 @@ describe Octopus::Association do
         @permission_brazil_2.roles.destroy_all                
         @permission_brazil_2.roles.exists?(role).should be_false     
       end
-      
+
       it "clear" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.empty?.should be_false     
         @permission_brazil_2.roles.clear                
         @permission_brazil_2.roles.empty?.should be_true          
       end
-      
+
       it "delete" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.empty?.should be_false
@@ -249,8 +219,154 @@ describe Octopus::Association do
   end
 
   describe "when you have has_many :through" do
-    it "should be implemented" do
-      pending()      
+    before(:each) do
+      @programmer = Programmer.using(:brazil).create!(:name => "Thiago")
+      @project = Project.using(:brazil).create!(:name => "RubySoc")
+      @project2 = Project.using(:brazil).create!(:name => "Cobol Application")
+      @programmer.projects << @project
+      @programmer.save()
+    end
+
+    it "should find all models in the specified shard" do
+      @programmer.project_ids().should == [ @project.id]
+      @programmer.projects().should == [@project]
+    end
+
+
+    it "should update the attribute for the item" do
+      new_brazil_programmer = Programmer.using(:brazil).create!(:name => "Joao")
+      @project.programmers = [new_brazil_programmer]
+      @project.programmers.should == [new_brazil_programmer]
+      @project.save()
+      @project.reload
+      @project.programmer_ids.should == [new_brazil_programmer.id]
+      @project.programmers().should == [new_brazil_programmer]
+    end
+
+    it "should works for create method" do
+      new_brazil_programmer = Programmer.using(:brazil).create!(:name => "Joao")
+      c = new_brazil_programmer.projects.create(:name => "new Project")
+      c.save()
+      new_brazil_programmer.save()
+      c.programmers().should == [new_brazil_programmer]
+      new_brazil_programmer.projects.should == [c]
+    end
+
+    describe "it should works when using" do
+      before(:each) do
+        @new_brazil_programmer = Programmer.using(:brazil).create!(:name => "Jose")
+        @project = Project.using(:brazil).create!(:name => "VB Application :-(")
+      end
+
+      it "update_attributes" do
+        @new_brazil_programmer.update_attributes(:project_ids => [@project.id])
+        @new_brazil_programmer.projects.to_set.should == [@project].to_set
+      end
+
+      it "update_attribute" do
+        @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
+        @new_brazil_programmer.projects.to_set.should == [@project].to_set
+      end
+
+      it "<<" do
+        @new_brazil_programmer.projects << @project
+        @project.save()
+        @new_brazil_programmer.save()
+        @new_brazil_programmer.reload
+        @new_brazil_programmer.projects.to_set.should == [@project].to_set
+      end
+
+      it "build" do
+        role = @new_brazil_programmer.projects.build(:name => "New VB App :-/")
+        @new_brazil_programmer.save()
+        @new_brazil_programmer.projects.to_set.should == [role].to_set
+      end
+
+      it "create" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.to_set.should == [role].to_set          
+      end
+
+      it "create" do
+        role = @new_brazil_programmer.projects.create!(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.to_set.should == [role].to_set          
+      end
+
+      it "count" do
+        @new_brazil_programmer.projects.count.should == 0
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.count.should == 1
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.count.should == 2
+      end
+
+      it "size" do
+        @new_brazil_programmer.projects.size.should == 0
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.size.should == 1
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.size.should == 2
+      end
+
+      it "length" do
+        @new_brazil_programmer.projects.length.should == 0
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.length.should == 1
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.length.should == 2
+      end
+
+
+      it "empty?" do
+        @new_brazil_programmer.projects.empty?.should be_true
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.empty?.should be_false
+      end
+
+      it "delete_all" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.empty?.should be_false     
+        @new_brazil_programmer.projects.delete_all                
+        @new_brazil_programmer.projects.empty?.should be_true
+      end
+
+      it "destroy_all" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.empty?.should be_false     
+        @new_brazil_programmer.projects.destroy_all                
+        @new_brazil_programmer.projects.empty?.should be_true
+      end
+
+      it "find" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.find(:first).should == role
+        @new_brazil_programmer.projects.destroy_all                
+        @new_brazil_programmer.projects.find(:first).should be_nil
+      end
+
+      it "exists?" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.exists?(role).should be_true
+        @new_brazil_programmer.projects.destroy_all                
+        @new_brazil_programmer.projects.exists?(role).should be_false     
+      end
+
+      it "clear" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.empty?.should be_false     
+        @new_brazil_programmer.projects.clear                
+        @new_brazil_programmer.projects.empty?.should be_true          
+      end
+
+      it "delete" do
+        role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
+        @new_brazil_programmer.projects.empty?.should be_false
+        @new_brazil_programmer.projects.delete(role)
+        @new_brazil_programmer.reload
+        @project.reload
+        @project.programmers.should == []
+        @new_brazil_programmer.projects.should == []
+      end
     end
   end
 

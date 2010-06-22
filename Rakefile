@@ -135,6 +135,19 @@ namespace :db do
         u.integer :role_id
         u.integer :permission_id
       end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:assignments) do |u|
+        u.integer :programmer_id
+        u.integer :project_id
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:programmers) do |u|
+        u.string :name
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:projects) do |u|
+        u.string :name
+      end
     end
   end
   

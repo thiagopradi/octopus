@@ -5,7 +5,11 @@ class ActiveRecord::Associations::AssociationCollection
 
   def count(column_name = nil, options = {})
     if @reflection.options[:counter_sql]
-      @reflection.klass.count_by_sql(@counter_sql)
+      if should_wrap_the_connection?
+        @owner.using(@owner.current_shard) { @reflection.klass.count_by_sql(@counter_sql) } 
+      else        
+        @reflection.klass.count_by_sql(@counter_sql)
+      end
     else
       column_name, options = nil, column_name if column_name.is_a?(Hash)
 

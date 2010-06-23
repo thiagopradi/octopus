@@ -3,10 +3,7 @@ class Octopus::Proxy
 
   def initialize(config)
     initialize_shards(config)
-    
-    if config[Octopus.env()]["replicated"]
-      initialize_replication()
-    end
+    initialize_replication() if config[Octopus.env()]["replicated"]
   end
   
   def initialize_shards(config)
@@ -113,6 +110,7 @@ class Octopus::Proxy
     older_shard = self.current_shard
     self.block = true
     self.current_shard = shard
+    
     begin
       yield
     ensure

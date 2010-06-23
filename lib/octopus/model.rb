@@ -63,7 +63,7 @@ module Octopus::Model
         arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && have_a_valid_shard?
       end
 
-      self.class.connection_proxy.current_shard = self.current_shard if have_a_valid_shard?
+      self.connection.current_shard = self.current_shard if have_a_valid_shard?
     end
     
     def have_a_valid_shard?

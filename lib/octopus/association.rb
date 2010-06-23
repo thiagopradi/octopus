@@ -84,8 +84,8 @@ module Octopus::Association
 
   def association_accessor_methods(reflection, association_proxy_class)
     define_method(reflection.name) do |*params|
-      force_reload = true
       reload_connection() 
+      force_reload = params.first unless params.empty?
       association = association_instance_get(reflection.name)
 
       if association.nil? || force_reload

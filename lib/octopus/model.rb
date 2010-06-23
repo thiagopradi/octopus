@@ -12,12 +12,10 @@ module Octopus::Model
       before_destroy :set_connection
 
       def set_current_shard
-        if self.class.respond_to?(:connection_proxy) && self.respond_to?(:current_shard)
-          if self.new_record?
-            self.current_shard = self.class.connection_proxy.current_shard    
-          else
-            self.current_shard = self.class.connection_proxy.last_current_shard  
-          end
+        if new_record?
+          self.current_shard = self.class.connection_proxy.current_shard    
+        else
+          self.current_shard = self.class.connection_proxy.last_current_shard  
         end
       end    
     end

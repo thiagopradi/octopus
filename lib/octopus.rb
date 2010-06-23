@@ -19,6 +19,7 @@ end
 require "octopus/proxy"
 require "octopus/migration"
 require "octopus/model"
+require "octopus/persistence"
 require "octopus/controller"
 require "octopus/association"
 require "octopus/association_collection"

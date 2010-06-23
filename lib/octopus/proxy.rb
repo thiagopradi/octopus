@@ -1,18 +1,17 @@
 class Octopus::Proxy
-  attr_accessor  :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
+  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
   def initialize(config)
-    @groups = {}
-    @replicated = config[Octopus.env()]["replicated"]
     initialize_shards(config)
     
-    if @replicated
+    if config[Octopus.env()]["replicated"]
       initialize_replication()
     end
   end
   
   def initialize_shards(config)
     @shards = {}
+    @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
     
@@ -34,6 +33,7 @@ class Octopus::Proxy
   end
   
   def initialize_replication()
+    @replicated = true
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
@@ -59,11 +59,7 @@ class Octopus::Proxy
   end
   
   def current_model=(model)
-    if model.is_a?(ActiveRecord::Base)
-      @current_model = model.class
-    else
-      @current_model = model
-    end
+    @current_model = model.is_a?(ActiveRecord::Base) ? model.class : model
   end
   
   def select_connection()
@@ -132,7 +128,6 @@ class Octopus::Proxy
 
   def initialize_adapter(adapter)
     begin
-      require 'rubygems'
       gem "activerecord-#{adapter}-adapter"
       require "active_record/connection_adapters/#{adapter}_adapter"
     rescue LoadError

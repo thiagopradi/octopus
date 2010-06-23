@@ -28,6 +28,7 @@ begin
     gem.homepage = "http://github.com/tchandy/octopus"
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_dependency('activerecord')
     gem.version = "0.0.4"
   end
   Jeweler::GemcutterTasks.new

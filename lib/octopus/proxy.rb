@@ -3,8 +3,6 @@ require "set"
 class Octopus::Proxy
   attr_accessor  :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
-  delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
-
   def initialize(config)
     @shards = {}
     @groups = {}

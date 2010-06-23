@@ -2,12 +2,8 @@ class Octopus::Proxy
   attr_accessor  :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
   def initialize(config)
-    @shards = {}
     @groups = {}
     @replicated = config[Octopus.env()]["replicated"]
-    @shards[:master] = ActiveRecord::Base.connection_pool()
-    @current_shard = :master
-    
     initialize_shards(config)
     
     if @replicated
@@ -16,6 +12,10 @@ class Octopus::Proxy
   end
   
   def initialize_shards(config)
+    @shards = {}
+    @shards[:master] = ActiveRecord::Base.connection_pool()
+    @current_shard = :master
+    
     config[Octopus.env()]["shards"].each do |key, value|
       if value.has_key?("adapter")
         initialize_adapter(value['adapter'])
@@ -113,7 +113,7 @@ class Octopus::Proxy
     end
   end
   
-  def run_query_on_shard(shard, &block)
+  def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     self.block = true
     self.current_shard = shard

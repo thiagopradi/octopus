@@ -66,7 +66,7 @@ module Octopus::Association
 
       if association.nil? || force_reload
         association = association_proxy_class.new(self, reflection)
-        retval = have_a_valid_shard? ? reflection.klass.uncached { self.class.connection_proxy.run_query_on_shard(self.current_shard) { association.reload } } : association.reload
+        retval = have_a_valid_shard? ? reflection.klass.uncached { self.class.connection_proxy.run_queries_on_shard(self.current_shard) { association.reload } } : association.reload
         if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
           association_instance_set(reflection.name, nil)
           return nil

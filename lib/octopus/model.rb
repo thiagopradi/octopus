@@ -64,7 +64,7 @@ module Octopus::Model
       clean_table_name()
 
       if block_given?
-        self.connection_proxy.run_query_on_shard(shard, &block)
+        self.connection_proxy.run_queries_on_shard(shard, &block)
       else
         hijack_initializer()  
         self.connection_proxy.current_shard = shard

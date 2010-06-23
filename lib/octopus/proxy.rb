@@ -34,11 +34,9 @@ class Octopus::Proxy
   end
   
   def initialize_replication()
-    @slaves_list = @shards.keys
-    @slaves_list.delete(:master)
-    @slaves_list = @slaves_list.map {|sym| sym.to_s}.sort    
+    @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
+    @slaves_list.delete('master')   
   end
-
   
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
@@ -54,7 +52,7 @@ class Octopus::Proxy
     if group_symbol.is_a?(Array)
       group_symbol.each {|symbol| raise "Nonexistent Group Name: #{symbol}" if @groups[symbol].nil? }
     else
-      raise "Nonexistent Group Name: #{group_symbol}" if @groups[group_symbol].nil? && !group_symbol.nil?
+      raise "Nonexistent Group Name: #{group_symbol}" if @groups[group_symbol].nil?
     end
 
     @current_group = group_symbol
@@ -73,11 +71,7 @@ class Octopus::Proxy
   end
 
   def shard_name
-    if(current_shard.is_a?(Array))
-      current_shard.first
-    else
-      current_shard
-    end
+    current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
     
   def add_transaction_record(record)
@@ -93,7 +87,7 @@ class Octopus::Proxy
       self.send_transaction_to_multiple_groups(options, &block)
     elsif should_send_queries_to_a_group_of_shards?
       self.send_transaction_to_multiple_shards(@groups[current_group], options, &block)
-      self.current_group = nil      
+      @current_group = nil      
     else
       select_connection.transaction(options, &block) 
     end

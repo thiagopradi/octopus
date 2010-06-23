@@ -53,10 +53,7 @@ module Octopus::Model
         end
 
         def connection 
-          if self.respond_to?(:replicated)
-            self.connection_proxy().set_replicated_model(self)
-          end
-
+          self.connection_proxy().current_model = self
           self.connection_proxy()
         end
       end
@@ -98,7 +95,7 @@ module Octopus::Model
   include InstanceMethods
 
   def replicated_model()
-    self.cattr_accessor :replicated
+    write_inheritable_attribute(:replicated, true)
   end
 
   def has_many(association_id, options = {}, &extension)

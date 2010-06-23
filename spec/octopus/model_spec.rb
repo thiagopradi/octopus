@@ -11,6 +11,13 @@ describe Octopus::Model do
       User.using(:canada).count.should == 1
       User.count.should == 0
     end
+    
+    it "should select the correct shard" do
+      pending()
+      # User.using(:canada)
+      # User.create!(:name => 'oi')
+      # User.using(:master).count.should == 1
+    end
 
     it "should allow scoping dynamically" do
       User.using(:canada).using(:master).using(:canada).create!(:name => 'oi')
@@ -144,8 +151,8 @@ describe Octopus::Model do
 
     it "should mark the Cat model as replicated" do
       using_enviroment :production_replicated do 
-        Cat.all.should == []
-        ActiveRecord::Base.connection_proxy.replicated_models.first.should == "Cat"
+        User.read_inheritable_attribute(:replicated).should be_false
+        Cat.read_inheritable_attribute(:replicated).should be_true
       end
     end
   end

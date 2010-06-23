@@ -1,14 +1,13 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :shards, :block, :current_shard, :groups, :current_group, :replicated, :slaves_list, :replicated_models, :using_enabled, :last_current_shard
+  attr_accessor :shards, :block, :current_model, :current_shard, :groups, :current_group, :replicated, :slaves_list, :using_enabled, :last_current_shard
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
   def initialize(config)
     @shards = {}
     @groups = {}
-    @replicated_models = Set.new
     @replicated = config[Octopus.env()]["replicated"]
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
@@ -65,6 +64,14 @@ class Octopus::Proxy
     @current_group = group_symbol
   end
   
+  def current_model=(model)
+    if model.is_a?(ActiveRecord::Base)
+      @current_model = model.class
+    else
+      @current_model = model
+    end
+  end
+  
   def select_connection()
     @shards[shard_name].connection()
   end
@@ -76,11 +83,7 @@ class Octopus::Proxy
       current_shard
     end
   end
-  
-  def set_replicated_model(model)
-    replicated_models << model.to_s
-  end
-  
+    
   def add_transaction_record(record)
     if !select_connection().instance_variable_get(:@_current_transaction_records).nil?
       select_connection().add_transaction_record(record)
@@ -192,10 +195,9 @@ class Octopus::Proxy
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        
-    #TODO: UGLY code, needs refactor
     old_shard = self.current_shard
-
-    if args.last =~ /#{replicated_models.to_a.join('|')}/
+    
+    if current_model.read_inheritable_attribute(:replicated)
       if !using_enabled
         self.current_shard = slaves_list.shift.to_sym
         slaves_list << self.current_shard

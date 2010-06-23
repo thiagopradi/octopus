@@ -1,7 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :shards, :block, :current_model, :current_shard, :groups, :current_group, :replicated, :slaves_list, :using_enabled, :last_current_shard
+  attr_accessor  :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
   delegate :increment_open_transactions, :decrement_open_transactions,  :to => :select_connection
 
@@ -155,7 +155,7 @@ class Octopus::Proxy
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !replicated
+    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated
   end
 
   def should_send_queries_to_multiple_shards?
@@ -199,8 +199,8 @@ class Octopus::Proxy
     
     if current_model.read_inheritable_attribute(:replicated)
       if !using_enabled
-        self.current_shard = slaves_list.shift.to_sym
-        slaves_list << self.current_shard
+        self.current_shard = @slaves_list.shift.to_sym
+        @slaves_list << self.current_shard
       end
     else
       self.current_shard = :master

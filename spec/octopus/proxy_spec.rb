@@ -7,15 +7,15 @@ describe Octopus::Proxy do
 
   describe "creating a new instance" do    
     it "should initialize all shards and groups" do
-      @proxy.shards.keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master].to_set
-      @proxy.groups.should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
+      @proxy.instance_variable_get(:@shards).keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master].to_set
+      @proxy.instance_variable_get(:@groups).should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
     end
 
     it "should initialize the block attribute as false" do
       @proxy.block.should be_false
     end    
     it "should initialize replicated attribute as false" do
-      @proxy.replicated.should be_false      
+      @proxy.instance_variable_get(:@replicated).should be_false      
     end
 
     describe "should raise error if you have duplicated shard names" do
@@ -48,12 +48,12 @@ describe Octopus::Proxy do
 
     describe "should return the connection based on shard_name" do
       it "when current_shard is empty" do
-        @proxy.select_connection().should == @proxy.shards[:master].connection()        
+        @proxy.select_connection().should == @proxy.instance_variable_get(:@shards)[:master].connection()        
       end
 
       it "when current_shard is a single shard" do
         @proxy.current_shard = :canada
-        @proxy.select_connection().should == @proxy.shards[:canada].connection()       
+        @proxy.select_connection().should == @proxy.instance_variable_get(:@shards)[:canada].connection()       
       end
     end
   end

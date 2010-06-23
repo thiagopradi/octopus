@@ -10,7 +10,7 @@ describe "when the database is replicated" do
   end
 
   it "should initialize the list of shards" do
-    @proxy.slaves_list.should == ["slave1", "slave2", "slave3", "slave4"]
+    @proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3", "slave4"]
   end
 
   it "should send all writes/reads queries to master when you have a replicated model" do

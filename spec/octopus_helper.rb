@@ -1,5 +1,5 @@
 def clean_all_shards()
-  ActiveRecord::Base.using(:master).connection.shards.keys.each do |shard_symbol|
+  ActiveRecord::Base.using(:master).connection.instance_variable_get(:@shards).keys.each do |shard_symbol|
     ['schema_migrations', 'users', 'clients', 'cats', 'items', 'keyboards', 'computers', 'permissions_roles', 'roles', 'permissions', 'assignments', 'projects', 'programmers'].each do |tables|
       ActiveRecord::Base.using(shard_symbol).connection.execute("DELETE FROM #{tables};") 
     end

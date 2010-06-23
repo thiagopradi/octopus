@@ -145,7 +145,7 @@ describe Octopus::Model do
   describe "#replicated_model method" do
     it "should be replicated" do
       using_enviroment :production_replicated do 
-        ActiveRecord::Base.connection_proxy.replicated.should be_true
+        ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated).should be_true
       end
     end
 

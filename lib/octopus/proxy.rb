@@ -1,5 +1,3 @@
-require "set"
-
 class Octopus::Proxy
   attr_accessor  :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 

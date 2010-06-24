@@ -11,7 +11,7 @@ describe Octopus::Model do
       User.using(:canada).count.should == 1
       User.count.should == 0
     end
-    
+
     it "should select the correct shard" do
       pending()
       # User.using(:canada)
@@ -109,7 +109,7 @@ describe Octopus::Model do
       User.using(:alone_shard).find(:all).should == []
     end
   end
-  
+
   describe "AR basic methods" do
     it "increment" do
       u = User.using(:brazil).create!(:name => "Teste", :number => 10)
@@ -140,15 +140,32 @@ describe Octopus::Model do
       u.toggle!(:admin)
       u = User.using(:brazil).find_by_name('Teste').admin.should be_true
     end
-    
+
     it "count" do
       u = User.using(:brazil).create!(:name => "User1")
       u2 = User.using(:brazil).create!(:name => "User2")
       u3 = User.using(:brazil).create!(:name => "User3")
       User.using(:brazil).where(:name => "User2").count.should == 1
     end
+
+    describe "deleting a record" do
+      before(:each) do
+        @user = User.using(:brazil).create!(:name => "User1")
+        @user2 = User.using(:brazil).find(@user.id)
+      end
+      
+      it "delete" do
+        @user2.delete
+        lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      it "destroy" do
+        @user2.destroy
+        lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
   end
-  
+
   describe "#replicated_model method" do
     it "should be replicated" do
       using_enviroment :production_replicated do 

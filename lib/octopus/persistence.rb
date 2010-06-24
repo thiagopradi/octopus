@@ -22,6 +22,16 @@ module Octopus::Persistence
     reload_connection()
     super
   end
+  
+  def delete
+    reload_connection()
+    super
+  end
+  
+  def destroy
+    reload_connection()
+    super
+  end
 end
 
 ActiveRecord::Base.send(:include, Octopus::Persistence)

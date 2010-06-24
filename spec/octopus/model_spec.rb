@@ -16,7 +16,7 @@ describe Octopus::Model do
       pending()
       # User.using(:canada)
       # User.create!(:name => 'oi')
-      # User.using(:master).count.should == 1
+      # User.count.should == 1
     end
 
     it "should allow scoping dynamically" do
@@ -139,6 +139,13 @@ describe Octopus::Model do
       u = User.using(:brazil).find_by_name('Teste')
       u.toggle!(:admin)
       u = User.using(:brazil).find_by_name('Teste').admin.should be_true
+    end
+    
+    it "count" do
+      u = User.using(:brazil).create!(:name => "User1")
+      u2 = User.using(:brazil).create!(:name => "User2")
+      u3 = User.using(:brazil).create!(:name => "User3")
+      User.using(:brazil).where(:name => "User2").count.should == 1
     end
   end
   

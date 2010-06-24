@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.7"
+  s.version = "0.0.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
      "lib/octopus/model.rb",
      "lib/octopus/persistence.rb",
      "lib/octopus/proxy.rb",
+     "lib/octopus/scope_proxy.rb",
      "rails/init.rb",
      "spec/config/shards.yml",
      "spec/database_connection.rb",

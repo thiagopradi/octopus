@@ -93,8 +93,7 @@ describe Octopus::Model do
 
     describe "raising errors" do
       it "should raise a error when you specify a shard that doesn't exist" do
-        pending()
-        #lambda { User.using(:crazy_shard) }.should raise_error("Nonexistent Shard Name: crazy_shard")
+        lambda { User.using(:crazy_shard).create!(:name => 'Thiago') }.should raise_error("Nonexistent Shard Name: crazy_shard")
       end
     end
   end

@@ -18,10 +18,9 @@ module Octopus::Model
         self.connection.run_queries_on_shard(shard, &block)
       else
         hijack_initializer()  
-        self.connection.current_shard = shard
         self.connection.using_enabled = true
 
-        return self
+        return Octopus::ScopeProxy.new(shard, self)
       end
     end
     

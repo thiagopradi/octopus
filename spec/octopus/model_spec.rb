@@ -148,12 +148,36 @@ describe Octopus::Model do
       User.using(:brazil).where(:name => "User2").count.should == 1
     end
 
+    it "update_attributes" do
+      @user = User.using(:brazil).create!(:name => "User1")
+      @user2 = User.using(:brazil).find(@user.id)
+      @user2.update_attributes(:name => "Joaquim")  
+      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil    
+    end
+    
+    it "using update_attributes inside a block" do
+      ActiveRecord::Base.connection.run_queries_on_shard :brazil do
+        @user = User.create!(:name => "User1")
+        @user2 = User.find(@user.id)
+        @user2.update_attributes(:name => "Joaquim")  
+      end
+      
+      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil
+    end
+
+    it "update_attribute" do
+      @user = User.using(:brazil).create!(:name => "User1")
+      @user2 = User.using(:brazil).find(@user.id)
+      @user2.update_attributes(:name => "Joaquim")  
+      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil
+    end
+
     describe "deleting a record" do
       before(:each) do
         @user = User.using(:brazil).create!(:name => "User1")
         @user2 = User.using(:brazil).find(@user.id)
       end
-      
+
       it "delete" do
         @user2.delete
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)

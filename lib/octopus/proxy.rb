@@ -138,7 +138,7 @@ class Octopus::Proxy
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated
+    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated && !self.block
   end
 
   def should_send_queries_to_multiple_shards?

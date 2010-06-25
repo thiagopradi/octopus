@@ -1,3 +1,5 @@
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+
 describe "when the database is replicated" do
   before(:each) do
     Octopus.stub!(:env).and_return("production_replicated")

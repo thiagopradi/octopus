@@ -84,13 +84,13 @@ module Octopus::Association
 
   def association_accessor_methods(reflection, association_proxy_class)
     define_method(reflection.name) do |*params|
-      reload_connection() 
+      reload_connection()
       force_reload = params.first unless params.empty?
       association = association_instance_get(reflection.name)
 
       if association.nil? || force_reload
         association = association_proxy_class.new(self, reflection)
-        retval = have_a_valid_shard? ? reflection.klass.uncached { self.class.connection_proxy.run_queries_on_shard(self.current_shard) { association.reload } } : association.reload
+        retval = force_reload ? reflection.klass.uncached { association.reload } : association.reload
         if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
           association_instance_set(reflection.name, nil)
           return nil
@@ -98,8 +98,7 @@ module Octopus::Association
         association_instance_set(reflection.name, association)
       end
 
-      association
-      #association.target.nil? ? nil : association
+      association.target.nil? ? nil : association
     end
 
     define_method("loaded_#{reflection.name}?") do

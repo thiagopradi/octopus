@@ -3,7 +3,7 @@ class Octopus::Proxy
 
   def initialize(config)
     initialize_shards(config)
-    initialize_replication() if config[Octopus.env()] && config[Octopus.env()]["replicated"]
+    initialize_replication() if have_a_valid_configuration?(config) && config[Octopus.env()]["replicated"]
   end
 
   def initialize_shards(config)
@@ -11,7 +11,8 @@ class Octopus::Proxy
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
-    shards_config = config[Octopus.env()]["shards"] || []
+    shards_config = config[Octopus.env()]["shards"] if have_a_valid_configuration?(config)
+    shards_config ||= []
     
     shards_config.each do |key, value|
       if value.has_key?("adapter")
@@ -66,6 +67,10 @@ class Octopus::Proxy
 
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
+  end
+  
+  def have_a_valid_configuration?(config)
+    !config[Octopus.env()].nil?
   end
 
   def add_transaction_record(record)

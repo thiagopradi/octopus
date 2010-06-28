@@ -45,6 +45,20 @@ describe Octopus::Proxy do
       end
     end
   end
+  
+  describe "when you have a replicated enviroment" do
+    before(:each) do
+      Octopus.stub!(:env).and_return("production_replicated")
+    end
+    
+    it "should have the replicated attribute as true" do
+      proxy.instance_variable_get(:@replicated).should be_true
+    end
+
+    it "should initialize the list of shards" do
+      proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3", "slave4"]
+    end
+  end
 
   describe "returning the correct connection" do
     describe "should return the shard name" do

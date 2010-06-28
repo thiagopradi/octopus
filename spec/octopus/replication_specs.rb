@@ -3,16 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "when the database is replicated" do
   before(:each) do
     Octopus.stub!(:env).and_return("production_replicated")
-    @proxy = Octopus::Proxy.new(Octopus.config())
     clean_connection_proxy()
-  end
-  
-  it "should have the replicated attribute as true" do
-    @proxy.replicated.should be_true
-  end
-
-  it "should initialize the list of shards" do
-    @proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3", "slave4"]
   end
 
   it "should send all writes/reads queries to master when you have a replicated model" do

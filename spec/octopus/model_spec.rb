@@ -25,6 +25,18 @@ describe Octopus::Model do
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
     end
+    
+    
+    it "should allow find inside blocks" do
+      @user = User.using(:brazil).create!(:name => "Thiago")
+
+      User.using(:brazil) do
+        User.first.should == @user
+      end
+      
+      User.using(:brazil).where(:name => "Thiago").first.should == @user
+    end
+    
 
     it "should clean the current_shard after executing the current query" do
       User.using(:canada).create!(:name => "oi")

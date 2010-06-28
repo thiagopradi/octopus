@@ -1,19 +1,13 @@
-module Octopus::Migration
-  def self.extended(base)
-    class << base
-      def connection
-        ActiveRecord::Base.connection_proxy()
-      end
-    end
-  end
-
-  def using(*args)
+module Octopus::Migration  
+  def using(*args, &block)
     if args.size == 1
       self.connection().block = true
       self.connection().current_shard = args.first
     else
       self.connection().current_shard = args        
     end
+    
+    yield if block_given?
 
     return self
   end

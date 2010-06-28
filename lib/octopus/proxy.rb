@@ -78,6 +78,7 @@ class Octopus::Proxy
       self.send_transaction_to_multiple_shards(current_shard, options, &block)
     elsif should_send_queries_to_multiple_groups?
       self.send_transaction_to_multiple_groups(options, &block)
+      @current_group = nil      
     elsif should_send_queries_to_a_group_of_shards?
       self.send_transaction_to_multiple_shards(@groups[current_group], options, &block)
       @current_group = nil      

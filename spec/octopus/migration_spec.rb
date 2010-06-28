@@ -38,6 +38,15 @@ describe Octopus::Migration do
     end
   end
 
+  it "should create users inside block" do
+    migrating_to_version 12 do 
+      User.using(:brazil).where(:name => "UsingBlock1").all.size.should == 1
+      User.using(:brazil).where(:name => "UsingBlock2").all.size.should == 1
+      User.using(:canada).where(:name => "UsingCanada").all.size.should == 1
+      User.using(:canada).where(:name => "UsingCanada2").all.size.should == 1
+    end
+  end
+
   describe "should raise a exception when" do
     it "you specify a invalid shard name" do
       lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Nonexistent Shard Name: amazing_shard")
@@ -72,7 +81,7 @@ describe Octopus::Migration do
           [:slave4, :slave1, :slave2, :slave3].each do |sym|
             Cat.using(sym).find_by_name("Slaves").should_not be_nil
           end
-          
+
           Cat.using(:master).find_by_name("Slaves").should be_nil
         end
       end

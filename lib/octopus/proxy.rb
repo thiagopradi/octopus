@@ -3,16 +3,17 @@ class Octopus::Proxy
 
   def initialize(config)
     initialize_shards(config)
-    initialize_replication() if config[Octopus.env()]["replicated"]
+    initialize_replication() if config[Octopus.env()] && config[Octopus.env()]["replicated"]
   end
-  
+
   def initialize_shards(config)
     @shards = {}
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
+    shards_config = config[Octopus.env()]["shards"] || []
     
-    config[Octopus.env()]["shards"].each do |key, value|
+    shards_config.each do |key, value|
       if value.has_key?("adapter")
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
@@ -28,13 +29,13 @@ class Octopus::Proxy
       end
     end
   end
-  
+
   def initialize_replication()
     @replicated = true
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
-  
+
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
@@ -54,11 +55,11 @@ class Octopus::Proxy
 
     @current_group = group_symbol
   end
-  
+
   def current_model=(model)
     @current_model = model.is_a?(ActiveRecord::Base) ? model.class : model
   end
-  
+
   def select_connection()
     @shards[shard_name].connection()
   end
@@ -66,7 +67,7 @@ class Octopus::Proxy
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
-    
+
   def add_transaction_record(record)
     if !select_connection().instance_variable_get(:@_current_transaction_records).nil?
       select_connection().add_transaction_record(record)
@@ -106,12 +107,12 @@ class Octopus::Proxy
       select_connection().send(method, *args, &block)
     end
   end
-  
+
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     self.block = true
     self.current_shard = shard
-    
+
     begin
       yield
     ensure
@@ -119,7 +120,7 @@ class Octopus::Proxy
       self.current_shard = older_shard
     end
   end
-  
+
   protected
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
@@ -180,7 +181,7 @@ class Octopus::Proxy
 
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
-    
+
     if current_model.read_inheritable_attribute(:replicated)
       if !using_enabled
         self.current_shard = @slaves_list.shift.to_sym

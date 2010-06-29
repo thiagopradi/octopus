@@ -3,7 +3,7 @@ class Octopus::Proxy
 
   def initialize(config)
     initialize_shards(config)
-    initialize_replication() if have_a_valid_configuration?(config) && config[Octopus.env()]["replicated"]
+    initialize_replication(config) if have_a_valid_configuration?(config) && config[Octopus.env()]["replicated"]
   end
 
   def initialize_shards(config)
@@ -31,8 +31,9 @@ class Octopus::Proxy
     end
   end
 
-  def initialize_replication()
+  def initialize_replication(config)
     @replicated = true
+    @entire_replicated = config[Octopus.env()]["entire_replicated"]
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
@@ -187,7 +188,7 @@ class Octopus::Proxy
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
 
-    if current_model.read_inheritable_attribute(:replicated)
+    if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
       if !using_enabled
         self.current_shard = @slaves_list.shift.to_sym
         @slaves_list << self.current_shard

@@ -11,6 +11,25 @@ describe Octopus::Model do
       User.using(:canada).count.should == 1
       User.count.should == 0
     end
+    
+    it "should allow selecting the shard using #new" do
+      u = User.using(:canada).new
+      u.name = "Thiago"
+      u.save
+      
+      User.using(:canada).count.should == 1
+      User.using(:brazil).count.should == 0
+      
+      u1 = User.new
+      u1.name = "Joaquim"
+      u2 = User.using(:canada).new
+      u2.name = "Manuel"
+      u1.save()
+      u2.save()
+
+      User.using(:canada).all.should == [u, u2]
+      User.all.should == [u1]
+    end
 
     it "should select the correct shard" do
       #TODO - Investigate this - why we need to set to master!?

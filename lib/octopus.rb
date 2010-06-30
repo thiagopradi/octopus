@@ -2,7 +2,7 @@ require "yaml"
 
 module Octopus
   def self.env()
-    @env ||= defined?(Rails) ? Rails.env.to_s : "production"      
+    @env ||= defined?(Rails) ? Rails.env.to_s : "octopus"      
   end
   
   def self.config()

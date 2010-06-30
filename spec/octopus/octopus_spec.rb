@@ -12,4 +12,10 @@ describe Octopus do
       Octopus.directory().should == File.expand_path(File.dirname(__FILE__) + "/../")
     end
   end
+
+  describe "#env method" do
+    it "should return 'production' when is outside of a rails application" do
+      Octopus.env().should == 'octopus'
+    end
+  end
 end

@@ -1,4 +1,4 @@
-production:
+octopus:
   shards:
     alone_shard:
       adapter: mysql

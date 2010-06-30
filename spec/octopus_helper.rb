@@ -25,7 +25,7 @@ def using_enviroment(enviroment, &block)
     clean_connection_proxy()
     yield
   ensure
-    Octopus.instance_variable_set(:@env, 'production')
+    Octopus.instance_variable_set(:@env, 'octopus')
     clean_connection_proxy()
   end
 end

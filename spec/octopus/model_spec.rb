@@ -203,6 +203,21 @@ describe Octopus::Model do
       @user2.update_attributes(:name => "Joaquim")  
       User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil
     end
+    
+    it "transaction" do
+      u = User.create!(:name => "Thiago")
+
+      User.using(:brazil).count.should == 0
+      User.using(:master).count.should == 1
+      
+      User.using(:brazil).transaction do
+        User.where(:name => "Thiago").first.should be_nil
+        User.create!(:name => "Brazil")
+      end
+      
+      User.using(:brazil).count.should == 1
+      User.using(:master).count.should == 1
+    end
 
     describe "deleting a record" do
       before(:each) do

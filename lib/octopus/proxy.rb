@@ -13,7 +13,7 @@ class Octopus::Proxy
     @current_shard = :master
     shards_config = config[Octopus.env()]["shards"] if have_a_valid_configuration?(config)
     shards_config ||= []
-    
+
     shards_config.each do |key, value|
       if value.has_key?("adapter")
         initialize_adapter(value['adapter'])
@@ -69,7 +69,7 @@ class Octopus::Proxy
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
-  
+
   def have_a_valid_configuration?(config)
     !config[Octopus.env()].nil?
   end

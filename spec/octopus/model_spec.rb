@@ -53,7 +53,7 @@ describe Octopus::Model do
         User.first.should == @user
       end
       
-      User.using(:brazil).where(:name => "Thiago").first.should == @user
+      User.using(:brazil).find_by_name("Thiago").should == @user
     end
     
 
@@ -81,6 +81,7 @@ describe Octopus::Model do
 
       it "should store the attribute when you find multiple instances" do
         5.times { User.using(:alone_shard).create!(:name => "Alone") }
+
         User.using(:alone_shard).all.each do |u|
           u.current_shard.should == :alone_shard
         end
@@ -97,7 +98,7 @@ describe Octopus::Model do
 
       it "should work for the reload method" do
         User.using(:alone_shard).create!(:name => "Alone")
-        u = User.using(:alone_shard).where(:name => "Alone").first
+        u = User.using(:alone_shard).find_by_name("Alone")
         u.reload
         u.name.should == "Alone"
       end
@@ -137,7 +138,7 @@ describe Octopus::Model do
 
     it "should works with writes and reads" do
       u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")      
-      User.using(:postgresql_shard).all.should == [u]      
+      User.using(:postgresql_shard).find(:all).should == [u]      
       User.using(:alone_shard).find(:all).should == []
     end
   end
@@ -177,14 +178,14 @@ describe Octopus::Model do
       u = User.using(:brazil).create!(:name => "User1")
       u2 = User.using(:brazil).create!(:name => "User2")
       u3 = User.using(:brazil).create!(:name => "User3")
-      User.using(:brazil).where(:name => "User2").count.should == 1
+      User.using(:brazil).find(:all, :conditions => {:name => "User2"}).count.should == 1
     end
 
     it "update_attributes" do
       @user = User.using(:brazil).create!(:name => "User1")
       @user2 = User.using(:brazil).find(@user.id)
       @user2.update_attributes(:name => "Joaquim")  
-      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil    
+      User.using(:brazil).find_by_name("Joaquim").should_not be_nil    
     end
     
     it "using update_attributes inside a block" do
@@ -194,14 +195,14 @@ describe Octopus::Model do
         @user2.update_attributes(:name => "Joaquim")  
       end
       
-      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil
+      User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
 
     it "update_attribute" do
       @user = User.using(:brazil).create!(:name => "User1")
       @user2 = User.using(:brazil).find(@user.id)
       @user2.update_attributes(:name => "Joaquim")  
-      User.using(:brazil).where(:name => "Joaquim").first.should_not be_nil
+      User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
     
     it "transaction" do
@@ -211,7 +212,7 @@ describe Octopus::Model do
       User.using(:master).count.should == 1
       
       User.using(:brazil).transaction do
-        User.where(:name => "Thiago").first.should be_nil
+        User.find_by_name("Thiago").should be_nil
         User.create!(:name => "Brazil")
       end
       

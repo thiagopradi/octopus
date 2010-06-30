@@ -16,12 +16,20 @@ module Octopus
   end
 end
 
-require "octopus/proxy"
-require "octopus/migration"
+
 require "octopus/model"
 require "octopus/persistence"
-require "octopus/controller"
-require "octopus/association"
-require "octopus/association_collection"
+require "octopus/migration"
+
+if ActiveRecord::VERSION::STRING > '2.4.0'
+  require "octopus/rails3/association"
+  require "octopus/rails3/association_collection"
+  require "octopus/rails3/has_and_belongs_to_many_association"
+else
+  puts "Rails 2"
+end
+
+require "octopus/proxy"
 require "octopus/scope_proxy"
-require "octopus/has_and_belongs_to_many_association"
+require "octopus/controller"
+

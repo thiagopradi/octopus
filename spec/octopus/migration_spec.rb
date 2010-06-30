@@ -32,18 +32,18 @@ describe Octopus::Migration do
 
   it "should run on multiples groups" do
     migrating_to_version 5 do 
-      User.using(:canada).where(:name => "MultipleGroup").all.size.should == 2
-      User.using(:brazil).where(:name => "MultipleGroup").all.size.should == 2
-      User.using(:russia).where(:name => "MultipleGroup").all.size.should == 2
+      User.using(:canada).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
+      User.using(:brazil).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
+      User.using(:russia).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
     end
   end
 
   it "should create users inside block" do
     migrating_to_version 12 do 
-      User.using(:brazil).where(:name => "UsingBlock1").all.size.should == 1
-      User.using(:brazil).where(:name => "UsingBlock2").all.size.should == 1
-      User.using(:canada).where(:name => "UsingCanada").all.size.should == 1
-      User.using(:canada).where(:name => "UsingCanada2").all.size.should == 1
+      User.using(:brazil).find(:all, :conditions => {:name => "UsingBlock1"}).size.should == 1
+      User.using(:brazil).find(:all, :conditions => {:name => "UsingBlock2"}).size.should == 1
+      User.using(:canada).find(:all, :conditions => {:name => "UsingCanada"}).size.should == 1
+      User.using(:canada).find(:all, :conditions => {:name => "UsingCanada2"}).size.should == 1
     end
   end
 
@@ -69,8 +69,8 @@ describe Octopus::Migration do
     it "should run writes on master when you use replication" do
       using_enviroment :production_replicated do 
         migrating_to_version 10 do 
-          Cat.using(:master).where(:name => "Replication").first.should_not be_nil
-          Cat.where(:name => "Replication").first.should be_nil
+          Cat.using(:master).find_by_name("Replication").should_not be_nil
+          Cat.find_by_name("Replication").should be_nil
         end
       end
     end

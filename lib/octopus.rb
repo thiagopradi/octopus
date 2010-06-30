@@ -18,15 +18,18 @@ end
 
 
 require "octopus/model"
-require "octopus/persistence"
 require "octopus/migration"
 
 if ActiveRecord::VERSION::STRING > '2.4.0'
   require "octopus/rails3/association"
   require "octopus/rails3/association_collection"
   require "octopus/rails3/has_and_belongs_to_many_association"
+  require "octopus/rails3/persistence"
 else
-  puts "Rails 2"
+  require "octopus/rails2/association"
+  require "octopus/rails2/association_collection"
+  require "octopus/rails2/has_and_belongs_to_many_association"
+  require "octopus/rails2/persistence"
 end
 
 require "octopus/proxy"

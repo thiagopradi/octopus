@@ -8,6 +8,7 @@ class Octopus::ScopeProxy
   
   def using(shard, &block)
     @shard = shard
+    
     if block_given?
       @klass.connection.run_queries_on_shard(@shard, &block)
     end

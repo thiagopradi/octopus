@@ -205,6 +205,8 @@ describe Octopus::Model do
     end
     
     it "transaction" do
+      #TODO - Investigate this - why we need to set to master!? 
+      ActiveRecord::Base.connection_proxy.current_shard = :master
       u = User.create!(:name => "Thiago")
 
       User.using(:brazil).count.should == 0

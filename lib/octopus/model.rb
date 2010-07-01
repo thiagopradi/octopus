@@ -2,7 +2,7 @@ module Octopus::Model
   def self.extended(base) 
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
-    base.hijack_connection() unless defined?(::Rails) && (Rails.env == 'test' || Rails.env == 'development')
+    base.hijack_connection() unless defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
   end
 
   module SharedMethods
@@ -11,7 +11,8 @@ module Octopus::Model
     end
 
     def using(shard, &block)
-      return if defined?(::Rails) && (Rails.env == 'test' || Rails.env == 'development')
+      return self if defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
+      
       hijack_connection()  
       clean_table_name()
 

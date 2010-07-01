@@ -1,7 +1,7 @@
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
-  def initialize(config)
+  def initialize(config)    
     initialize_shards(config)
     initialize_replication(config) if have_a_valid_configuration?(config) && config[Octopus.env()]["replicated"]
   end
@@ -11,6 +11,11 @@ class Octopus::Proxy
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
+    
+    if have_a_valid_configuration?(config) && config[Octopus.env()]['excluded_enviroments']
+      Octopus.excluded_enviroments = config[Octopus.env()]['excluded_enviroments']
+    end
+    
     shards_config = config[Octopus.env()]["shards"] if have_a_valid_configuration?(config)
     shards_config ||= []
 

@@ -1,4 +1,8 @@
 octopus:
+  excluded_enviroments: 
+    - cucumber 
+    - test
+    - staging
   shards:
     alone_shard:
       adapter: mysql

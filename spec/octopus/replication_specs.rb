@@ -11,6 +11,14 @@ describe "when the database is replicated" do
     User.count.should == 1
     User.find(u.id).should == u
   end
+  
+  it "should send all writes queries to master" do
+    u = Cat.using(:slave4).create!(:name => "Slave Cat")    
+    u1 = Cat.using(:slave4).first
+    u1.name = "Miau"
+    u1.save()
+    Cat.using(:slave4).first.name.should == "Slave Cat"
+  end
 
   it "should send read queries to slaves, when you have a replicated model, using a round robin algorithm" do
     u = Cat.create!(:name => "master")
@@ -43,6 +51,14 @@ describe "when the database is replicated and the entire application is replicat
   before(:each) do
     Octopus.stub!(:env).and_return("production_entire_replicated")
     clean_connection_proxy()
+  end
+  
+  it "should send all writes queries to master" do
+    u = Client.using(:slave4).create!(:name => "Slave Client")    
+    u1 = Client.using(:slave4).first
+    u1.name = "Client"
+    u1.save()
+    Client.using(:slave4).first.name.should == "Slave Client"
   end
 
   it "should send read queries to slaves,to all models, using a round robin algorithm" do

@@ -2,15 +2,16 @@ module Octopus::Model
   def self.extended(base) 
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
-    base.hijack_connection()
+    base.hijack_connection() unless defined?(::Rails) && (Rails.env == 'test' || Rails.env == 'development')
   end
 
   module SharedMethods
     def clean_table_name
       self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
     end
-    
+
     def using(shard, &block)
+      return if defined?(::Rails) && (Rails.env == 'test' || Rails.env == 'development')
       hijack_connection()  
       clean_table_name()
 
@@ -23,7 +24,7 @@ module Octopus::Model
         return Octopus::ScopeProxy.new(shard, self)
       end
     end
-    
+
     def hijack_initializer()
       attr_accessor :current_shard
       after_initialize :set_current_shard
@@ -54,7 +55,7 @@ module Octopus::Model
 
   module InstanceMethods
     include SharedMethods
-    
+
     def set_connection(*args)
       if(args.size == 1)
         arg = args.first
@@ -63,7 +64,7 @@ module Octopus::Model
 
       self.connection.current_shard = self.current_shard if have_a_valid_shard?
     end
-    
+
     def have_a_valid_shard?
       self.respond_to?(:current_shard) && self.current_shard != nil
     end

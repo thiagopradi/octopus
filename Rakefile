@@ -29,7 +29,7 @@ begin
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency('activerecord', '>= 3.0.0beta')
-    gem.version = "0.0.14"
+    gem.version = "0.0.15"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

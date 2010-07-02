@@ -6,7 +6,7 @@ module Octopus
   end
   
   def self.config()
-    @config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml") 
+    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
   end
 
   # Returns the Rails.root_to_s when you are using rails

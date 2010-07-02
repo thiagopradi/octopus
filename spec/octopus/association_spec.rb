@@ -46,19 +46,6 @@ describe Octopus::Association do
       k.computer_id.should == c.id
       k.computer.should == c
     end
-
-    it "should works when using create!" do
-      # TODO - This works without octopus?!
-      # c = Computer.using(:brazil).create!(:name => "Computer Brazil")
-      #      k = c.keyboard.create!(:name => "New Keyboard")    
-      #      c.save()
-      #      k.save()
-      #      c.reload()
-      #      k.reload()  
-      #      c.keyboard.should == k
-      #      k.computer_id.should == c.id
-      #      k.computer.should == c
-    end
   end
 
   describe "when you have a N x N reliationship" do

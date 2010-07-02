@@ -23,7 +23,7 @@ module Octopus
   end
   
   def self.excluded_enviroments=(excluded_enviroments)
-    @excluded_enviroments = excluded_enviroments.map {|element| element.to_s }
+    @excluded_enviroments = excluded_enviroments.map { |element| element.to_s }
   end
   
   def self.excluded_enviroments

@@ -32,7 +32,7 @@ module Octopus::Model
       before_save :set_connection
 
       def set_current_shard
-        if new_record?
+        if new_record? || self.connection.block
           self.current_shard = self.class.connection_proxy.current_shard    
         else
           self.current_shard = self.class.connection_proxy.last_current_shard  

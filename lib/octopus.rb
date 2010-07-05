@@ -7,6 +7,12 @@ module Octopus
   
   def self.config()
     @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
+    
+    if !@config[Octopus.env].nil? && @config[Octopus.env()]['excluded_enviroments']
+      self.excluded_enviroments = @config[Octopus.env()]['excluded_enviroments']
+    end
+    
+    @config
   end
 
   # Returns the Rails.root_to_s when you are using rails

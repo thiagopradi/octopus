@@ -12,10 +12,6 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
     
-    if have_a_valid_configuration?(config) && config[Octopus.env()]['excluded_enviroments']
-      Octopus.excluded_enviroments = config[Octopus.env()]['excluded_enviroments']
-    end
-    
     shards_config = config[Octopus.env()]["shards"] if have_a_valid_configuration?(config)
     shards_config ||= []
 

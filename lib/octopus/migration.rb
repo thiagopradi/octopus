@@ -7,6 +7,10 @@ module Octopus::Migration
       self.connection().current_shard = args        
     end
     
+    args.each do |shard|
+      ActiveRecord::Base.using(:shard).connection.initialize_schema_migrations_table
+    end
+    
     yield if block_given?
 
     return self

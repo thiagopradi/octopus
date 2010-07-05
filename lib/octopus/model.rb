@@ -60,13 +60,13 @@ module Octopus::Model
     def set_connection(*args)
       if(args.size == 1)
         arg = args.first
-        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && have_a_valid_shard?
+        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && should_set_current_shard?
       end
 
-      self.connection.current_shard = self.current_shard if have_a_valid_shard?
+      self.connection.current_shard = self.current_shard if should_set_current_shard?
     end
 
-    def have_a_valid_shard?
+    def should_set_current_shard?
       self.respond_to?(:current_shard) && self.current_shard != nil
     end
   end

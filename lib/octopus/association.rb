@@ -74,7 +74,7 @@ module Octopus::Association
         return_val = association.send(constructor, attributees)
       end
 
-      if have_a_valid_shard?
+      if should_set_current_shard?
         return_val.current_shard = self.current_shard
       end
 

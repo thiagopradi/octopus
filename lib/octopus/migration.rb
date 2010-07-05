@@ -1,5 +1,7 @@
 module Octopus::Migration  
   def using(*args, &block)
+    Octopus.config()
+
     args.each do |shard|
       if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
         ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
@@ -19,6 +21,8 @@ module Octopus::Migration
   end
 
   def using_group(*args)
+    Octopus.config()
+    
     if args.size == 1
       self.connection().block = true
       self.connection().current_group = args.first

@@ -39,7 +39,7 @@ describe Octopus::Model do
     
     it "should work when you have a SQLite3 shard" do
       u = User.using(:sqlite_shard).create!(:name => "Sqlite3")
-      User.where(:name => "Sqlite3").using(:sqlite_shard).first.should == u
+      User.using(:sqlite_shard).find_by_name("Sqlite3").should == u
     end
     
     it "should clean #current_shard from proxy when using execute" do

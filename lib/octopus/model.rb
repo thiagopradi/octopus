@@ -37,7 +37,13 @@ module Octopus::Model
         else
           self.current_shard = self.class.connection_proxy.last_current_shard  
         end
-      end    
+      end
+      
+      if !Octopus.rails3?
+        def after_initialize
+          set_current_shard()
+        end
+      end
     end
 
     def hijack_connection()
@@ -68,6 +74,10 @@ module Octopus::Model
 
     def should_set_current_shard?
       self.respond_to?(:current_shard) && self.current_shard != nil
+    end
+    
+    def reload_connection()
+      set_connection() if should_set_current_shard?
     end
   end
 

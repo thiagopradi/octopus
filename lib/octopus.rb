@@ -35,13 +35,17 @@ module Octopus
   def self.excluded_enviroments
     @excluded_enviroments || ['development',"cucumber", "test"]
   end
+  
+  def self.rails3?
+    ActiveRecord::VERSION::MAJOR == 3
+  end
 end
 
 
 require "octopus/model"
 require "octopus/migration"
 
-if ActiveRecord::VERSION::STRING > '2.4.0'
+if Octopus.rails3?
   require "octopus/rails3/association"
   require "octopus/rails3/association_collection"
   require "octopus/rails3/has_and_belongs_to_many_association"

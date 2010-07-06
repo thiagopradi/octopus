@@ -1,4 +1,10 @@
 module Octopus::Migration  
+  def self.extended(base)
+    class << base
+      alias_method_chain :migrate, :octopus
+    end
+  end
+  
   def using(*args, &block)
     Octopus.config()
 
@@ -14,6 +20,7 @@ module Octopus::Migration
     else
       self.connection().current_shard = args        
     end
+
 
     yield if block_given?
 
@@ -42,7 +49,17 @@ module Octopus::Migration
 
     return self
   end
-end
+  
+  def migrate_with_octopus(direction)
+    ret = migrate_without_octopus(direction)
+    # This Cleans the proxy
+    # TODO - REFACTOR!
+    ActiveRecord::Base.connection.instance_variable_set(:@current_shard, :master)
+    ActiveRecord::Base.connection.instance_variable_set(:@current_group, nil)
+    ActiveRecord::Base.connection().block = false
 
+    return ret
+  end
+end
 
 ActiveRecord::Migration.extend(Octopus::Migration)

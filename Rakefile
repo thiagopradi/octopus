@@ -90,7 +90,7 @@ namespace :db do
     Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
     require "database_connection"
     require "octopus"
-    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard].each do |shard_symbol|
+    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.initialize_schema_migrations_table()
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|

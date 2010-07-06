@@ -5,7 +5,7 @@ describe Octopus::Proxy do
   
   describe "creating a new instance" do    
     it "should initialize all shards and groups" do
-      proxy.instance_variable_get(:@shards).keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master].to_set
+      proxy.instance_variable_get(:@shards).keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master, :sqlite_shard].to_set
       proxy.instance_variable_get(:@groups).should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
     end
 

@@ -32,11 +32,19 @@ describe Octopus::Model do
     end
 
     it "should select the correct shard" do
-      #TODO - Investigate this - why we need to set to master!?
-      ActiveRecord::Base.connection_proxy.current_shard = :master
       User.using(:canada)
       User.create!(:name => 'oi')
       User.count.should == 1
+    end
+    
+    it "should work when you have a SQLite3 shard" do
+      u = User.using(:sqlite_shard).create!(:name => "Sqlite3")
+      User.where(:name => "Sqlite3").using(:sqlite_shard).first.should == u
+    end
+    
+    it "should clean #current_shard from proxy when using execute" do
+      ActiveRecord::Base.using(:canada).connection().execute("select * from users limit 1;")
+      ActiveRecord::Base.connection.current_shard.should == :master
     end
 
     it "should allow scoping dynamically" do
@@ -44,7 +52,6 @@ describe Octopus::Model do
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
     end
-    
     
     it "should allow find inside blocks" do
       @user = User.using(:brazil).create!(:name => "Thiago")
@@ -55,7 +62,6 @@ describe Octopus::Model do
       
       User.using(:brazil).find_by_name("Thiago").should == @user
     end
-    
 
     it "should clean the current_shard after executing the current query" do
       User.using(:canada).create!(:name => "oi")
@@ -191,12 +197,13 @@ describe Octopus::Model do
     end
     
     it "using update_attributes inside a block" do
-      ActiveRecord::Base.connection.run_queries_on_shard :brazil do
+      ActiveRecord::Base.using(:brazil) do
         @user = User.create!(:name => "User1")
         @user2 = User.find(@user.id)
         @user2.update_attributes(:name => "Joaquim")  
       end
       
+      User.find_by_name("Joaquim").should be_nil
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
 

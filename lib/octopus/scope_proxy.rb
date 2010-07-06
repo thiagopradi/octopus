@@ -8,6 +8,7 @@ class Octopus::ScopeProxy
   
   def using(shard, &block)
     @shard = shard
+    
     if block_given?
       @klass.connection.run_queries_on_shard(@shard, &block)
     end
@@ -32,12 +33,10 @@ class Octopus::ScopeProxy
     @klass.connection()
   end
   
-  #TODO - THIS IS UGLY, NEEDS REFACTOR!
   def method_missing(method, *args, &block)
     @klass.connection().current_shard = @shard
     @klass = @klass.send(method, *args, &block)
-    return nil if @klass.nil?
-    return @klass if @klass.is_a?(ActiveRecord::Base) or @klass.is_a?(Array) or @klass.is_a?(Fixnum)
+    return @klass if @klass.is_a?(ActiveRecord::Base) or @klass.is_a?(Array) or @klass.is_a?(Fixnum) or @klass.nil?
     return self
   end
   

@@ -1,6 +1,6 @@
 module Octopus::Persistence
   def reload_connection()
-    set_connection() if have_a_valid_shard?
+    set_connection() if should_set_current_shard?
   end
 
   def update_attribute(name, value)

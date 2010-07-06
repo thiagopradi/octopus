@@ -1,9 +1,9 @@
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
-  def initialize(config)
+  def initialize(config)    
     initialize_shards(config)
-    initialize_replication(config) if have_a_valid_configuration?(config) && config[Octopus.env()]["replicated"]
+    initialize_replication(config) if have_config_for_enviroment?(config) && config[Octopus.env()]["replicated"]
   end
 
   def initialize_shards(config)
@@ -11,7 +11,8 @@ class Octopus::Proxy
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
-    shards_config = config[Octopus.env()]["shards"] if have_a_valid_configuration?(config)
+    
+    shards_config = config[Octopus.env()]["shards"] if have_config_for_enviroment?(config)
     shards_config ||= []
 
     shards_config.each do |key, value|
@@ -68,10 +69,6 @@ class Octopus::Proxy
 
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
-  end
-
-  def have_a_valid_configuration?(config)
-    !config[Octopus.env()].nil?
   end
 
   def add_transaction_record(record)
@@ -146,7 +143,7 @@ class Octopus::Proxy
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /insert|select/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated && !self.block
+    method.to_s =~ /insert|select|execute/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated && !self.block
   end
 
   def should_send_queries_to_multiple_shards?
@@ -163,6 +160,10 @@ class Octopus::Proxy
 
   def should_send_queries_to_replicated_databases?(method)
     @replicated && method.to_s =~ /select/
+  end
+  
+  def have_config_for_enviroment?(config)
+    !config[Octopus.env()].nil?
   end
 
   def send_queries_to_multiple_groups(method, *args, &block)

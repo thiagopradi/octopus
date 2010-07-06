@@ -29,7 +29,7 @@ begin
     gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency('activerecord', '>= 3.0.0beta')
-    gem.version = "0.0.12"
+    gem.version = "0.0.19"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -90,7 +90,9 @@ namespace :db do
     Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
     require "database_connection"
     require "octopus"
-    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard].each do |shard_symbol|
+    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
+      ActiveRecord::Base.using(shard_symbol).connection.initialize_schema_migrations_table()
+      
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
         u.integer :number
@@ -110,11 +112,7 @@ namespace :db do
         u.string :name
         u.integer :client_id
       end
-      
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:schema_migrations) do |u|
-        u.string :version, :unique => true, :null => false
-      end
-      
+            
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:computers) do |u|
         u.string :name
       end

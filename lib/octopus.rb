@@ -2,17 +2,38 @@ require "yaml"
 
 module Octopus
   def self.env()
-    @env ||= defined?(Rails) ? Rails.env.to_s : "octopus"      
+    @env ||= defined?(Rails) ? Rails.env.to_s : 'octopus'
   end
   
   def self.config()
-    @config ||= YAML.load_file(Octopus.directory() + "/config/shards.yml") 
+    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
+    
+    if !@config[Octopus.env].nil? && @config[Octopus.env()]['excluded_enviroments']
+      self.excluded_enviroments = @config[Octopus.env()]['excluded_enviroments']
+    end
+    
+    @config
   end
 
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory()
     @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd     
+  end
+  
+  # This is the default way to do Octopus Setup
+  # Available variables:
+  # :excluded_enviroments => the enviroments that octopus will not run. default: :development, :cucumber and :test
+  def self.setup
+    yield self
+  end
+  
+  def self.excluded_enviroments=(excluded_enviroments)
+    @excluded_enviroments = excluded_enviroments.map { |element| element.to_s }
+  end
+  
+  def self.excluded_enviroments
+    @excluded_enviroments || ['development',"cucumber", "test"]
   end
 end
 

@@ -136,10 +136,16 @@ module Octopus::Association
       end
 
       if association_proxy_class == ActiveRecord::Associations::HasOneAssociation
-        association.send(constructor, attributees, replace_existing)
+        ret_val = association.send(constructor, attributees, replace_existing)
       else
-        association.send(constructor, attributees)
+        ret_val = association.send(constructor, attributees)
       end
+      
+      if should_set_current_shard?
+        ret_val.current_shard = self.current_shard
+      end
+      
+      return ret_val
     end
   end
 end

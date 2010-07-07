@@ -44,16 +44,14 @@ end
 
 require "octopus/model"
 require "octopus/migration"
+require "octopus/association_collection"
+require "octopus/has_and_belongs_to_many_association"
 
 if Octopus.rails3?
   require "octopus/rails3/association"
-  require "octopus/rails3/association_collection"
-  require "octopus/rails3/has_and_belongs_to_many_association"
   require "octopus/rails3/persistence"
 else
   require "octopus/rails2/association"
-  require "octopus/rails2/association_collection"
-  require "octopus/rails2/has_and_belongs_to_many_association"
   require "octopus/rails2/persistence"
 end
 

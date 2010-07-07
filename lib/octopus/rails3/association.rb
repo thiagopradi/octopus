@@ -1,132 +1,112 @@
-module Octopus::Association
-  def has_many(association_id, options = {}, &extension)
-    default_octopus_opts(options)
-    super(association_id, options, &extension)
-  end
+module Octopus
+  module Rails3
+    module Association
+      def collection_reader_method(reflection, association_proxy_class)
+        define_method(reflection.name) do |*params|
+          force_reload = params.first unless params.empty?
+          reload_connection() 
 
-  def has_and_belongs_to_many(association_id, options = {}, &extension)
-    default_octopus_opts(options)
-    super(association_id, options, &extension)    
-  end
+          association = association_instance_get(reflection.name)
 
-  def default_octopus_opts(options)
-    if options[:before_add].is_a?(Array)
-      options[:before_add] << :set_connection
-    else
-      options[:before_add] = :set_connection
-    end
+          unless association
+            association  = association_proxy_class.new(self, reflection)
+            association_instance_set(reflection.name, association)
+          end
 
-    if options[:before_remove].is_a?(Array)
-      options[:before_remove] << :set_connection
-    else
-      options[:before_remove] = :set_connection
-    end
-  end
-  
-  def collection_reader_method(reflection, association_proxy_class)
-    define_method(reflection.name) do |*params|
-      force_reload = params.first unless params.empty?
-      reload_connection() 
+          reflection.klass.uncached { association.reload } if force_reload
 
-      association = association_instance_get(reflection.name)
+          association
+        end
 
-      unless association
-        association  = association_proxy_class.new(self, reflection)
-        association_instance_set(reflection.name, association)
-      end
-
-      reflection.klass.uncached { association.reload } if force_reload
-
-      association
-    end
-
-    define_method("#{reflection.name.to_s.singularize}_ids") do
-      reload_connection()        
-      if send(reflection.name).loaded? || reflection.options[:finder_sql]
-        send(reflection.name).map(&:id)
-      else
-        if reflection.through_reflection && reflection.source_reflection.belongs_to?
-          through = reflection.through_reflection
-          primary_key = reflection.source_reflection.primary_key_name
-          send(through.name).select("DISTINCT #{through.quoted_table_name}.#{primary_key}").map!(&:"#{primary_key}")
-        else
-          send(reflection.name).select("#{reflection.quoted_table_name}.#{reflection.klass.primary_key}").except(:includes).map!(&:id)
+        define_method("#{reflection.name.to_s.singularize}_ids") do
+          reload_connection()        
+          if send(reflection.name).loaded? || reflection.options[:finder_sql]
+            send(reflection.name).map(&:id)
+          else
+            if reflection.through_reflection && reflection.source_reflection.belongs_to?
+              through = reflection.through_reflection
+              primary_key = reflection.source_reflection.primary_key_name
+              send(through.name).select("DISTINCT #{through.quoted_table_name}.#{primary_key}").map!(&:"#{primary_key}")
+            else
+              send(reflection.name).select("#{reflection.quoted_table_name}.#{reflection.klass.primary_key}").except(:includes).map!(&:id)
+            end
+          end
         end
       end
-    end
-  end
 
-  def association_constructor_method(constructor, reflection, association_proxy_class)
-    define_method("#{constructor}_#{reflection.name}") do |*params|
-      reload_connection() 
-      attributees      = params.first unless params.empty?
-      replace_existing = params[1].nil? ? true : params[1]
-      association      = association_instance_get(reflection.name)
+      def association_constructor_method(constructor, reflection, association_proxy_class)
+        define_method("#{constructor}_#{reflection.name}") do |*params|
+          reload_connection() 
+          attributees      = params.first unless params.empty?
+          replace_existing = params[1].nil? ? true : params[1]
+          association      = association_instance_get(reflection.name)
 
-      unless association
-        association = association_proxy_class.new(self, reflection)
-        association_instance_set(reflection.name, association)
-      end
+          unless association
+            association = association_proxy_class.new(self, reflection)
+            association_instance_set(reflection.name, association)
+          end
 
-      if association_proxy_class == ActiveRecord::Associations::HasOneAssociation
-        return_val = association.send(constructor, attributees, replace_existing)
-      else
-        return_val = association.send(constructor, attributees)
-      end
+          if association_proxy_class == ActiveRecord::Associations::HasOneAssociation
+            return_val = association.send(constructor, attributees, replace_existing)
+          else
+            return_val = association.send(constructor, attributees)
+          end
 
-      if should_set_current_shard?
-        return_val.current_shard = self.current_shard
-      end
+          if should_set_current_shard?
+            return_val.current_shard = self.current_shard
+          end
 
-      return_val
-    end
-  end
-
-  def association_accessor_methods(reflection, association_proxy_class)
-    define_method(reflection.name) do |*params|
-      reload_connection()
-      force_reload = params.first unless params.empty?
-      association = association_instance_get(reflection.name)
-
-      if association.nil? || force_reload
-        association = association_proxy_class.new(self, reflection)
-        retval = force_reload ? reflection.klass.uncached { association.reload } : association.reload
-        if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
-          association_instance_set(reflection.name, nil)
-          return nil
+          return_val
         end
-        association_instance_set(reflection.name, association)
       end
 
-      association.target.nil? ? nil : association
-    end
+      def association_accessor_methods(reflection, association_proxy_class)
+        define_method(reflection.name) do |*params|
+          reload_connection()
+          force_reload = params.first unless params.empty?
+          association = association_instance_get(reflection.name)
 
-    define_method("loaded_#{reflection.name}?") do
-      reload_connection() 
-      association = association_instance_get(reflection.name)
-      association && association.loaded?
-    end
+          if association.nil? || force_reload
+            association = association_proxy_class.new(self, reflection)
+            retval = force_reload ? reflection.klass.uncached { association.reload } : association.reload
+            if retval.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
+              association_instance_set(reflection.name, nil)
+              return nil
+            end
+            association_instance_set(reflection.name, association)
+          end
 
-    define_method("#{reflection.name}=") do |new_value|
-      reload_connection() 
-      association = association_instance_get(reflection.name)
+          association.target.nil? ? nil : association
+        end
 
-      if association.nil? || association.target != new_value
-        association = association_proxy_class.new(self, reflection)
+        define_method("loaded_#{reflection.name}?") do
+          reload_connection() 
+          association = association_instance_get(reflection.name)
+          association && association.loaded?
+        end
+
+        define_method("#{reflection.name}=") do |new_value|
+          reload_connection() 
+          association = association_instance_get(reflection.name)
+
+          if association.nil? || association.target != new_value
+            association = association_proxy_class.new(self, reflection)
+          end
+
+          association.replace(new_value)
+          association_instance_set(reflection.name, new_value.nil? ? nil : association)
+        end
+
+        define_method("set_#{reflection.name}_target") do |target|
+          return if target.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
+          reload_connection() 
+          association = association_proxy_class.new(self, reflection)
+          association.target = target
+          association_instance_set(reflection.name, association)
+        end
       end
-
-      association.replace(new_value)
-      association_instance_set(reflection.name, new_value.nil? ? nil : association)
-    end
-
-    define_method("set_#{reflection.name}_target") do |target|
-      return if target.nil? and association_proxy_class == ActiveRecord::Associations::BelongsToAssociation
-      reload_connection() 
-      association = association_proxy_class.new(self, reflection)
-      association.target = target
-      association_instance_set(reflection.name, association)
     end
   end
 end
 
-ActiveRecord::Base.extend(Octopus::Association)
+ActiveRecord::Base.extend(Octopus::Rails3::Association)

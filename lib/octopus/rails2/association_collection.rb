@@ -1,19 +1,13 @@
-module Octopus::AssociationCollection 
-  def self.included(base)
-    base.instance_eval do 
-      alias_method_chain :count, :octopus
-    end
-  end
-  
+module Octopus::AssociationCollection   
   def should_wrap_the_connection?
     @owner.respond_to?(:current_shard) && @owner.current_shard != nil
   end
 
-  def count_with_octopus(*args)
+  def count(*args)
     if should_wrap_the_connection?
-      @owner.using(@owner.current_shard) { count_without_octopus(args) } 
+      @owner.using(@owner.current_shard) { super } 
     else        
-      count_without_octopus(args)
+      super
     end
   end
 end

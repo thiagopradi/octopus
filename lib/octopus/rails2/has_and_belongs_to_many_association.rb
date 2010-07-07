@@ -4,7 +4,7 @@ class ActiveRecord::Associations::HasAndBelongsToManyAssociation
   end
 
   def insert_record(record, force = true, validate = true)
-    if has_primary_key?
+    if self.respond_to?(:has_primary_key?) && has_primary_key?
       raise ActiveRecord::ConfigurationError,
       "Primary key is not allowed in a has_and_belongs_to_many join table (#{@reflection.options[:join_table]})."
     end

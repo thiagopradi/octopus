@@ -70,21 +70,7 @@ class Octopus::Proxy
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
-
-  def method_missing(method, *args, &block)
-    if should_clean_connection?(method)
-      conn = select_connection()
-      self.last_current_shard = self.current_shard
-      self.current_shard = :master
-      @using_enabled = nil
-      conn.send(method, *args, &block)
-    elsif should_send_queries_to_replicated_databases?(method)
-      send_queries_to_selected_slave(method, *args, &block)      
-    else
-      select_connection().send(method, *args, &block)
-    end
-  end
-
+  
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     self.block = true
@@ -98,7 +84,14 @@ class Octopus::Proxy
     end
   end
   
+  def send_queries_to_multiple_shards(shards, &block)
+    shards.each do |shard|
+      self.run_queries_on_shard(shard, &block)
+    end
+  end
+  
   def clean_proxy()
+    @using_enabled = nil
     @current_shard = :master
     @current_group = nil
     @block = false
@@ -107,6 +100,19 @@ class Octopus::Proxy
   def check_schema_migrations(shard)
     if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
       ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+    end
+  end
+
+  def method_missing(method, *args, &block)
+    if should_clean_connection?(method)
+      conn = select_connection()
+      self.last_current_shard = self.current_shard
+      clean_proxy()
+      conn.send(method, *args, &block)
+    elsif should_send_queries_to_replicated_databases?(method)
+      send_queries_to_selected_slave(method, *args, &block)      
+    else
+      select_connection().send(method, *args, &block)
     end
   end
 

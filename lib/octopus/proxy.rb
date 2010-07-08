@@ -71,12 +71,6 @@ class Octopus::Proxy
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
 
-  def add_transaction_record(record)
-    if !select_connection().instance_variable_get(:@_current_transaction_records).nil?
-      select_connection().add_transaction_record(record)
-    end
-  end
-  
   def method_missing(method, *args, &block)
     if should_clean_connection?(method)
       conn = select_connection()

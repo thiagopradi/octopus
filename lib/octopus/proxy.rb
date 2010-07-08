@@ -103,6 +103,12 @@ class Octopus::Proxy
     @current_group = nil
     @block = false
   end
+  
+  def check_schema_migrations(shard)
+    if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
+      ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+    end
+  end
 
   protected
   def connection_pool_for(adapter, config)

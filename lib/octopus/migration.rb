@@ -9,18 +9,11 @@ module Octopus::Migration
     Octopus.config()
 
     args.each do |shard|
-      if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-        ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
-      end
+      self.connection().check_schema_migrations(shard)
     end
 
-    if args.size == 1
-      self.connection().block = true
-      self.connection().current_shard = args.first
-    else
-      self.connection().current_shard = args        
-    end
-
+    self.connection().block = true
+    self.connection().current_shard = args        
 
     yield if block_given?
 
@@ -29,23 +22,17 @@ module Octopus::Migration
 
   def using_group(*args)
     Octopus.config()
-
+    
     args.each do |group_shard|
       shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
 
       shards.each do |shard|
-        if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-          ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
-        end
+        self.connection().check_schema_migrations(shard)
       end
     end
 
-    if args.size == 1
-      self.connection().block = true
-      self.connection().current_group = args.first
-    else
-      self.connection().current_group = args
-    end
+    self.connection().block = true
+    self.connection().current_group = args
 
     return self
   end
@@ -61,9 +48,7 @@ module Octopus::Migration
     groups = conn.instance_variable_get(:@groups)
     
     if conn.current_group.is_a?(Array)
-      conn.current_group.each do |group|
-        send_queries_to_multiple_shards(groups[group], direction)
-      end
+      conn.current_group.each { |group| send_queries_to_multiple_shards(groups[group], direction) } 
     elsif conn.current_group.is_a?(Symbol)
       send_queries_to_multiple_shards(groups[conn.current_group], direction)      
     elsif conn.current_shard.is_a?(Array)

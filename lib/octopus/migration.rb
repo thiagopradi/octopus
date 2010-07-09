@@ -2,6 +2,14 @@ module Octopus::Migration
   def self.extended(base)
     class << base
       alias_method_chain :migrate, :octopus
+      
+      def announce(message)
+        version = defined?(@version) ? @version : nil
+
+        text = "#{version} #{name}: #{message} - #{get_current_shard}"
+        length = [0, 75 - text.length].max
+        write "== %s %s" % [text, "=" * length]
+      end
     end
   end
 
@@ -40,6 +48,11 @@ module Octopus::Migration
     
     return self
   end
+  
+  def get_current_shard
+    "Shard: #{ActiveRecord::Base.connection.current_shard()}" if ActiveRecord::Base.connection.respond_to?(:current_shard)
+  end
+
 
   def migrate_with_octopus(direction)
     conn = ActiveRecord::Base.connection

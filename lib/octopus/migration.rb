@@ -7,14 +7,16 @@ module Octopus::Migration
 
   def using(*args, &block)
     Octopus.config()
+    
+    unless defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
+      args.each do |shard|
+        self.connection().check_schema_migrations(shard)
+      end
 
-    args.each do |shard|
-      self.connection().check_schema_migrations(shard)
+      self.connection().block = true
+      self.connection().current_shard = args        
     end
-
-    self.connection().block = true
-    self.connection().current_shard = args        
-
+    
     yield if block_given?
 
     return self
@@ -23,24 +25,26 @@ module Octopus::Migration
   def using_group(*args)
     Octopus.config()
     
-    args.each do |group_shard|
-      shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
+    unless defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
+      args.each do |group_shard|
+        shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
 
-      shards.each do |shard|
-        self.connection().check_schema_migrations(shard)
+        shards.each do |shard|
+          self.connection().check_schema_migrations(shard)
+        end
       end
+
+      self.connection().block = true
+      self.connection().current_group = args
     end
-
-    self.connection().block = true
-    self.connection().current_group = args
-
+    
     return self
   end
 
   def migrate_with_octopus(direction)
     conn = ActiveRecord::Base.connection
     groups = conn.instance_variable_get(:@groups)
-    
+
     if conn.current_group.is_a?(Array)
       conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
     elsif conn.current_group.is_a?(Symbol)       

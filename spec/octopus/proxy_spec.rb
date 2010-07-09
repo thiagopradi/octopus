@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Octopus::Proxy do
   let(:proxy) { Octopus::Proxy.new(Octopus.config()) }
-  
+
   describe "creating a new instance" do    
     it "should initialize all shards and groups" do
       proxy.instance_variable_get(:@shards).keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master, :sqlite_shard].to_set
@@ -12,7 +12,7 @@ describe Octopus::Proxy do
     it "should initialize the block attribute as false" do
       proxy.block.should be_false
     end    
-    
+
     it "should initialize replicated attribute as false" do
       proxy.instance_variable_get(:@replicated).should be_false      
     end
@@ -31,32 +31,63 @@ describe Octopus::Proxy do
       before(:each) do
         Octopus.stub!(:env).and_return("crazy_enviroment")        
       end
-      
+
       it "should initialize just the master shard" do
         proxy.instance_variable_get(:@shards).keys.should == [:master]
       end
-      
+
       it "should not initialize the groups variable" do
         proxy.instance_variable_get(:@groups).should == {}
       end
-      
+
       it "should not initialize replication" do
         proxy.instance_variable_get(:@replicated).should be_nil
       end
     end
   end
-  
+
   describe "when you have a replicated enviroment" do
     before(:each) do
       Octopus.stub!(:env).and_return("production_replicated")
     end
-    
+
     it "should have the replicated attribute as true" do
       proxy.instance_variable_get(:@replicated).should be_true
     end
 
     it "should initialize the list of shards" do
       proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3", "slave4"]
+    end
+  end
+
+  describe "when you have a rails application" do
+    before(:each) do
+      Rails = mock()
+      Octopus.stub!(:env).and_return("octopus_rails")
+    end
+    
+    it "should initialize correctly octopus common variables for the enviroments" do
+      Rails.stub!(:env).and_return('staging')
+      Octopus.config()
+      
+      proxy.instance_variable_get(:@replicated).should be_true
+      Octopus.excluded_enviroments.should == ["test", "cucumber"] 
+    end
+    
+    it "should initialize correctly the shards for the staging enviroment" do
+      Rails.stub!(:env).and_return('staging')
+
+      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave1, :slave2, :master])
+    end
+    
+    it "should initialize correctly the shards for the production enviroment" do
+      Rails.stub!(:env).and_return('production')
+
+      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave3, :slave4, :master])
+    end
+    
+    after(:each) do
+      Object.send(:remove_const, :Rails)
     end
   end
 

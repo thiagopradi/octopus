@@ -2,7 +2,11 @@ require "yaml"
 
 module Octopus
   def self.env()
-    @env ||= defined?(Rails) ? Rails.env.to_s : 'octopus'
+   @env ||= 'octopus'
+  end
+  
+  def self.rails_env()
+    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
   end
   
   def self.config()
@@ -38,6 +42,10 @@ module Octopus
   
   def self.rails3?
     ActiveRecord::VERSION::MAJOR == 3
+  end
+  
+  def self.rails?
+    defined?(Rails) 
   end
 end
 

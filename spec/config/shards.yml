@@ -106,4 +106,34 @@ production_entire_replicated:
       host: localhost
       database: octopus_shard5
       
+octopus_rails:
+  excluded_enviroments:
+    - test
+    - cucumber
+
+  replicated: true
+
+  staging:
+    shards:
+      slave1:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard2
+      slave2:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard3
+
+  production:
+    shards:
+      slave3:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard4
+      slave4:
+        adapter: mysql
+        host: localhost
+        database: octopus_shard5
+      
+      
   

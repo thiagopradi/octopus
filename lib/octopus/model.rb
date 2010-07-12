@@ -57,6 +57,7 @@ module Octopus::Model
 
       def self.connection_with_octopus()
         if defined?(::Rails) 
+          Octopus.config()
           if Octopus.octopus_enviroments.include?(Rails.env.to_s)
             self.connection_proxy().current_model = self
             return self.connection_proxy()

@@ -246,6 +246,20 @@ describe Octopus::Model do
       end
     end
   end
+  
+  describe "ActiveRecord::Base Validations" do
+    it "should work correctly when using validations" do
+      @key = Keyboard.create!(:name => "Key")
+      lambda { Keyboard.using(:brazil).create!(:name => "Key") }.should_not raise_error()
+      lambda { Keyboard.create!(:name => "Key") }.should raise_error()
+    end
+    
+    it "should work correctly when using validations with using syntax" do
+      @key = Keyboard.using(:brazil).create!(:name => "Key")
+      lambda { Keyboard.create!(:name => "Key") }.should_not raise_error()
+      lambda { Keyboard.using(:brazil).create!(:name => "Key") }.should raise_error()
+    end
+  end
 
   describe "#replicated_model method" do
     it "should be replicated" do

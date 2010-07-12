@@ -1,8 +1,4 @@
 octopus:
-  excluded_enviroments: 
-    - cucumber 
-    - test
-    - staging
   shards:
     alone_shard:
       adapter: mysql
@@ -107,11 +103,10 @@ production_entire_replicated:
       database: octopus_shard5
       
 octopus_rails:
-  excluded_enviroments:
-    - test
-    - cucumber
-
   replicated: true
+  octopus_enviroments:
+    - staging
+    - production
 
   staging:
     shards:

@@ -71,7 +71,7 @@ describe Octopus::Proxy do
       Octopus.config()
       
       proxy.instance_variable_get(:@replicated).should be_true
-      Octopus.excluded_enviroments.should == ["test", "cucumber"] 
+      Octopus.octopus_enviroments.should == ["staging", "production"] 
     end
     
     it "should initialize correctly the shards for the staging enviroment" do

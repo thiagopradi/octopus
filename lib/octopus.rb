@@ -12,8 +12,8 @@ module Octopus
   def self.config()
     @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
     
-    if !@config[Octopus.env].nil? && @config[Octopus.env()]['excluded_enviroments']
-      self.excluded_enviroments = @config[Octopus.env()]['excluded_enviroments']
+    if !@config[Octopus.env].nil? && @config[Octopus.env()]['octopus_enviroments']
+      self.octopus_enviroments = @config[Octopus.env()]['octopus_enviroments']
     end
     
     @config
@@ -32,12 +32,12 @@ module Octopus
     yield self
   end
   
-  def self.excluded_enviroments=(excluded_enviroments)
-    @excluded_enviroments = excluded_enviroments.map { |element| element.to_s }
+  def self.octopus_enviroments=(octopus_enviroments)
+    @octopus_enviroments = octopus_enviroments.map { |element| element.to_s }
   end
   
-  def self.excluded_enviroments
-    @excluded_enviroments || ['development',"cucumber", "test"]
+  def self.octopus_enviroments
+    @octopus_enviroments || ['production']
   end
   
   def self.rails3?

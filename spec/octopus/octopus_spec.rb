@@ -19,25 +19,20 @@ describe Octopus do
     end
   end
   
-  describe "#setup method" do
-    it "should load from YAML" do
-      Octopus.excluded_enviroments.should == ["cucumber", "test", "staging"]       
+  describe "#setup method" do    
+    it "should have the default octopus enviroment as production" do
+      Octopus.octopus_enviroments.should == ["production"]
     end
     
-    it "should have the default excluded enviroments" do
-      Octopus.instance_variable_set(:@excluded_enviroments, nil)
-      Octopus.excluded_enviroments.should == ["development", "cucumber", "test"]
-    end
-    
-    it "should configure the excluded enviroments" do
+    it "should allow the user to configure the octopus enviroments" do
       Octopus.setup do |config|
-        config.excluded_enviroments = [:cucumber, :test]
+        config.octopus_enviroments = [:production, :staging]
       end
       
-      Octopus.excluded_enviroments.should == ['cucumber', 'test']      
+      Octopus.octopus_enviroments.should == ['production', 'staging']      
 
       Octopus.setup do |config|
-        config.excluded_enviroments = [:cucumber, :test, :staging]
+        config.octopus_enviroments = [:production]
       end
     end
   end

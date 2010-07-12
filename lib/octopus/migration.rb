@@ -15,7 +15,8 @@ module Octopus::Migration
 
   def using(*args, &block)
     Octopus.config()
-    
+    ActiveRecord::Base.hijack_connection() if Octopus.octopus_enviroments.include?(Rails.env.to_s)
+
     if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
       args.each do |shard|
         self.connection().check_schema_migrations(shard)
@@ -32,6 +33,7 @@ module Octopus::Migration
 
   def using_group(*args)
     Octopus.config()
+    ActiveRecord::Base.hijack_connection() if Octopus.octopus_enviroments.include?(Rails.env.to_s)
     
     if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
       args.each do |group_shard|
@@ -57,7 +59,9 @@ module Octopus::Migration
   def migrate_with_octopus(direction)
     conn = ActiveRecord::Base.connection
     groups = conn.instance_variable_get(:@groups)
-
+    
+    return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
+    
     if conn.current_group.is_a?(Array)
       conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
     elsif conn.current_group.is_a?(Symbol)       

@@ -16,7 +16,7 @@ module Octopus::Migration
   def using(*args, &block)
     Octopus.config()
     
-    unless defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
+    if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
       args.each do |shard|
         self.connection().check_schema_migrations(shard)
       end
@@ -33,7 +33,7 @@ module Octopus::Migration
   def using_group(*args)
     Octopus.config()
     
-    unless defined?(::Rails) && Octopus.excluded_enviroments.include?(Rails.env.to_s)
+    if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
       args.each do |group_shard|
         shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
 

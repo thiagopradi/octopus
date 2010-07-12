@@ -6,7 +6,7 @@ module Octopus::Model
     if defined?(::Rails)
       base.hijack_connection() if Octopus.octopus_enviroments.include?(Rails.env.to_s)
     else
-     base.hijack_connection()
+      base.hijack_connection()
     end
   end
 
@@ -17,7 +17,7 @@ module Octopus::Model
 
     def using(shard, &block)
       return self if defined?(::Rails) && !Octopus.octopus_enviroments.include?(Rails.env.to_s)
-      
+
       hijack_connection()  
       clean_table_name()
 
@@ -43,7 +43,7 @@ module Octopus::Model
           self.current_shard = self.class.connection_proxy.last_current_shard  
         end
       end
-      
+
       if !Octopus.rails3?
         def after_initialize
           set_current_shard()
@@ -80,7 +80,7 @@ module Octopus::Model
     def should_set_current_shard?
       self.respond_to?(:current_shard) && self.current_shard != nil
     end
-    
+
     def reload_connection()
       set_connection() if should_set_current_shard?
     end

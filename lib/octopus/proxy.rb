@@ -128,14 +128,9 @@ class Octopus::Proxy
 
   def initialize_adapter(adapter)
     begin
-      gem "activerecord-#{adapter}-adapter"
       require "active_record/connection_adapters/#{adapter}_adapter"
     rescue LoadError
-      begin
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
-      end
+      raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
     end
   end
 

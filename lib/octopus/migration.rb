@@ -14,10 +14,7 @@ module Octopus::Migration
   end
 
   def using(*args, &block)
-    Octopus.config()
-    ActiveRecord::Base.hijack_connection() if Octopus.octopus_enviroments.include?(Rails.env.to_s)
-
-    if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
+    if self.connection().is_a?(Octopus::Proxy)
       args.each do |shard|
         self.connection().check_schema_migrations(shard)
       end
@@ -32,10 +29,8 @@ module Octopus::Migration
   end
 
   def using_group(*args)
-    Octopus.config()
-    ActiveRecord::Base.hijack_connection() if Octopus.octopus_enviroments.include?(Rails.env.to_s)
     
-    if defined?(::Rails) && Octopus.octopus_enviroments.include?(Rails.env.to_s)
+    if self.connection().is_a?(Octopus::Proxy)
       args.each do |group_shard|
         shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
 

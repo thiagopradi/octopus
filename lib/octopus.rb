@@ -27,7 +27,7 @@ module Octopus
   
   # This is the default way to do Octopus Setup
   # Available variables:
-  # :excluded_enviroments => the enviroments that octopus will not run. default: :development, :cucumber and :test
+  # :octopus_enviroments => the enviroments that octopus will run. default: :production
   def self.setup
     yield self
   end

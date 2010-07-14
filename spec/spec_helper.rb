@@ -9,7 +9,7 @@ end
 
 require 'spec'
 require 'spec/autorun'
-require "spec/database_connection"
+require File.expand_path(File.dirname(__FILE__)) + "/database_connection"
 require "action_controller"
 require 'octopus'
 require "octopus_helper"

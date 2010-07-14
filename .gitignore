@@ -1,3 +1,4 @@
 pkg/*.*
 tmp/*
 *.sqlite3
+.rvmrc

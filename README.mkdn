@@ -14,6 +14,24 @@
 
 <p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
 <p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p> 
+
+<h2> Install </h2>
+
+<h3> Rails 2.x </h3>
+
+Install  the octopus gem:
+<pre> sudo gem install ar-octopus </pre>
+
+Add this line to enviroment.rb:
+<pre>config.gem 'ar-octopus', :lib => "octopus"</pre>
+
+<h3> Rails 3.x </h3>
+
+Add this line to Gemfile:
+<pre>gem 'ar-octopus', :require => "octopus"</pre>
+
+Runs a bundle install:
+<pre>bundle install</pre>
   
 <h2>Thanks</h2>
 

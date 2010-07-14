@@ -11,7 +11,7 @@ module Octopus::Migration
   end
 
   def using(*args, &block)
-    if self.connection().is_a?(Octopus::Proxy)
+    if self.connection().is_a?(Octopus::Proxy) && !block_given?
       args.each do |shard|
         self.connection().check_schema_migrations(shard)
       end
@@ -20,13 +20,14 @@ module Octopus::Migration
       self.connection().current_shard = args        
     end
     
-    yield if block_given?
+    if block_given?
+      self.connection.run_queries_on_shard(args, &block)
+    end 
 
     return self
   end
 
   def using_group(*args)
-    
     if self.connection().is_a?(Octopus::Proxy)
       args.each do |group_shard|
         shards = self.connection().instance_variable_get(:@groups)[group_shard] || []

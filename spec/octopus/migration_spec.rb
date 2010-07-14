@@ -46,6 +46,15 @@ describe Octopus::Migration do
       User.using(:canada).find(:all, :conditions => {:name => "UsingCanada2"}).size.should == 1
     end
   end
+  
+  it "should send the query to the correct shard" do
+    migrating_to_version 13 do 
+      User.using(:brazil).find(:all, :conditions => {:name => "Brazil"}).size.should == 1
+      User.using(:brazil).find(:all, :conditions => {:name => "Canada"}).size.should == 0
+      User.using(:canada).find(:all, :conditions => {:name => "Brazil"}).size.should == 0
+      User.using(:canada).find(:all, :conditions => {:name => "Canada"}).size.should == 1
+    end    
+  end
 
   describe "should raise a exception when" do
     it "you specify a invalid shard name" do

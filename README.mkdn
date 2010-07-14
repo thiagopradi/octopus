@@ -3,7 +3,7 @@
 <p> Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a nice and clean way of doing Database Sharding.</p>
 
 <h2>Feature list: </h2>
-<p> The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3, is compatible with Rails 2.x.</p>
+<p> The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3, but is compatible with Rails 2.x.</p>
 
 <p> Octopus supports: </p>
 
@@ -19,31 +19,6 @@
 
 This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
 and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
-
-
-<h3>If you are writing code that smells using octopus, the EVIL Octopus is going behind you, be careful.</h3>
-<pre>
-                                _________________
-                      ___       | I'm so EVIL!  |
-                   .-'   `'.    |______________ |
-                  /         \   /
-                  |         ;  /
-                  |         | /         ___.--,
-         _.._     |0) ~ (0) |    _.---'`__.-( (_.
-  __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`
- ( ,.--'`   ',__ /./;   ;, '.__.'`    __
- _`) )  .---.__.' / |   |\   \__..--""  """--.,_
-`---' .'.''-._.-'`_./  /\ '.  \ _.-~~~````~~~-._`-.__.'
-      | |  .' _.-' |  |  \  \  '.               `~---`
-       \ \/ .'     \  \   '. '-._)
-        \/ /        \  \    `=.__`~-.
-        / /\         `) )    / / `"".`\
-  , _.-'.'\ \        / /    ( (     / /
-   `--~`   ) )    .-'.'      '.'.  | (
-          (/`    ( (`          ) )  '-;
-           `      '-;         (-'
-</pre>
-
 
 <h2>Copyright</h2>
 

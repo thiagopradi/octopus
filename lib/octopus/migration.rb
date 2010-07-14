@@ -52,19 +52,21 @@ module Octopus::Migration
     conn = ActiveRecord::Base.connection
     groups = conn.instance_variable_get(:@groups)
     
-    return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
+    begin
+      return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
     
-    if conn.current_group.is_a?(Array)
-      conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
-    elsif conn.current_group.is_a?(Symbol)       
-      conn.send_queries_to_multiple_shards(groups[conn.current_group]) { migrate_without_octopus(direction) }     
-    elsif conn.current_shard.is_a?(Array)
-      conn.send_queries_to_multiple_shards(conn.current_shard) { migrate_without_octopus(direction) }     
-    else
-      migrate_without_octopus(direction)
+      if conn.current_group.is_a?(Array)
+        conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
+      elsif conn.current_group.is_a?(Symbol)       
+        conn.send_queries_to_multiple_shards(groups[conn.current_group]) { migrate_without_octopus(direction) }     
+      elsif conn.current_shard.is_a?(Array)
+        conn.send_queries_to_multiple_shards(conn.current_shard) { migrate_without_octopus(direction) }     
+      else
+        migrate_without_octopus(direction)
+      end
+    ensure
+      conn.clean_proxy()
     end
-
-    conn.clean_proxy()
   end
 end
 

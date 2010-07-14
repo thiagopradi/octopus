@@ -7,17 +7,17 @@ module Octopus
 
       def update_attribute(name, value)
         reload_connection()
-        super(name, value)
+        super
       end
 
       def update_attributes(attributes)
         reload_connection()
-        super(attributes)
+        super
       end
 
       def update_attributes!(attributes)
         reload_connection()
-        super(attributes)
+        super
       end
 
       def reload

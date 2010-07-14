@@ -1,12 +1,12 @@
 module Octopus::Association
   def has_many(association_id, options = {}, &extension)
     default_octopus_opts(options)
-    super(association_id, options, &extension)
+    super
   end
 
   def has_and_belongs_to_many(association_id, options = {}, &extension)
     default_octopus_opts(options)
-    super(association_id, options, &extension)    
+    super
   end
 
   def default_octopus_opts(options)

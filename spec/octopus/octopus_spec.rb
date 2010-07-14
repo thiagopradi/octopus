@@ -21,18 +21,18 @@ describe Octopus do
   
   describe "#setup method" do    
     it "should have the default octopus enviroment as production" do
-      Octopus.octopus_enviroments.should == ["production"]
+      Octopus.enviroments.should == ["production"]
     end
     
     it "should allow the user to configure the octopus enviroments" do
       Octopus.setup do |config|
-        config.octopus_enviroments = [:production, :staging]
+        config.enviroments = [:production, :staging]
       end
       
-      Octopus.octopus_enviroments.should == ['production', 'staging']      
+      Octopus.enviroments.should == ['production', 'staging']      
 
       Octopus.setup do |config|
-        config.octopus_enviroments = [:production]
+        config.enviroments = [:production]
       end
     end
   end

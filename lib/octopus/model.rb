@@ -15,7 +15,7 @@ module Octopus::Model
     end
 
     def using(shard, &block)
-      return self if defined?(::Rails) && !Octopus.octopus_enviroments.include?(Rails.env.to_s)
+      return self if defined?(::Rails) && !Octopus.enviroments.include?(Rails.env.to_s)
 
       hijack_connection()  
       clean_table_name()
@@ -58,7 +58,7 @@ module Octopus::Model
       def self.connection_with_octopus()
         if defined?(::Rails) 
           Octopus.config()
-          if Octopus.octopus_enviroments.include?(Rails.env.to_s)
+          if Octopus.enviroments.include?(Rails.env.to_s)
             self.connection_proxy().current_model = self
             return self.connection_proxy()
           else

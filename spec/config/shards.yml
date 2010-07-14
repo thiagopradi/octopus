@@ -104,7 +104,7 @@ production_entire_replicated:
       
 octopus_rails:
   replicated: true
-  octopus_enviroments:
+  enviroments:
     - staging
     - production
 

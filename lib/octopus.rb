@@ -12,8 +12,8 @@ module Octopus
   def self.config()
     @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
     
-    if !@config[Octopus.env].nil? && @config[Octopus.env()]['octopus_enviroments']
-      self.octopus_enviroments = @config[Octopus.env()]['octopus_enviroments']
+    if !@config[Octopus.env].nil? && @config[Octopus.env()]['enviroments']
+      self.enviroments = @config[Octopus.env()]['enviroments']
     end
     
     @config
@@ -27,17 +27,17 @@ module Octopus
   
   # This is the default way to do Octopus Setup
   # Available variables:
-  # :octopus_enviroments => the enviroments that octopus will run. default: :production
+  # :enviroments => the enviroments that octopus will run. default: :production
   def self.setup
     yield self
   end
   
-  def self.octopus_enviroments=(octopus_enviroments)
-    @octopus_enviroments = octopus_enviroments.map { |element| element.to_s }
+  def self.enviroments=(enviroments)
+    @enviroments = enviroments.map { |element| element.to_s }
   end
   
-  def self.octopus_enviroments
-    @octopus_enviroments || ['production']
+  def self.enviroments
+    @enviroments || ['production']
   end
   
   def self.rails3?

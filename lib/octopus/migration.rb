@@ -1,15 +1,12 @@
 module Octopus::Migration  
   def self.extended(base)
     class << base
-      alias_method_chain :migrate, :octopus
-      
-      def announce(message)
-        version = defined?(@version) ? @version : nil
-
-        text = "#{version} #{name}: #{message} - #{get_current_shard}"
-        length = [0, 75 - text.length].max
-        write "== %s %s" % [text, "=" * length]
+      def announce_with_octopus(message)
+        announce_without_octopus("#{message} - #{get_current_shard}")
       end
+      
+      alias_method_chain :migrate, :octopus
+      alias_method_chain :announce, :octopus
     end
   end
 

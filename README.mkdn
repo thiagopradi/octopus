@@ -12,8 +12,11 @@
 - Moving data between shards with migrations.
 - Tools to manage database configurations. (soon)
 
-<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
-<p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p> 
+<h3> Replication </h3>
+<p> When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a> </p>
+
+<h3> Sharding </h3>
+<p> When using sharding, you need to specify what shard the query will be sent. Octopus support selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> </p>
 
 <h2> Install </h2>
 
@@ -32,6 +35,38 @@ Add this line to Gemfile:
 
 Runs a bundle install:
 <pre>bundle install</pre>
+
+<h2> How to use Octopus? </h2>
+<p>First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a></p>.
+
+<h3> Syntax </h3>
+<p>Octopus adds a method to each AR Class and object. the using method is used to select the shard, like this: </p>
+<pre>User.where(:name => "Thiago").limit(3).using(:slave_one) </pre>
+
+<p> Octopus also supports queries inside block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. </p>
+<pre>
+User.using(:slave_two) do 
+  User.create(:name => "Mike")
+end
+</pre>
+
+<p> Each object knows where is your shard, so you could to thinks like this:</p>
+<pre> 
+# This will find the user in the shard1
+@user = User.using(:shard1).find_by_name("Joao")
+
+# This will find the user in the master database
+@user2 = User.find_by_name("Jose")
+
+#Sets the name
+@user.name = "Mike"
+
+# Save the user in the correct shard, shard1. 
+@user.save()
+</pre>
+
+<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
+<p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p>
   
 <h2>Thanks</h2>
 

@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.23"
+  s.version = "0.0.24"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
@@ -46,6 +46,7 @@ Gem::Specification.new do |s|
      "spec/migrations/10_create_users_using_replication.rb",
      "spec/migrations/11_add_field_in_all_slaves.rb",
      "spec/migrations/12_create_users_using_block.rb",
+     "spec/migrations/13_create_users_using_block_and_using.rb",
      "spec/migrations/1_create_users_on_master.rb",
      "spec/migrations/2_create_users_on_canada.rb",
      "spec/migrations/3_create_users_on_both_shards.rb",
@@ -78,6 +79,7 @@ Gem::Specification.new do |s|
      "spec/migrations/10_create_users_using_replication.rb",
      "spec/migrations/11_add_field_in_all_slaves.rb",
      "spec/migrations/12_create_users_using_block.rb",
+     "spec/migrations/13_create_users_using_block_and_using.rb",
      "spec/migrations/1_create_users_on_master.rb",
      "spec/migrations/2_create_users_on_canada.rb",
      "spec/migrations/3_create_users_on_both_shards.rb",

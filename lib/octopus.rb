@@ -2,20 +2,20 @@ require "yaml"
 
 module Octopus
   def self.env()
-   @env ||= 'octopus'
+    @env ||= 'octopus'
   end
-  
+
   def self.rails_env()
     @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
   end
-  
+
   def self.config()
-    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
-    
-    if !@config[Octopus.env].nil? && @config[Octopus.env()]['enviroments']
-      self.enviroments = @config[Octopus.env()]['enviroments']
+    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))[Octopus.env()]
+
+    if @config && @config['enviroments']
+      self.enviroments = @config['enviroments']
     end
-    
+
     @config
   end
 
@@ -24,26 +24,26 @@ module Octopus
   def self.directory()
     @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd     
   end
-  
+
   # This is the default way to do Octopus Setup
   # Available variables:
   # :enviroments => the enviroments that octopus will run. default: :production
   def self.setup
     yield self
   end
-  
+
   def self.enviroments=(enviroments)
     @enviroments = enviroments.map { |element| element.to_s }
   end
-  
+
   def self.enviroments
     @enviroments || ['production']
   end
-  
+
   def self.rails3?
     ActiveRecord::VERSION::MAJOR == 3
   end
-  
+
   def self.rails?
     defined?(Rails) 
   end

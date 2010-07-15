@@ -19,7 +19,7 @@ describe Octopus::Proxy do
 
     describe "should raise error if you have duplicated shard names" do
       before(:each) do
-        Octopus.stub!(:env).and_return("production_raise_error")        
+        set_octopus_env("production_raise_error")                      
       end
 
       it "should raise the error" do
@@ -29,7 +29,7 @@ describe Octopus::Proxy do
 
     describe "should initialize just the master when you don't have a shards.yml file" do
       before(:each) do
-        Octopus.stub!(:env).and_return("crazy_enviroment")        
+        set_octopus_env("crazy_enviroment")              
       end
 
       it "should initialize just the master shard" do
@@ -48,7 +48,7 @@ describe Octopus::Proxy do
 
   describe "when you have a replicated enviroment" do
     before(:each) do
-      Octopus.stub!(:env).and_return("production_replicated")
+      set_octopus_env("production_replicated")      
     end
 
     it "should have the replicated attribute as true" do
@@ -63,7 +63,7 @@ describe Octopus::Proxy do
   describe "when you have a rails application" do
     before(:each) do
       Rails = mock()
-      Octopus.stub!(:env).and_return("octopus_rails")
+      set_octopus_env("octopus_rails")
     end
     
     it "should initialize correctly octopus common variables for the enviroments" do
@@ -88,6 +88,7 @@ describe Octopus::Proxy do
     
     after(:each) do
       Object.send(:remove_const, :Rails)
+      Octopus.instance_variable_set(:@config, nil)
     end
   end
 

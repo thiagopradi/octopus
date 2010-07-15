@@ -1,9 +1,9 @@
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
 
-  def initialize(config)    
+  def initialize(config)
     initialize_shards(config)
-    initialize_replication(config) if have_config_for_enviroment?(config) && config[Octopus.env()]["replicated"]
+    initialize_replication(config) if !config.nil? && config["replicated"]
   end
 
   def initialize_shards(config)
@@ -12,10 +12,10 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
     
-    if have_config_for_enviroment?(config) && Octopus.rails?
-      shards_config = config[Octopus.env()][Rails.env().to_s]["shards"]
-    elsif have_config_for_enviroment?(config)
-      shards_config = config[Octopus.env()]["shards"]
+    if !config.nil? && Octopus.rails?
+      shards_config = config[Rails.env().to_s]["shards"]
+    elsif !config.nil?
+      shards_config = config["shards"]
     end
     
     shards_config ||= []
@@ -39,7 +39,7 @@ class Octopus::Proxy
 
   def initialize_replication(config)
     @replicated = true
-    @entire_replicated = config[Octopus.env()]["entire_replicated"]
+    @entire_replicated = config["entire_replicated"]
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
@@ -140,10 +140,6 @@ class Octopus::Proxy
 
   def should_send_queries_to_replicated_databases?(method)
     @replicated && method.to_s =~ /select/
-  end
-  
-  def have_config_for_enviroment?(config)
-    !config[Octopus.env()].nil?
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        

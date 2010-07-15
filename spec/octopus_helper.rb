@@ -21,11 +21,16 @@ end
 
 def using_enviroment(enviroment, &block)
   begin
-    Octopus.instance_variable_set(:@env, enviroment.to_s)
+    set_octopus_env(enviroment.to_s)
     clean_connection_proxy()
     yield
   ensure
-    Octopus.instance_variable_set(:@env, 'octopus')
+    set_octopus_env('octopus')
     clean_connection_proxy()
   end
+end
+
+def set_octopus_env(env)
+  Octopus.instance_variable_set(:@config, nil)
+  Octopus.stub!(:env).and_return(env)
 end

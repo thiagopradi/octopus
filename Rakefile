@@ -147,6 +147,12 @@ namespace :db do
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:projects) do |u|
         u.string :name
       end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:comments) do |u|
+        u.string :name
+        u.string :commentable_type
+        u.integer :commentable_id
+      end
     end
   end
   

@@ -10,6 +10,7 @@ end
 #The client class isn't replicated
 class Client < ActiveRecord::Base
   has_many :items
+  has_many :comments, :as => :commentable
 end
 
 #This class is replicated
@@ -52,4 +53,8 @@ end
 class Project < ActiveRecord::Base
   has_many :assignments
   has_many :programmers, :through => :assignments
+end
+
+class Comment < ActiveRecord::Base
+  belongs_to :commentable, :polymorphic => true
 end

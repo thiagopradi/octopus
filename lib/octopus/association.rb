@@ -22,12 +22,16 @@ module Octopus::Association
   def default_octopus_opts(options)
     if options[:before_add].is_a?(Array)
       options[:before_add] << :set_connection_on_association
+    elsif options[:before_add].is_a?(Symbol)
+      options[:before_add] = [:set_connection_on_association, options[:before_add]]      
     else
       options[:before_add] = :set_connection_on_association
     end
 
     if options[:before_remove].is_a?(Array)
       options[:before_remove] << :set_connection_on_association
+    elsif options[:before_remove].is_a?(Symbol)
+      options[:before_remove] = [:set_connection_on_association, options[:before_remove]]      
     else
       options[:before_remove] = :set_connection_on_association
     end

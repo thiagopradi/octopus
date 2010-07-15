@@ -15,7 +15,7 @@ octopus:
     #TODO - FIX THIS
     sqlite_shard:
       adapter: sqlite3
-      database: /Users/tchandy/Projetos/octopus/spec/database.sqlite3
+      database: /tmp/database.sqlite3
     
     history_shards:
       aug2009:

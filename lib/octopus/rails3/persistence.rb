@@ -1,10 +1,6 @@
 module Octopus
   module Rails3
     module Persistence
-      def reload_connection()
-        set_connection() if should_set_current_shard?
-      end
-
       def update_attribute(name, value)
         reload_connection()
         super

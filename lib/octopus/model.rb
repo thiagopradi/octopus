@@ -33,13 +33,13 @@ module Octopus::Model
     def hijack_initializer()
       attr_accessor :current_shard
       after_initialize :set_current_shard
-      before_save :set_connection
+      before_save :reload_connection
 
       def set_current_shard
         if new_record? || self.connection.block
-          self.current_shard = self.class.connection_proxy.current_shard    
+          self.current_shard = self.connection.current_shard    
         else
-          self.current_shard = self.class.connection_proxy.last_current_shard  
+          self.current_shard = self.connection.last_current_shard  
         end
       end
 
@@ -75,21 +75,12 @@ module Octopus::Model
   module InstanceMethods
     include SharedMethods
 
-    def set_connection(*args)
-      if(args.size == 1)
-        arg = args.first
-        arg.current_shard = self.current_shard if arg.respond_to?(:current_shard) && should_set_current_shard?
-      end
-
-      self.connection.current_shard = self.current_shard if should_set_current_shard?
-    end
-
     def should_set_current_shard?
-      self.respond_to?(:current_shard) && self.current_shard != nil
+      self.respond_to?(:current_shard) && !self.current_shard.nil?
     end
 
     def reload_connection()
-      set_connection() if should_set_current_shard?
+      self.connection.current_shard = self.current_shard() if should_set_current_shard?
     end
   end
 

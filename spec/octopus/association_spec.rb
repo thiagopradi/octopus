@@ -377,6 +377,12 @@ describe Octopus::Association do
     it "should finds the client that the item belongs" do
       @item_brazil.client.should == @brazil_client
     end
+    
+    it "should raise error if you try to add a record from a different shard" do
+      lambda do 
+        @brazil_client.items << Item.using(:canada).create!(:name => "New User")
+      end.should raise_error("Association Error: Records are from different shards")
+    end
 
     it "should update the attribute for the item" do
       new_brazil_client = Client.using(:brazil).create!(:name => "new Client")

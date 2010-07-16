@@ -5,6 +5,10 @@ module Octopus::Association
 
   module InstanceMethods
     def set_connection_on_association(record)
+      if !record.current_shard.nil? && !self.current_shard.nil? && record.current_shard != self.current_shard
+        raise "Association Error: Records are from different shards" 
+      end
+      
       record.current_shard = self.connection.current_shard = self.current_shard if should_set_current_shard?
     end
   end

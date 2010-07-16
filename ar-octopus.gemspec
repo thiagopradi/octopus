@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.24"
+  s.version = "0.0.25"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
-  s.date = %q{2010-07-14}
+  s.authors = ["Thiago Pradi", "Mike Perham"]
+  s.date = %q{2010-07-16}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
@@ -107,13 +107,22 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
+      s.add_development_dependency(%q<mysql>, [">= 2.8.1"])
+      s.add_development_dependency(%q<pg>, [">= 0.9.0"])
+      s.add_development_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
       s.add_runtime_dependency(%q<activerecord>, [">= 3.0.0beta"])
     else
       s.add_dependency(%q<rspec>, [">= 1.2.9"])
+      s.add_dependency(%q<mysql>, [">= 2.8.1"])
+      s.add_dependency(%q<pg>, [">= 0.9.0"])
+      s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
       s.add_dependency(%q<activerecord>, [">= 3.0.0beta"])
     end
   else
     s.add_dependency(%q<rspec>, [">= 1.2.9"])
+    s.add_dependency(%q<mysql>, [">= 2.8.1"])
+    s.add_dependency(%q<pg>, [">= 0.9.0"])
+    s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
     s.add_dependency(%q<activerecord>, [">= 3.0.0beta"])
   end
 end

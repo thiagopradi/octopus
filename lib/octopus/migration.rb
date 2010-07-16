@@ -51,11 +51,11 @@ module Octopus::Migration
 
   def migrate_with_octopus(direction)
     conn = ActiveRecord::Base.connection
+    return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
+
     groups = conn.instance_variable_get(:@groups)
     
     begin
-      return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
-    
       if conn.current_group.is_a?(Array)
         conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
       elsif conn.current_group.is_a?(Symbol)       

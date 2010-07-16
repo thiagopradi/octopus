@@ -1,26 +1,26 @@
-<h1> Octopus  - Easy Database Sharding for ActiveRecord</h1>
+# Octopus  - Easy Database Sharding for ActiveRecord
 
-<p> Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a nice and clean way of doing Database Sharding.</p>
+Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a nice and clean way of doing Database Sharding.
 
-<h2>Feature list: </h2>
-<p> The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3, but is compatible with Rails 2.x.</p>
+## Feature list:
+The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3, but is compatible with Rails 2.x.
 
-<p> Octopus supports: </p>
+Octopus supports:
 
 - Sharding (with multiple shards, and grouped shards).
 - Replication (Master/slave support, with multiple slaves).
 - Moving data between shards with migrations.
 - Tools to manage database configurations. (soon)
 
-<h3> Replication </h3>
-<p> When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a> </p>
+### Replication
+When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a>
 
-<h3> Sharding </h3>
-<p> When using sharding, you need to specify what shard the query will be sent. Octopus support selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> </p>
+### Sharding
+ When using sharding, you need to specify what shard the query will be sent. Octopus support selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> 
 
-<h2> Install </h2>
+## Install 
 
-<h3> Rails 2.x </h3>
+### Rails 2.x 
 
 Install  the octopus gem:
 <pre> sudo gem install ar-octopus </pre>
@@ -28,7 +28,7 @@ Install  the octopus gem:
 Add this line to enviroment.rb:
 <pre>config.gem 'ar-octopus', :lib => "octopus"</pre>
 
-<h3> Rails 3.x </h3>
+### Rails 3.x 
 
 Add this line to Gemfile:
 <pre>gem 'ar-octopus', :require => "octopus"</pre>
@@ -36,21 +36,23 @@ Add this line to Gemfile:
 Runs a bundle install:
 <pre>bundle install</pre>
 
-<h2> How to use Octopus? </h2>
-<p>First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a></p>.
+## How to use Octopus? 
 
-<h3> Syntax </h3>
-<p>Octopus adds a method to each AR Class and object. the using method is used to select the shard, like this: </p>
+First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a>.
+
+### Syntax 
+
+Octopus adds a method to each AR Class and object. the using method is used to select the shard, like this: 
 <pre>User.where(:name => "Thiago").limit(3).using(:slave_one) </pre>
 
-<p> Octopus also supports queries inside block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. </p>
+ Octopus also supports queries inside block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. 
 <pre>
 User.using(:slave_two) do 
   User.create(:name => "Mike")
 end
 </pre>
 
-<p> Each object knows where is your shard, so you could to thinks like this:</p>
+ Each object knows where is your shard, so you could to thinks like this:
 <pre> 
 # This will find the user in the shard1
 @user = User.using(:shard1).find_by_name("Joao")
@@ -65,7 +67,7 @@ end
 @user.save()
 </pre>
 
-<p> In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in brazil and canada shards.</p>
+ In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in brazil and canada shards.
 <pre>
   class CreateUsersOnBothShards < ActiveRecord::Migration
     using(:brazil, :canada)
@@ -79,7 +81,7 @@ end
     end
   end
 </pre>
-<p> You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml: </p>
+ You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml: 
 <pre>
   class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
     using_group(:history_shards)
@@ -94,14 +96,14 @@ end
   end
 </pre>
 
-<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
-<p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p>
+ To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
+Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> 
   
-<h2>Thanks</h2>
+## Thanks
 
 This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
 and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
-<h2>Copyright</h2>
+## Copyright
 
 Copyright (c) 2010 Thiago Pradi, released under the MIT license.

@@ -47,7 +47,7 @@ Octopus adds a method to each AR Class and object. the using method is used to s
 
  Octopus also supports queries inside block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. 
 <pre>
-User.using(:slave_two) do 
+Octopus.using(:slave_two) do 
   User.create(:name => "Mike")
 end
 </pre>

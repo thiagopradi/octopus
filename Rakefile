@@ -1,12 +1,5 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
 require 'rubygems'
-
-if ENV["VERSION"]
-  gem 'activerecord', ENV["VERSION"]
-  gem 'activesupport', ENV["VERSION"]
-  gem 'actionpack', ENV["VERSION"]
-end
-
 require 'rake'
 require "yaml"
 

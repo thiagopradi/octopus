@@ -11,8 +11,8 @@ module Octopus::Migration
     end
   end
 
-  def using(*args, &block)
-    if self.connection().is_a?(Octopus::Proxy) && !block_given?
+  def using(*args)
+    if self.connection().is_a?(Octopus::Proxy)
       args.each do |shard|
         self.connection().check_schema_migrations(shard)
       end
@@ -21,10 +21,6 @@ module Octopus::Migration
       self.current_shard = args
       self.connection().current_shard = args        
     end
-    
-    if block_given?
-      self.connection.run_queries_on_shard(args, &block)
-    end 
 
     return self
   end

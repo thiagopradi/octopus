@@ -14,20 +14,15 @@ module Octopus::Model
       self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
     end
 
-    def using(shard, &block)
+    def using(shard)
       return self if defined?(::Rails) && !Octopus.enviroments.include?(Rails.env.to_s)
 
-      hijack_connection()  
       clean_table_name()
+      hijack_initializer()
+        
+      self.connection.using_enabled = true
 
-      if block_given?
-        self.connection.run_queries_on_shard(shard, &block)
-      else
-        hijack_initializer()  
-        self.connection.using_enabled = true
-
-        return Octopus::ScopeProxy.new(shard, self)
-      end
+      return Octopus::ScopeProxy.new(shard, self)
     end
 
     def hijack_initializer()

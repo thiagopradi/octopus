@@ -5,7 +5,7 @@ module Octopus::AssociationCollection
 
   def count(*args)
     if should_wrap_the_connection?
-      @owner.using(@owner.current_shard) { super } 
+      Octopus.using(@owner.current_shard) { super } 
     else        
       super
     end

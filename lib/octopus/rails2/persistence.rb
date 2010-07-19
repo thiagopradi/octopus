@@ -11,9 +11,7 @@ module Octopus
 
       def delete_with_octopus()
         if should_set_current_shard?
-          self.using(self.current_shard) do
-            delete_without_octopus()
-          end
+          Octopus.using(self.current_shard) { delete_without_octopus() }
         else
           delete_without_octopus()
         end
@@ -21,9 +19,7 @@ module Octopus
 
       def destroy_with_octopus()
         if should_set_current_shard?
-          self.using(self.current_shard) do
-            destroy_without_octopus()
-          end
+          Octopus.using(self.current_shard) { destroy_without_octopus() }
         else
           destroy_without_octopus()
         end
@@ -31,9 +27,7 @@ module Octopus
 
       def reload_with_octopus(options = nil)
         if should_set_current_shard?
-          self.using(self.current_shard) do
-            reload_without_octopus(options)
-          end
+          Octopus.using(self.current_shard) { reload_without_octopus(options) }
         else
           reload_without_octopus(options)
         end

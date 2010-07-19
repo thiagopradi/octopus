@@ -56,7 +56,7 @@ describe Octopus::Model do
     it "should allow find inside blocks" do
       @user = User.using(:brazil).create!(:name => "Thiago")
 
-      User.using(:brazil) do
+      Octopus.using(:brazil) do
         User.first.should == @user
       end
       
@@ -112,7 +112,7 @@ describe Octopus::Model do
 
     describe "passing a block" do
       it "should allow queries be executed inside the block, ponting to a specific shard" do
-        User.using(:canada) do
+        Octopus.using(:canada) do
           User.create(:name => "oi")
         end
 
@@ -197,7 +197,7 @@ describe Octopus::Model do
     end
     
     it "using update_attributes inside a block" do
-      ActiveRecord::Base.using(:brazil) do
+      Octopus.using(:brazil) do
         @user = User.create!(:name => "User1")
         @user2 = User.find(@user.id)
         @user2.update_attributes(:name => "Joaquim")  

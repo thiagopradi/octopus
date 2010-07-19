@@ -2,7 +2,7 @@ class CreateUsersUsingBlockAndUsing < ActiveRecord::Migration
   using(:brazil)
   
   def self.up
-    using(:canada) do
+    Octopus.using(:canada) do
       User.create!(:name => "Canada")
     end
     

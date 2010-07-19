@@ -1,11 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Octopus::Controller do
-  it "should have the using method to select the shard" do
-    a = ActionController::Base.new
-    a.respond_to?(:using).should be_true
-  end
-  
+describe "Rails Controllers" do
   it "should use #using method to in all requests" do
     class UsersControllers < ActionController::Base
       around_filter :select_shard      
@@ -15,7 +10,7 @@ describe Octopus::Controller do
       end
       
       def select_shard
-        using(:brazil) do
+        Octopus.using(:brazil) do
           yield
         end
       end

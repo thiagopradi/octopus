@@ -109,26 +109,24 @@ octopus_rails:
     - production
 
   staging:
-    shards:
-      slave1:
-        adapter: mysql
-        host: localhost
-        database: octopus_shard2
-      slave2:
-        adapter: mysql
-        host: localhost
-        database: octopus_shard3
+    slave1:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard2
+    slave2:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard3
 
   production:
-    shards:
-      slave3:
-        adapter: mysql
-        host: localhost
-        database: octopus_shard4
-      slave4:
-        adapter: mysql
-        host: localhost
-        database: octopus_shard5
+    slave3:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard4
+    slave4:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard5
       
       
   

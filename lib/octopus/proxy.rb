@@ -12,12 +12,7 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
     
-    if !config.nil? && Octopus.rails?
-      shards_config = config[Rails.env().to_s]["shards"]
-    elsif !config.nil?
-      shards_config = config["shards"]
-    end
-    
+    shards_config = config[Octopus.rails_env()] if !config.nil?
     shards_config ||= []
 
     shards_config.each do |key, value|

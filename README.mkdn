@@ -67,6 +67,8 @@ end
 @user.save()
 </pre>
 
+### Migrations
+
  In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in brazil and canada shards.
 <pre>
   class CreateUsersOnBothShards < ActiveRecord::Migration
@@ -93,6 +95,22 @@ end
     def self.down
       User.delete_all()
     end
+  end
+</pre>
+
+
+### Rails Controllers
+
+If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
+<pre>
+  class ApplicationController < ActionController::Base
+    around_filter :select_shard      
+    
+    def select_shard
+      Octopus.using(:brazil) do
+        yield
+      end
+    end    
   end
 </pre>
 

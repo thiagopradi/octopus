@@ -1,7 +1,18 @@
 octopus:
   enviroments:
     - development
+    - test
   development:
+    asia:
+      adapter: sqlite3
+      database: db/asia.sqlite3
+    europe:
+      adapter: sqlite3
+      database: db/europe.sqlite3
+    america:
+      adapter: sqlite3
+      database: db/america.sqlite3
+  test:
     asia:
       adapter: sqlite3
       database: db/asia.sqlite3

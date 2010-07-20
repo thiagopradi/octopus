@@ -9,12 +9,14 @@ gem 'sqlite3-ruby', :require => 'sqlite3'
 
 gem 'ar-octopus', :git => 'git://github.com/tchandy/octopus.git', :require => "octopus"
 
-gem 'capybara'
-gem 'database_cleaner'
-gem 'cucumber-rails'
-gem 'cucumber'
-gem 'spork'
-gem 'launchy'   
-gem "rspec-rails", ">= 2.0.0.beta.16"
-gem 'ruby-debug'
-gem "aruba"
+group :test do 
+  gem 'capybara'
+  gem 'database_cleaner'
+  gem 'cucumber-rails'
+  gem 'cucumber'
+  gem 'spork'
+  gem 'launchy'   
+  gem "rspec-rails", ">= 2.0.0.beta.16"
+  gem 'ruby-debug'
+  gem "aruba"
+end

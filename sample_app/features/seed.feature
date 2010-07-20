@@ -4,5 +4,5 @@ Feature: rake db:seed
   I want to use the rake db:seed command
 
   Scenario: Detect subset of one-line output
-    When I run "ruby -e 'puts \"hello world\"'"
-    Then the output should contain "hello world"
+    When I run "cd ~/Projetos/octopus/sample_app && RAILS_ENV=development rake db:seed"
+    Then the output should contain "Could not find table 'users'"

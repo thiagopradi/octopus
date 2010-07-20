@@ -85,6 +85,7 @@ namespace :db do
     end
     
     %x( dropdb -U #{postgres_user} octopus_shard1 )
+    %x(rm /tmp/database.sqlite3)
   end
 
   desc 'Create tables on tests databases'
@@ -154,6 +155,11 @@ namespace :db do
         u.string :name
         u.string :commentable_type
         u.integer :commentable_id
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:parts) do |u|
+        u.string :name
+        u.integer :item_id
       end
     end
   end

@@ -266,6 +266,9 @@ describe Octopus::Model do
         @item1 = Item.create(:client => @client2, :name => "Item 1")
         @item2 = Item.create(:client => @client2, :name => "Item 2")
         @item3 = Item.create(:client => @client3, :name => "Item 3")
+        @part1 = Part.create(:item => @item1, :name => "Part 1")
+        @part2 = Part.create(:item => @item1, :name => "Part 2")
+        @part3 = Part.create(:item => @item2, :name => "Part 3")
       end
       
       @item4 = Item.using(:brazil).create(:client => @client1, :name => "Item 4")
@@ -276,9 +279,11 @@ describe Octopus::Model do
       items.should == [@item1, @item2]
     end
     
-    it "should work using the rails 2.x syntax" do
-      items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
-      items.should == [@item1, @item2]      
+    it "should work using the rails 3.x syntax" do
+      if Octopus.rails3?
+        items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
+        items.should == [@item1, @item2]      
+      end
     end
     
     it "should work for include also, rails 2.x syntax" do
@@ -287,8 +292,22 @@ describe Octopus::Model do
     end
 
     it "should work for include also, rails 3.x syntax" do
-      items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
-      items.should == [@item1, @item2]
+      if Octopus.rails3?
+        items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
+        items.should == [@item1, @item2]
+      end
+    end
+    
+    it "should work for multiple includes, with rails 2.x syntax" do
+      parts = Part.using(:canada).find(:all, :include => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
+      parts.should == [@part1, @part2, @part3]
+      parts.first.item.client.should == @client2
+    end
+    
+    it "should work for multiple join, with rails 2.x syntax" do
+      parts = Part.using(:canada).find(:all, :joins => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
+      parts.should == [@part1, @part2, @part3]
+      parts.first.item.client.should == @client2
     end
   end
 

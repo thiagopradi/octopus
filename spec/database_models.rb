@@ -21,6 +21,11 @@ end
 #This items belongs to a client
 class Item < ActiveRecord::Base
   belongs_to :client
+  has_many :parts
+end
+
+class Part < ActiveRecord::Base
+  belongs_to :item
 end
 
 class Keyboard < ActiveRecord::Base

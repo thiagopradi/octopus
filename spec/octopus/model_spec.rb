@@ -37,6 +37,15 @@ describe Octopus::Model do
       User.count.should == 1
     end
     
+    it "should allow creating more than one user" do
+      Octopus.using(:canada) do 
+        User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
+      end
+      
+      User.using(:canada).find_by_name("America User 1").should_not be_nil
+      User.using(:canada).find_by_name("America User 2").should_not be_nil      
+    end
+    
     it "should work when you have a SQLite3 shard" do
       u = User.using(:sqlite_shard).create!(:name => "Sqlite3")
       User.using(:sqlite_shard).find_by_name("Sqlite3").should == u
@@ -245,6 +254,14 @@ describe Octopus::Model do
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
       end
     end
+  end
+  
+  describe "when you have join models" do
+    
+  end
+  
+  describe "when you have included models" do
+    
   end
   
   describe "ActiveRecord::Base Validations" do

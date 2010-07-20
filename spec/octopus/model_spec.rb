@@ -256,7 +256,7 @@ describe Octopus::Model do
     end
   end
 
-  describe "when you have join models" do
+  describe "when you have joins/include" do 
     before(:each) do
       @client1 = Client.using(:brazil).create(:name => "Thiago")
       
@@ -280,10 +280,16 @@ describe Octopus::Model do
       items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
       items.should == [@item1, @item2]      
     end
-  end
+    
+    it "should work for include also, rails 2.x syntax" do
+      items = Item.using(:canada).find(:all, :include => :client, :conditions => { :clients => { :id => @client2.id } })      
+      items.should == [@item1, @item2]
+    end
 
-  describe "when you have included models" do
-
+    it "should work for include also, rails 3.x syntax" do
+      items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
+      items.should == [@item1, @item2]
+    end
   end
 
   describe "ActiveRecord::Base Validations" do

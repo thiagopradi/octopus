@@ -11,15 +11,15 @@ describe Octopus::Model do
       User.using(:canada).count.should == 1
       User.count.should == 0
     end
-    
+
     it "should allow selecting the shard using #new" do
       u = User.using(:canada).new
       u.name = "Thiago"
       u.save
-      
+
       User.using(:canada).count.should == 1
       User.using(:brazil).count.should == 0
-      
+
       u1 = User.new
       u1.name = "Joaquim"
       u2 = User.using(:canada).new
@@ -36,21 +36,21 @@ describe Octopus::Model do
       User.create!(:name => 'oi')
       User.count.should == 1
     end
-    
+
     it "should allow creating more than one user" do
       Octopus.using(:canada) do 
         User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
       end
-      
+
       User.using(:canada).find_by_name("America User 1").should_not be_nil
       User.using(:canada).find_by_name("America User 2").should_not be_nil      
     end
-    
+
     it "should work when you have a SQLite3 shard" do
       u = User.using(:sqlite_shard).create!(:name => "Sqlite3")
       User.using(:sqlite_shard).find_by_name("Sqlite3").should == u
     end
-    
+
     it "should clean #current_shard from proxy when using execute" do
       ActiveRecord::Base.using(:canada).connection().execute("select * from users limit 1;")
       ActiveRecord::Base.connection.current_shard.should == :master
@@ -61,14 +61,14 @@ describe Octopus::Model do
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
     end
-    
+
     it "should allow find inside blocks" do
       @user = User.using(:brazil).create!(:name => "Thiago")
 
       Octopus.using(:brazil) do
         User.first.should == @user
       end
-      
+
       User.using(:brazil).find_by_name("Thiago").should == @user
     end
 
@@ -204,14 +204,14 @@ describe Octopus::Model do
       @user2.update_attributes(:name => "Joaquim")  
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil    
     end
-    
+
     it "using update_attributes inside a block" do
       Octopus.using(:brazil) do
         @user = User.create!(:name => "User1")
         @user2 = User.find(@user.id)
         @user2.update_attributes(:name => "Joaquim")  
       end
-      
+
       User.find_by_name("Joaquim").should be_nil
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
@@ -222,18 +222,18 @@ describe Octopus::Model do
       @user2.update_attributes(:name => "Joaquim")  
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
-    
+
     it "transaction" do
       u = User.create!(:name => "Thiago")
 
       User.using(:brazil).count.should == 0
       User.using(:master).count.should == 1
-      
+
       User.using(:brazil).transaction do
         User.find_by_name("Thiago").should be_nil
         User.create!(:name => "Brazil")
       end
-      
+
       User.using(:brazil).count.should == 1
       User.using(:master).count.should == 1
     end
@@ -255,22 +255,44 @@ describe Octopus::Model do
       end
     end
   end
-  
+
   describe "when you have join models" do
+    before(:each) do
+      @client1 = Client.using(:brazil).create(:name => "Thiago")
+      
+      Octopus.using(:canada) do 
+        @client2 = Client.create(:name => "Mike")
+        @client3 = Client.create(:name => "Joao")
+        @item1 = Item.create(:client => @client2, :name => "Item 1")
+        @item2 = Item.create(:client => @client2, :name => "Item 2")
+        @item3 = Item.create(:client => @client3, :name => "Item 3")
+      end
+      
+      @item4 = Item.using(:brazil).create(:client => @client1, :name => "Item 4")
+    end
     
+    it "should work with the rails 2.x syntax" do
+      items = Item.using(:canada).find(:all, :joins => :client, :conditions => { :clients => { :id => @client2.id } })      
+      items.should == [@item1, @item2]
+    end
+    
+    it "should work using the rails 2.x syntax" do
+      items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
+      items.should == [@item1, @item2]      
+    end
   end
-  
+
   describe "when you have included models" do
-    
+
   end
-  
+
   describe "ActiveRecord::Base Validations" do
     it "should work correctly when using validations" do
       @key = Keyboard.create!(:name => "Key")
       lambda { Keyboard.using(:brazil).create!(:name => "Key") }.should_not raise_error()
       lambda { Keyboard.create!(:name => "Key") }.should raise_error()
     end
-    
+
     it "should work correctly when using validations with using syntax" do
       @key = Keyboard.using(:brazil).create!(:name => "Key")
       lambda { Keyboard.create!(:name => "Key") }.should_not raise_error()

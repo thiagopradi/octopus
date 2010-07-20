@@ -1,4 +1,6 @@
 class CreateItems < ActiveRecord::Migration
+  using(:master, :asia, :europe, :america)
+  
   def self.up
     create_table :items do |t|
       t.string :name

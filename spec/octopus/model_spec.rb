@@ -39,8 +39,10 @@ describe Octopus::Model do
 
     it "should allow creating more than one user" do
       User.using(:canada).create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
+      User.create!(:name => "Thiago")
       User.using(:canada).find_by_name("America User 1").should_not be_nil
       User.using(:canada).find_by_name("America User 2").should_not be_nil      
+      User.using(:master).find_by_name("Thiago").should_not be_nil
     end
 
     it "should work when you have a SQLite3 shard" do

@@ -38,10 +38,7 @@ describe Octopus::Model do
     end
 
     it "should allow creating more than one user" do
-      Octopus.using(:canada) do 
-        User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
-      end
-
+      User.using(:canada).create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
       User.using(:canada).find_by_name("America User 1").should_not be_nil
       User.using(:canada).find_by_name("America User 2").should_not be_nil      
     end

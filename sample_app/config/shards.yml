@@ -12,6 +12,7 @@ octopus:
     america:
       adapter: sqlite3
       database: db/america.sqlite3
+
   test:
     asia:
       adapter: sqlite3
@@ -22,3 +23,6 @@ octopus:
     america:
       adapter: sqlite3
       database: db/america.sqlite3
+    dev_env:
+      adapter: sqlite3
+      database: db/development.sqlite3

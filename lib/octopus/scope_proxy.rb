@@ -13,14 +13,9 @@ class Octopus::ScopeProxy
   
   # Transaction Method send all queries to a specified shard.
   def transaction(options = {}, &block)
-    @klass.connection().current_shard = @shard
-    @klass.connection().block = true
-    
-    begin
-      @klass.connection().transaction(options, &block)
-    ensure
-      @klass.connection().block = false    
-    end
+    @klass.connection.run_queries_on_shard(@shard) do
+      @klass = @klass.connection().transaction(options, &block)
+    end      
   end
     
   def connection

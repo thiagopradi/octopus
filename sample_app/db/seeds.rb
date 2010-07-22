@@ -13,3 +13,4 @@ Octopus.using(:america) do
   users_america = User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
 end
 
+User.create!(:name => "Teste")

@@ -57,7 +57,7 @@ if defined?(ActiveRecord::Base)
   end
 end
 
-After do 
+Before do 
   `rm #{Rails.root.to_s}/db/america.sqlite3`
   `rm #{Rails.root.to_s}/db/asia.sqlite3`
   `rm #{Rails.root.to_s}/db/development.sqlite3`

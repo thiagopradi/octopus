@@ -1,4 +1,5 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
+$LOAD_PATH << (File.dirname(__FILE__) + '/spec')
 require 'rubygems'
 require 'rake'
 require "yaml"

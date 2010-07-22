@@ -19,6 +19,11 @@ describe "when the database is replicated" do
     u1.save()
     Cat.using(:slave4).first.name.should == "Slave Cat"
   end
+  
+  it "should allow to send some queries to a selected slave" do
+    Cat.using(:slave4).create!([{:name => "Slave Cat 1"}, {:name => "Slave Cat 2"}])  
+    Cat.using(:slave4).count.should == 2
+  end
 
   it "should send read queries to slaves, when you have a replicated model, using a round robin algorithm" do
     u = Cat.create!(:name => "master")

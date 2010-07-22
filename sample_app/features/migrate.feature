@@ -31,6 +31,12 @@ Feature: rake db:migrate
     Then the output should contain "CreateSampleUsers: migrating - Shard: europe"
     Then the output should not contain "An error has occurred, this and all later migrations canceled:"
     Then the version of "dev_env" shard should be "20100720210335"
-    Then the version of "america" shard should be "20100720210335"
-    Then the version of "europe" shard should be "20100720210335"
-    Then the version of "asia" shard should be "20100720210335"
+    Then the version of "america" shard should be "nil"
+    Then the version of "europe" shard should be "nil"
+    Then the version of "asia" shard should be "nil"
+    
+  Scenario: after running rake db:migrate
+    When I run "cd ~/Projetos/octopus/sample_app && RAILS_ENV=development rake db:migrate"
+    When I run "cd ~/Projetos/octopus/sample_app && RAILS_ENV=development rake db:abort_if_pending_migrations"
+    Then the output should not contain "pending migrations"
+  

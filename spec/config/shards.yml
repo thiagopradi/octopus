@@ -127,6 +127,28 @@ octopus_rails:
       adapter: mysql
       host: localhost
       database: octopus_shard5
+
+
+not_entire_sharded:
+  entire_sharded: false
+  shards:
+    europe:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard2
+    canada:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard3
+    brazil:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard4
+    russia:
+      adapter: mysql
+      host: localhost
+      database: octopus_shard5
+  
       
       
   

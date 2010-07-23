@@ -11,6 +11,7 @@ class Octopus::Proxy
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @current_shard = :master
+    @entire_sharded = config['entire_sharded']
     
     shards_config = config[Octopus.rails_env()] if !config.nil?
     shards_config ||= []

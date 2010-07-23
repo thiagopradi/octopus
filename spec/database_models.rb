@@ -16,6 +16,7 @@ end
 #This class is replicated
 class Cat < ActiveRecord::Base
   replicated_model()
+  sharded_model()
 end
 
 #This items belongs to a client

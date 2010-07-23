@@ -79,6 +79,10 @@ module Octopus::Model
     def replicated_model()
       write_inheritable_attribute(:replicated, true)
     end
+    
+    def sharded_model()
+      write_inheritable_attribute(:sharded, true)      
+    end
   end
 end
 

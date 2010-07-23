@@ -27,7 +27,7 @@ module Octopus
 
   # This is the default way to do Octopus Setup
   # Available variables:
-  # :enviroments => the enviroments that octopus will run. default: :production
+  # :enviroments => the enviroments that octopus will run. default: 'production'
   def self.setup
     yield self
   end

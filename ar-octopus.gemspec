@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.26"
+  s.version = "0.0.27"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham"]
-  s.date = %q{2010-07-19}
+  s.date = %q{2010-07-23}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
@@ -39,6 +39,71 @@ Gem::Specification.new do |s|
      "lib/octopus/rails3/persistence.rb",
      "lib/octopus/scope_proxy.rb",
      "rails/init.rb",
+     "sample_app/.gitignore",
+     "sample_app/.rspec",
+     "sample_app/Gemfile",
+     "sample_app/Gemfile.lock",
+     "sample_app/README",
+     "sample_app/Rakefile",
+     "sample_app/app/controllers/application_controller.rb",
+     "sample_app/app/helpers/application_helper.rb",
+     "sample_app/app/models/item.rb",
+     "sample_app/app/models/user.rb",
+     "sample_app/app/views/layouts/application.html.erb",
+     "sample_app/autotest/discover.rb",
+     "sample_app/config.ru",
+     "sample_app/config/application.rb",
+     "sample_app/config/boot.rb",
+     "sample_app/config/cucumber.yml",
+     "sample_app/config/database.yml",
+     "sample_app/config/environment.rb",
+     "sample_app/config/environments/development.rb",
+     "sample_app/config/environments/production.rb",
+     "sample_app/config/environments/test.rb",
+     "sample_app/config/initializers/backtrace_silencers.rb",
+     "sample_app/config/initializers/inflections.rb",
+     "sample_app/config/initializers/mime_types.rb",
+     "sample_app/config/initializers/secret_token.rb",
+     "sample_app/config/initializers/session_store.rb",
+     "sample_app/config/locales/en.yml",
+     "sample_app/config/routes.rb",
+     "sample_app/config/shards.yml",
+     "sample_app/db/migrate/20100720172715_create_users.rb",
+     "sample_app/db/migrate/20100720172730_create_items.rb",
+     "sample_app/db/migrate/20100720210335_create_sample_users.rb",
+     "sample_app/db/schema.rb",
+     "sample_app/db/seeds.rb",
+     "sample_app/doc/README_FOR_APP",
+     "sample_app/features/migrate.feature",
+     "sample_app/features/seed.feature",
+     "sample_app/features/step_definitions/seeds_steps.rb",
+     "sample_app/features/step_definitions/web_steps.rb",
+     "sample_app/features/support/env.rb",
+     "sample_app/features/support/paths.rb",
+     "sample_app/lib/tasks/.gitkeep",
+     "sample_app/lib/tasks/cucumber.rake",
+     "sample_app/public/404.html",
+     "sample_app/public/422.html",
+     "sample_app/public/500.html",
+     "sample_app/public/favicon.ico",
+     "sample_app/public/images/rails.png",
+     "sample_app/public/index.html",
+     "sample_app/public/javascripts/application.js",
+     "sample_app/public/javascripts/controls.js",
+     "sample_app/public/javascripts/dragdrop.js",
+     "sample_app/public/javascripts/effects.js",
+     "sample_app/public/javascripts/prototype.js",
+     "sample_app/public/javascripts/rails.js",
+     "sample_app/public/robots.txt",
+     "sample_app/public/stylesheets/.gitkeep",
+     "sample_app/script/cucumber",
+     "sample_app/script/rails",
+     "sample_app/spec/models/item_spec.rb",
+     "sample_app/spec/models/user_spec.rb",
+     "sample_app/spec/spec_helper.rb",
+     "sample_app/test/performance/browsing_test.rb",
+     "sample_app/test/test_helper.rb",
+     "sample_app/vendor/plugins/.gitkeep",
      "spec/config/shards.yml",
      "spec/database_connection.rb",
      "spec/database_models.rb",
@@ -109,20 +174,20 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<mysql>, [">= 2.8.1"])
       s.add_development_dependency(%q<pg>, [">= 0.9.0"])
       s.add_development_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
-      s.add_runtime_dependency(%q<activerecord>, [">= 3.0.0beta"])
+      s.add_runtime_dependency(%q<activerecord>, [">= 2.3"])
     else
       s.add_dependency(%q<rspec>, [">= 1.2.9"])
       s.add_dependency(%q<mysql>, [">= 2.8.1"])
       s.add_dependency(%q<pg>, [">= 0.9.0"])
       s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
-      s.add_dependency(%q<activerecord>, [">= 3.0.0beta"])
+      s.add_dependency(%q<activerecord>, [">= 2.3"])
     end
   else
     s.add_dependency(%q<rspec>, [">= 1.2.9"])
     s.add_dependency(%q<mysql>, [">= 2.8.1"])
     s.add_dependency(%q<pg>, [">= 0.9.0"])
     s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
-    s.add_dependency(%q<activerecord>, [">= 3.0.0beta"])
+    s.add_dependency(%q<activerecord>, [">= 2.3"])
   end
 end
 

@@ -3,10 +3,6 @@ module Octopus::Model
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
     base.hijack_connection()
-    
-    class << base
-      alias_method_chain :connection, :octopus
-    end
   end
 
   module SharedMethods
@@ -50,19 +46,13 @@ module Octopus::Model
         Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
       end
 
-      def self.connection_with_octopus()
-        if defined?(::Rails) 
-          Octopus.config()
-          if Octopus.enviroments.include?(Rails.env.to_s)
-            self.connection_proxy().current_model = self
-            return self.connection_proxy()
-          else
-            self.connection_without_octopus()
-          end
-        else
-          self.connection_proxy().current_model = self
-          return self.connection_proxy()
+      def self.connection()
+        if defined?(::Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
+          return super 
         end
+
+        self.connection_proxy().current_model = self
+        self.connection_proxy()
       end
     end
   end

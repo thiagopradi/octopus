@@ -50,7 +50,12 @@ module Octopus
   
   def self.using(shard, &block)
     ActiveRecord::Base.hijack_initializer()
-    ActiveRecord::Base.connection.run_queries_on_shard(shard, &block)
+
+    if ActiveRecord::Base.connection.is_a?(Octopus::Proxy)
+      ActiveRecord::Base.connection.run_queries_on_shard(shard, &block)
+    else
+      yield
+    end
   end  
 end
 

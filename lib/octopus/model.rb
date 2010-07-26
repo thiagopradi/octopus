@@ -15,8 +15,8 @@ module Octopus::Model
 
       clean_table_name()
       hijack_initializer()
-        
-      self.connection.using_enabled = true
+
+      self.connection_proxy.using_enabled = true
 
       return Octopus::ScopeProxy.new(shard, self)
     end
@@ -27,10 +27,10 @@ module Octopus::Model
       before_save :reload_connection
 
       def set_current_shard
-        if new_record? || self.connection.block
-          self.current_shard = self.connection.current_shard    
+        if new_record? || self.class.connection_proxy.block
+          self.current_shard = self.class.connection_proxy.current_shard    
         else
-          self.current_shard = self.connection.last_current_shard  
+          self.current_shard = self.class.connection_proxy.last_current_shard  
         end
       end
 
@@ -46,13 +46,17 @@ module Octopus::Model
         Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
       end
 
-      def self.connection()
-        if defined?(::Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
-          return super 
+      def self.connection_with_octopus()
+        if defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
+          return connection_without_octopus() 
         end
 
         self.connection_proxy().current_model = self
         self.connection_proxy()
+      end
+
+      class << self
+        alias_method_chain :connection, :octopus
       end
     end
   end
@@ -65,7 +69,7 @@ module Octopus::Model
     end
 
     def reload_connection()
-      self.connection.current_shard = self.current_shard() if should_set_current_shard?
+      self.class.connection_proxy.current_shard = self.current_shard() if should_set_current_shard?
     end
   end
 

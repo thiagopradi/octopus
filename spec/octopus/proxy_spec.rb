@@ -65,28 +65,59 @@ describe Octopus::Proxy do
       Rails = mock()
       set_octopus_env("octopus_rails")
     end
-    
+
     it "should initialize correctly octopus common variables for the enviroments" do
       Rails.stub!(:env).and_return('staging')
       Octopus.instance_variable_set(:@rails_env, nil)
       Octopus.config()
-      
+
       proxy.instance_variable_get(:@replicated).should be_true
       Octopus.enviroments.should == ["staging", "production"] 
     end
-    
+
     it "should initialize correctly the shards for the staging enviroment" do
       Rails.stub!(:env).and_return('staging')
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave1, :slave2, :master])
     end
-    
+
     it "should initialize correctly the shards for the production enviroment" do
       Rails.stub!(:env).and_return('production')
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave3, :slave4, :master])
     end
-    
+
+    describe "using the master connection" do
+      before(:each) do
+        Rails.stub!(:env).and_return('development')        
+      end
+
+      it "should use the master connection" do
+        user = User.create!(:name =>"Thiago")
+        user.name = "New Thiago"
+        user.save()
+        User.find_by_name("New Thiago").should_not be_nil
+      end
+
+      it "should work when using using syntax" do
+        user = User.using(:russia).create!(:name =>"Thiago")
+
+        user.name = "New Thiago"
+        user.save()
+        
+        User.using(:russia).find_by_name("New Thiago").should == user
+        User.find_by_name("New Thiago").should == user    
+      end
+
+      it "should work when using blocks" do
+        Octopus.using(:russia) do
+          @user = User.create!(:name =>"Thiago")
+        end
+
+        User.find_by_name("Thiago").should == @user
+      end
+    end
+
     after(:each) do
       Object.send(:remove_const, :Rails)
       Octopus.instance_variable_set(:@config, nil)

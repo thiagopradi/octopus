@@ -42,14 +42,17 @@ module Octopus::Model
     end
 
     def hijack_connection()
+      
+      def self.should_use_normal_connection?
+        defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
+      end
+      
       def self.connection_proxy
         Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
       end
 
       def self.connection_with_octopus()
-        if defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
-          return connection_without_octopus() 
-        end
+        return connection_without_octopus() if should_use_normal_connection?
 
         self.connection_proxy().current_model = self
         self.connection_proxy()

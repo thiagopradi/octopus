@@ -15,7 +15,7 @@ describe "Rails Controllers" do
         end
       end
       
-      def self._router
+      def self._routes
         ActionDispatch::Routing::RouteSet.new
       end      
     end

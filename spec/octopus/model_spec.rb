@@ -218,7 +218,7 @@ describe Octopus::Model do
     it "update_attribute" do
       @user = User.using(:brazil).create!(:name => "User1")
       @user2 = User.using(:brazil).find(@user.id)
-      @user2.update_attributes(:name => "Joaquim")  
+      @user2.update_attribute(:name, "Joaquim")  
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
 

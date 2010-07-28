@@ -130,11 +130,14 @@ Contributors are welcome! To run the test suite, you need mysql, postgresql and 
 </pre>
 
 To run our integrations tests inside sample_app, you need to following commands:
+
 <pre>
   cd sample_app
   bundle install
   cucumber
 </pre>
+
+If you are having issues with octopus spec suite, check all databases password inside the config files, and make sure that your passwords/permissions are right.
 
 ## Thanks
 

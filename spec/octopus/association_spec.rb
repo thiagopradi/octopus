@@ -99,9 +99,11 @@ describe Octopus::Association do
         @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
 
-      it "update_attribute" do
-        @permission_brazil_2.update_attribute(:role_ids, [@role.id])
-        @permission_brazil_2.roles.to_set.should == [@role].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @permission_brazil_2.update_attribute(:role_ids, [@role.id])
+          @permission_brazil_2.roles.to_set.should == [@role].to_set
+        end
       end
 
       it "<<" do
@@ -252,9 +254,11 @@ describe Octopus::Association do
         @new_brazil_programmer.projects.to_set.should == [@project].to_set
       end
 
-      it "update_attribute" do
-        @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
-        @new_brazil_programmer.projects.to_set.should == [@project].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
+          @new_brazil_programmer.projects.to_set.should == [@project].to_set
+        end
       end
 
       it "<<" do
@@ -377,7 +381,7 @@ describe Octopus::Association do
     it "should finds the client that the item belongs" do
       @item_brazil.client.should == @brazil_client
     end
-    
+
     it "should raise error if you try to add a record from a different shard" do
       lambda do 
         @brazil_client.items << Item.using(:canada).create!(:name => "New User")
@@ -409,14 +413,17 @@ describe Octopus::Association do
         @brazil_client.items.to_set.should == [@item_brazil].to_set 
       end
 
+
       it "update_attributes" do
         @brazil_client.update_attributes(:item_ids => [@item_brazil_2.id, @item_brazil.id])
         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
       end
 
-      it "update_attribute" do
-        @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
-        @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
+          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
       end
 
       it "<<" do
@@ -509,7 +516,7 @@ describe Octopus::Association do
       end
     end
   end
-  
+
   describe "when you have a 1 x N polymorphic relationship" do
     before(:each) do
       @brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
@@ -550,9 +557,11 @@ describe Octopus::Association do
         @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
       end
 
-      it "update_attribute" do
-        @brazil_client.update_attribute(:comment_ids, [@comment_brazil_2.id, @comment_brazil.id])
-        @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @brazil_client.update_attribute(:comment_ids, [@comment_brazil_2.id, @comment_brazil.id])
+          @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+        end
       end
 
       it "<<" do

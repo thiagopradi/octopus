@@ -17,6 +17,6 @@ group :test do
   gem 'spork'
   gem 'launchy'   
   gem "rspec-rails", ">= 2.0.0.beta.16"
-  gem 'ruby-debug'
+  gem 'ruby-debug' if RUBY_VERSION < "1.9"
   gem "aruba"
 end

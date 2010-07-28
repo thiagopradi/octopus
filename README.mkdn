@@ -116,7 +116,26 @@ If you want to send a specified action, or all actions from a controller, to a s
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
 Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> 
-  
+
+
+## Contributing with Octopus
+Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. In order to install necessary gems, this is what you need to setup your Octopus development environment:
+
+<pre>
+  git clone http://github.com/tchandy/octopus.git
+  cd octopus
+  bundle install
+  rake db:prepare
+  rake spec
+</pre>
+
+To run our integrations tests inside sample_app, you need to following commands:
+<pre>
+  cd sample_app
+  bundle install
+  cucumber
+</pre>
+
 ## Thanks
 
 This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,

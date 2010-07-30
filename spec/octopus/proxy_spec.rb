@@ -116,6 +116,13 @@ describe Octopus::Proxy do
 
         User.find_by_name("Thiago").should == @user
       end
+      
+      it "should work with associations" do
+        u = Client.create!(:name => "Thiago")
+        i = Item.create(:name => "Item")
+        u.items << i
+        u.save()
+      end
     end
 
     after(:each) do

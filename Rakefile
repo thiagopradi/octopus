@@ -35,9 +35,9 @@ begin
     gem.add_development_dependency "pg", ">= 0.9.0"
     gem.add_development_dependency "sqlite3-ruby", ">= 1.3.1"
     gem.add_development_dependency "jeweler", ">= 1.4"
-    gem.add_development_dependency "actionpack", ">= 2.3.5"
-    gem.add_dependency('activerecord', '>= 2.3.5')
-    gem.version = "0.0.28"
+    gem.add_development_dependency "actionpack", ">= 2.3"
+    gem.add_dependency('activerecord', '>= 2.3')
+    gem.version = "0.0.29"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

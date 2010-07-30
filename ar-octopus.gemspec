@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.28"
+  s.version = "0.0.29"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham"]
-  s.date = %q{2010-07-26}
+  s.date = %q{2010-07-30}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
@@ -17,6 +17,9 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".gitignore",
+     ".rspec",
+     "Gemfile",
+     "Gemfile.lock",
      "README.mkdn",
      "Rakefile",
      "VERSION",
@@ -128,8 +131,8 @@ Gem::Specification.new do |s|
      "spec/octopus/proxy_spec.rb",
      "spec/octopus/replication_specs.rb",
      "spec/octopus/scope_proxy_spec.rb",
+     "spec/octopus/sharded_spec.rb",
      "spec/octopus_helper.rb",
-     "spec/spec.opts",
      "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/tchandy/octopus}
@@ -161,6 +164,7 @@ Gem::Specification.new do |s|
      "spec/octopus/proxy_spec.rb",
      "spec/octopus/replication_specs.rb",
      "spec/octopus/scope_proxy_spec.rb",
+     "spec/octopus/sharded_spec.rb",
      "spec/octopus_helper.rb",
      "spec/spec_helper.rb"
   ]
@@ -170,23 +174,29 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
+      s.add_development_dependency(%q<rspec>, [">= 2.0.0.beta.19"])
       s.add_development_dependency(%q<mysql>, [">= 2.8.1"])
       s.add_development_dependency(%q<pg>, [">= 0.9.0"])
       s.add_development_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
+      s.add_development_dependency(%q<jeweler>, [">= 1.4"])
+      s.add_development_dependency(%q<actionpack>, [">= 2.3"])
       s.add_runtime_dependency(%q<activerecord>, [">= 2.3"])
     else
-      s.add_dependency(%q<rspec>, [">= 1.2.9"])
+      s.add_dependency(%q<rspec>, [">= 2.0.0.beta.19"])
       s.add_dependency(%q<mysql>, [">= 2.8.1"])
       s.add_dependency(%q<pg>, [">= 0.9.0"])
       s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
+      s.add_dependency(%q<jeweler>, [">= 1.4"])
+      s.add_dependency(%q<actionpack>, [">= 2.3"])
       s.add_dependency(%q<activerecord>, [">= 2.3"])
     end
   else
-    s.add_dependency(%q<rspec>, [">= 1.2.9"])
+    s.add_dependency(%q<rspec>, [">= 2.0.0.beta.19"])
     s.add_dependency(%q<mysql>, [">= 2.8.1"])
     s.add_dependency(%q<pg>, [">= 0.9.0"])
     s.add_dependency(%q<sqlite3-ruby>, [">= 1.3.1"])
+    s.add_dependency(%q<jeweler>, [">= 1.4"])
+    s.add_dependency(%q<actionpack>, [">= 2.3"])
     s.add_dependency(%q<activerecord>, [">= 2.3"])
   end
 end

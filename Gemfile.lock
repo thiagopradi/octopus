@@ -22,8 +22,6 @@ GEM
       arel (~> 0.4.0)
       tzinfo (~> 0.3.22)
     activesupport (3.0.0.rc)
-    ar-octopus (0.0.28)
-      activerecord (>= 2.3)
     arel (0.4.0)
       activesupport (>= 3.0.0.beta)
     builder (2.1.2)
@@ -64,7 +62,6 @@ PLATFORMS
 DEPENDENCIES
   actionpack (>= 3.0.0.rc)
   activerecord (>= 3.0.0.rc)
-  ar-octopus
   jeweler (>= 1.4)
   mysql (>= 2.8.1)
   pg (>= 0.9.0)

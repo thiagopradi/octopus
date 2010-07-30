@@ -7,4 +7,3 @@ gem "sqlite3-ruby", ">= 1.3.1"
 gem 'activerecord', '>= 3.0.0.rc'
 gem 'actionpack', '>= 3.0.0.rc'
 gem "jeweler", ">= 1.4"
-gem "ar-octopus", :require => "octopus"

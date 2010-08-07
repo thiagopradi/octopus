@@ -9,10 +9,8 @@ describe "Rails Controllers" do
         render :nothing => true
       end
       
-      def select_shard
-        Octopus.using(:brazil) do
-          yield
-        end
+      def select_shard(&block)
+        Octopus.using(:brazil, &block)
       end
       
       def self._routes

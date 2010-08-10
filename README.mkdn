@@ -18,6 +18,9 @@ When using replication, all writes queries will be sent to master, and read quer
 ### Sharding
  When using sharding, you need to specify what shard the query will be sent. Octopus support selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> 
 
+### Replication + Sharding
+ Replication + Sharding isn't supported yet. This is in our todo, and will be done ASAP. if you need, feel free to fork and implement it.
+
 ## Install 
 
 ### Rails 2.x 

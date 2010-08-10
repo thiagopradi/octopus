@@ -12,7 +12,7 @@ module Octopus::Model
 
     def using(shard)
       return self if defined?(::Rails) && !Octopus.enviroments.include?(Rails.env.to_s)
-
+      
       clean_table_name()
       hijack_initializer()
 

@@ -12,7 +12,6 @@ octopus:
       database: octopus_shard1
       encoding: unicode
     
-    #TODO - FIX THIS
     sqlite_shard:
       adapter: sqlite3
       database: /tmp/database.sqlite3
@@ -62,6 +61,8 @@ production_raise_error:
         
 production_replicated:
   replicated: true
+  entire_replicated: false
+  
   shards:
     slave1:
       adapter: mysql
@@ -83,7 +84,6 @@ production_replicated:
 
 production_entire_replicated:
   replicated: true
-  entire_replicated: true
   shards:
     slave1:
       adapter: mysql
@@ -127,7 +127,6 @@ octopus_rails:
       adapter: mysql
       host: localhost
       database: octopus_shard5
-
 
 not_entire_sharded:
   entire_sharded: false

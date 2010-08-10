@@ -37,7 +37,11 @@ class Octopus::Proxy
 
   def initialize_replication(config)
     @replicated = true
-    @entire_replicated = config["entire_replicated"]
+    if config.has_key?("entire_replicated")
+      @entire_replicated = config["entire_replicated"]
+    else
+      @entire_replicated = true
+    end
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
@@ -105,6 +109,16 @@ class Octopus::Proxy
       ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
     end
   end
+  
+  def transaction(options = {}, &block)
+    if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
+      self.run_queries_on_shard(:master) do
+        select_connection.transaction(options, &block)
+      end
+    else
+      select_connection.transaction(options, &block)
+    end
+  end
 
   def method_missing(method, *args, &block)
     if should_clean_connection?(method)
@@ -142,16 +156,14 @@ class Octopus::Proxy
 
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
-
+    
     if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
-      if !using_enabled
-        self.current_shard = @slaves_list.shift.to_sym
-        @slaves_list << self.current_shard
-      end
+      self.current_shard = @slaves_list.shift.to_sym
+      @slaves_list << self.current_shard
     else
       self.current_shard = :master
     end
-
+    
     sql = select_connection().send(method, *args, &block)     
     self.current_shard = old_shard
     @using_enabled = nil

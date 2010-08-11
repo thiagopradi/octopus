@@ -37,10 +37,10 @@ class Octopus::Proxy
 
   def initialize_replication(config)
     @replicated = true
-    if config.has_key?("entire_replicated")
-      @entire_replicated = config["entire_replicated"]
+    if config.has_key?("fully_replicated")
+      @fully_replicated = config["fully_replicated"]
     else
-      @entire_replicated = true
+      @fully_replicated = true
     end
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
@@ -111,7 +111,7 @@ class Octopus::Proxy
   end
   
   def transaction(options = {}, &block)
-    if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
+    if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
       self.run_queries_on_shard(:master) do
         select_connection.transaction(options, &block)
       end
@@ -157,7 +157,7 @@ class Octopus::Proxy
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
     
-    if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
+    if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
       self.current_shard = @slaves_list.shift.to_sym
       @slaves_list << self.current_shard
     else

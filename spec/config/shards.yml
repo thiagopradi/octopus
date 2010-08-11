@@ -61,7 +61,7 @@ production_raise_error:
         
 production_replicated:
   replicated: true
-  entire_replicated: false
+  fully_replicated: false
   
   shards:
     slave1:
@@ -82,7 +82,7 @@ production_replicated:
       database: octopus_shard5
 
 
-production_entire_replicated:
+production_fully_replicated:
   replicated: true
   shards:
     slave1:

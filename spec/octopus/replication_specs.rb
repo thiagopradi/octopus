@@ -38,12 +38,12 @@ end
 
 describe "when the database is replicated and the entire application is replicated" do
   before(:each) do
-    Octopus.stub!(:env).and_return("production_entire_replicated")
+    Octopus.stub!(:env).and_return("production_fully_replicated")
     clean_connection_proxy()
   end
 
   it "should send all writes queries to master" do
-    using_enviroment :production_entire_replicated do 
+    using_enviroment :production_fully_replicated do 
       Cat.create!(:name => "Slave Cat")    
       Cat.find_by_name("Slave Cat").should be_nil
       Client.create!(:name => "Slave Client")

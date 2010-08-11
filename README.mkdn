@@ -115,7 +115,7 @@ If you want to send a specified action, or all actions from a controller, to a s
 </pre>
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
-Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> 
+Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have a example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
 
 
 ## Contributing with Octopus

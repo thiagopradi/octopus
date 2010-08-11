@@ -36,6 +36,18 @@ describe Octopus::Model do
       User.create!(:name => 'oi')
       User.count.should == 1
     end
+    
+    it "should ensure that the connection will be cleaned" do
+      ActiveRecord::Base.connection.current_shard.should == :master
+      begin
+        Octopus.using(:canada) do 
+          raise "Some Exception"
+        end
+      rescue
+      end
+
+      ActiveRecord::Base.connection.current_shard.should == :master
+    end
 
     it "should allow creating more than one user" do
       User.using(:canada).create([{ :name => 'America User 1' }, { :name => 'America User 2' }])

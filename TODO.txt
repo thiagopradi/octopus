@@ -3,3 +3,4 @@
 - Automatic configuration file for shards.
 - Support specifics cases of sharding/replication.
 - Basic algorithm to do load balancing between slaves server (handling servers down)
+- Support replication + sharding

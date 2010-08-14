@@ -37,7 +37,7 @@ begin
     gem.add_development_dependency "jeweler", ">= 1.4"
     gem.add_development_dependency "actionpack", ">= 2.3"
     gem.add_dependency('activerecord', '>= 2.3')
-    gem.version = "0.0.29"
+    gem.version = "0.0.30"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

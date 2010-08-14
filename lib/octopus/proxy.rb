@@ -111,7 +111,7 @@ class Octopus::Proxy
   end
   
   def transaction(options = {}, &block)
-    if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
+    if @replicated && (current_model.read_inheritable_attribute(:replicated) || @fully_replicated)
       self.run_queries_on_shard(:master) do
         select_connection.transaction(options, &block)
       end

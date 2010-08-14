@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ar-octopus}
-  s.version = "0.0.29"
+  s.version = "0.0.30"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thiago Pradi", "Mike Perham"]
-  s.date = %q{2010-07-30}
+  s.date = %q{2010-08-14}
   s.description = %q{This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards.}
   s.email = %q{tchandy@gmail.com}
   s.extra_rdoc_files = [
@@ -22,12 +22,8 @@ Gem::Specification.new do |s|
      "Gemfile.lock",
      "README.mkdn",
      "Rakefile",
-     "VERSION",
+     "TODO.txt",
      "ar-octopus.gemspec",
-     "doc/api.textile",
-     "doc/features.textile",
-     "doc/libraries.textile",
-     "doc/shards.yml",
      "init.rb",
      "lib/octopus.rb",
      "lib/octopus/association.rb",

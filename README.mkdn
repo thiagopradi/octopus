@@ -109,10 +109,8 @@ If you want to send a specified action, or all actions from a controller, to a s
   class ApplicationController < ActionController::Base
     around_filter :select_shard      
     
-    def select_shard
-      Octopus.using(:brazil) do
-        yield
-      end
+    def select_shard(&block)
+      Octopus.using(:brazil, &block)
     end    
   end
 </pre>

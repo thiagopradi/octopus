@@ -46,7 +46,6 @@ GEM
       rack (>= 1.0.0)
       rack-test (>= 0.5.4)
       selenium-webdriver (>= 0.0.3)
-    columnize (0.3.1)
     configuration (1.1.0)
     cucumber (0.8.5)
       builder (~> 2.1.2)
@@ -70,7 +69,6 @@ GEM
     launchy (0.3.7)
       configuration (>= 0.0.5)
       rake (>= 0.8.1)
-    linecache (0.43)
     mail (2.2.5)
       activesupport (>= 2.3.6)
       mime-types
@@ -108,11 +106,6 @@ GEM
     rspec-rails (2.0.0.beta.19)
       rspec (= 2.0.0.beta.19)
       webrat (>= 0.7.2.beta.1)
-    ruby-debug (0.10.3)
-      columnize (>= 0.1)
-      ruby-debug-base (~> 0.10.3.0)
-    ruby-debug-base (0.10.3)
-      linecache (>= 0.3)
     rubyzip (0.9.4)
     selenium-webdriver (0.0.27)
       ffi (>= 0.6.1)
@@ -144,6 +137,5 @@ DEPENDENCIES
   launchy
   rails (= 3.0.0.rc)
   rspec-rails (>= 2.0.0.beta.16)
-  ruby-debug
   spork
   sqlite3-ruby

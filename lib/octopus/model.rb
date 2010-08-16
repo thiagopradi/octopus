@@ -42,7 +42,6 @@ module Octopus::Model
     end
 
     def hijack_connection()
-      
       def self.should_use_normal_connection?
         defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
       end

@@ -16,6 +16,10 @@ describe Octopus::Proxy do
     it "should initialize replicated attribute as false" do
       proxy.instance_variable_get(:@replicated).should be_false      
     end
+    
+    it "should not verify connections for default" do
+      proxy.instance_variable_get(:@verify_connection).should be_false
+    end
 
     describe "should raise error if you have duplicated shard names" do
       before(:each) do
@@ -72,6 +76,7 @@ describe Octopus::Proxy do
       Octopus.config()
 
       proxy.instance_variable_get(:@replicated).should be_true
+      proxy.instance_variable_get(:@verify_connection).should be_true
       Octopus.enviroments.should == ["staging", "production"] 
     end
 

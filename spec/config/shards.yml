@@ -104,6 +104,7 @@ production_fully_replicated:
       
 octopus_rails:
   replicated: true
+  verify_connection: true
   enviroments:
     - staging
     - production

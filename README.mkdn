@@ -120,6 +120,15 @@ If you want to send a specified action, or all actions from a controller, to a s
 Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
 
 
+## Important!
+Sometimes, when a connection isn't used for much time, this will makes ActiveRecord raising an exception. if you have this kind of applications, please, add the following line to your configuration:
+
+<pre>
+verify_connection: true
+</pre>
+
+This will tell Octopus to verify the connection before sending the query.
+
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 

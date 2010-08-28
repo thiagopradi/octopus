@@ -1,7 +1,7 @@
 source :rubygems
 
-gem 'activerecord', '>= 3.0.0.rc'
-gem 'actionpack', '>= 3.0.0.rc'
+gem 'activerecord', '>= 3.0.0.rc2'
+gem 'actionpack', '>= 3.0.0.rc2'
 
 group :test do
 	gem "jeweler", ">= 1.4"

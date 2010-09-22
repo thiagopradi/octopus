@@ -10,8 +10,20 @@ module Octopus
   end
 
   def self.config()
-    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))[Octopus.env()]
+    if @config
+      return @config
+    else
+      @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))[Octopus.env()]
 
+      if @config && @config['environments']
+        self.environments = @config['environments']
+      end
+      return @config
+    end
+  end
+  
+  def self.config=(configuration)
+    @config = configuration
     if @config && @config['environments']
       self.environments = @config['environments']
     end
@@ -32,8 +44,8 @@ module Octopus
     yield self
   end
 
-  def self.environments=(environments)
-    @environments = environments.map { |element| element.to_s }
+  def self.environments=(new_environments)
+    @environments = new_environments.map { |element| element.to_s }
   end
 
   def self.environments

@@ -70,14 +70,14 @@ describe Octopus::Proxy do
       set_octopus_env("octopus_rails")
     end
 
-    it "should initialize correctly octopus common variables for the enviroments" do
+    it "should initialize correctly octopus common variables for the environments" do
       Rails.stub!(:env).and_return('staging')
       Octopus.instance_variable_set(:@rails_env, nil)
       Octopus.config()
 
       proxy.instance_variable_get(:@replicated).should be_true
       proxy.instance_variable_get(:@verify_connection).should be_true
-      Octopus.enviroments.should == ["staging", "production"] 
+      Octopus.environments.should == ["staging", "production"] 
     end
 
     it "should initialize correctly the shards for the staging enviroment" do

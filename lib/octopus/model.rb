@@ -6,14 +6,10 @@ module Octopus::Model
   end
 
   module SharedMethods
-    def clean_table_name
-      self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
-    end
 
     def using(shard)
-      return self if defined?(::Rails) && !Octopus.enviroments.include?(Rails.env.to_s)
+      return self if defined?(::Rails) && !Octopus.environments.include?(Rails.env.to_s)
       
-      clean_table_name()
       hijack_initializer()
 
       self.connection_proxy.using_enabled = true
@@ -43,7 +39,7 @@ module Octopus::Model
 
     def hijack_connection()
       def self.should_use_normal_connection?
-        defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
+        defined?(Rails) && Octopus.config() && !Octopus.environments.include?(Rails.env.to_s)
       end
       
       def self.connection_proxy

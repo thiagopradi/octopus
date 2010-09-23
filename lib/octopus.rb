@@ -1,4 +1,5 @@
 require "yaml"
+require "erb"
 
 module Octopus
   def self.env()
@@ -10,7 +11,7 @@ module Octopus
   end
 
   def self.config()
-    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))[Octopus.env()]
+    @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(Octopus.directory() + "/config/shards.yml").read()).result))[Octopus.env()]
 
     if @config && @config['enviroments']
       self.enviroments = @config['enviroments']

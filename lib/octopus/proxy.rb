@@ -9,8 +9,6 @@ class Octopus::Proxy
   def initialize_shards(config)
     @shards = {}
     @groups = {}
-    @shards[:master] = ActiveRecord::Base.connection_pool()
-    @current_shard = :master
     
     if !config.nil? && config.has_key?("verify_connection")
       @verify_connection = config["verify_connection"]
@@ -40,6 +38,12 @@ class Octopus::Proxy
         end
       end
     end
+    if default_shard = config[Octopus.rails_env]['default_shard']
+      @shards[:master] = @shards[default_shard]
+    else
+      @shards[:master] = ActiveRecord::Base.connection_pool()
+    end
+    @current_shard = :master
   end
 
   def initialize_replication(config)

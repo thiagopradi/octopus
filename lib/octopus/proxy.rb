@@ -18,7 +18,7 @@ class Octopus::Proxy
     
     if !config.nil?
       @entire_sharded = config['entire_sharded']  
-      shards_config = config[Octopus.rails_env()] 
+      shards_config = config[Octopus.rails_env()]['shards']
     end
     
     shards_config ||= []
@@ -39,7 +39,7 @@ class Octopus::Proxy
       end
     end
     if default_shard = config[Octopus.rails_env]['default_shard']
-      @shards[:master] = @shards[default_shard]
+      @shards[:master] = @shards[default_shard.to_sym]
     else
       @shards[:master] = ActiveRecord::Base.connection_pool()
     end

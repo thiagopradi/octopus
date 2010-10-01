@@ -1,9 +1,10 @@
 class Octopus::Proxy
-  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
+  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard, :config
 
   def initialize(config)
     initialize_shards(config)
     initialize_replication(config) if !config.nil? && config["replicated"]
+    @config = ::ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
   end
 
   def initialize_shards(config)

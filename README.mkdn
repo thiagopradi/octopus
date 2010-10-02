@@ -107,6 +107,7 @@ You also could send a migration to a group of shards.  This migration will be se
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
 <pre>
+  
   class ApplicationController < ActionController::Base
     around_filter :select_shard      
     
@@ -114,6 +115,7 @@ If you want to send a specified action, or all actions from a controller, to a s
       Octopus.using(:brazil, &block)
     end    
   end
+  
 </pre>
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
@@ -149,6 +151,10 @@ To run our integrations tests inside sample_app, you need to following commands:
 </pre>
 
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
+
+## Contributors:
+- <a href="http://github.com/carlosbrando">Carlos Brando</a>
+- <a href="http://github.com/bjones">Brian Jones</a>
 
 ## Thanks
 

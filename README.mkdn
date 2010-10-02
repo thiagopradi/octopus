@@ -26,18 +26,22 @@ When using replication, all writes queries will be sent to master, and read quer
 ### Rails 2.x 
 
 Install  the octopus gem:
-<pre> sudo gem install ar-octopus </pre>
+
+    sudo gem install ar-octopus
 
 Add this line to enviroment.rb:
-<pre>config.gem 'ar-octopus', :lib => "octopus"</pre>
+
+    config.gem 'ar-octopus', :lib => "octopus"
 
 ### Rails 3.x 
 
 Add this line to Gemfile:
-<pre>gem 'ar-octopus', :require => "octopus"</pre>
+
+    gem 'ar-octopus', :require => "octopus"
 
 Runs a bundle install:
-<pre>bundle install</pre>
+
+    bundle install
 
 ## How to use Octopus? 
 
@@ -46,77 +50,70 @@ First, you need to create a config file, shards.yml, inside your config/ directo
 ### Syntax 
 
 Octopus adds a method to each AR Class and object: the using method is used to select the shard like this: 
-<pre>User.where(:name => "Thiago").limit(3).using(:slave_one) </pre>
+
+    User.where(:name => "Thiago").limit(3).using(:slave_one)
 
 Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. 
-<pre>
-Octopus.using(:slave_two) do 
-  User.create(:name => "Mike")
-end
-</pre>
+
+    Octopus.using(:slave_two) do 
+      User.create(:name => "Mike")
+    end
 
 Each model instance knows which shard it came from so this will work automatically:
-<pre> 
-# This will find the user in the shard1
-@user = User.using(:shard1).find_by_name("Joao")
 
-# This will find the user in the master database
-@user2 = User.find_by_name("Jose")
+    # This will find the user in the shard1
+    @user = User.using(:shard1).find_by_name("Joao")
 
-#Sets the name
-@user.name = "Mike"
+    # This will find the user in the master database
+    @user2 = User.find_by_name("Jose")
 
-# Save the user in the correct shard, shard1. 
-@user.save
-</pre>
+    #Sets the name
+    @user.name = "Mike"
+
+    # Save the user in the correct shard, shard1. 
+    @user.save
 
 ### Migrations
 
 In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in the brazil and canada shards.
-<pre>
-  class CreateUsersOnBothShards < ActiveRecord::Migration
-    using(:brazil, :canada)
 
-    def self.up
-      User.create!(:name => "Both")
-    end
+    class CreateUsersOnBothShards < ActiveRecord::Migration
+      using(:brazil, :canada)
 
-    def self.down
-      User.delete_all
+      def self.up
+        User.create!(:name => "Both")
+      end
+
+      def self.down
+        User.delete_all
+      end
     end
-  end
-</pre>
 
 You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml: 
-<pre>
-  class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
-    using_group(:history_shards)
 
-    def self.up
-      User.create!(:name => "MultipleGroup")
+    class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
+      using_group(:history_shards)
+
+      def self.up
+        User.create!(:name => "MultipleGroup")
+      end
+
+      def self.down
+        User.delete_all
+      end
     end
-
-    def self.down
-      User.delete_all
-    end
-  end
-</pre>
-
 
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
-<pre>
   
-  class ApplicationController < ActionController::Base
-    around_filter :select_shard      
+    class ApplicationController < ActionController::Base
+      around_filter :select_shard      
     
-    def select_shard(&block)
-      Octopus.using(:brazil, &block)
-    end    
-  end
-  
-</pre>
+      def select_shard(&block)
+        Octopus.using(:brazil, &block)
+      end    
+    end
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
 Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
@@ -125,30 +122,24 @@ Want to see sample rails applications using octopus features? please check it ou
 ## Important!
 Sometimes, when a connection isn't used for much time, this will makes ActiveRecord raising an exception. if you have this kind of applications, please, add the following line to your configuration:
 
-<pre>
-verify_connection: true
-</pre>
+    verify_connection: true
 
 This will tell Octopus to verify the connection before sending the query.
 
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 
-<pre>
-  git clone http://github.com/tchandy/octopus.git
-  cd octopus
-  bundle install
-  rake db:prepare
-  rake
-</pre>
+    git clone http://github.com/tchandy/octopus.git
+    cd octopus
+    bundle install
+    rake db:prepare
+    rake
 
 To run our integrations tests inside sample_app, you need to following commands:
 
-<pre>
-  cd sample_app
-  bundle install
-  cucumber
-</pre>
+    cd sample_app
+    bundle install
+    cucumber
 
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
 

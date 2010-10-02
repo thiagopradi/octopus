@@ -4,13 +4,13 @@ class Octopus::Proxy
   def initialize(config)
     initialize_shards(config)
     initialize_replication(config) if !config.nil? && config["replicated"]
-    @config = ::ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
   end
 
   def initialize_shards(config)
     @shards = {}
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
+    @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
     @current_shard = :master
     
     if !config.nil? && config.has_key?("verify_connection")

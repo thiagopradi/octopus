@@ -20,6 +20,10 @@ describe Octopus::Proxy do
     it "should not verify connections for default" do
       proxy.instance_variable_get(:@verify_connection).should be_false
     end
+    
+    it "should work with thiking sphinx" do
+      proxy.instance_variable_get(:@config).should == {:adapter=>"mysql", :password=>"", :database=>"octopus_shard1", :username=>"root"}
+    end
 
     describe "should raise error if you have duplicated shard names" do
       before(:each) do

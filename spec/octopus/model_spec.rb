@@ -172,6 +172,10 @@ describe Octopus::Model do
   end
 
   describe "AR basic methods" do
+    it "establish_connection" do
+      CustomConnection.connection.current_database.should == "octopus_shard2" 
+    end
+
     it "increment" do
       u = User.using(:brazil).create!(:name => "Teste", :number => 10)
       u = User.using(:brazil).find_by_number(10)

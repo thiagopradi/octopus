@@ -43,7 +43,7 @@ module Octopus::Model
 
     def hijack_connection()
       def self.should_use_normal_connection?
-        defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)
+        (defined?(Rails) && Octopus.config() && !Octopus.enviroments.include?(Rails.env.to_s)) || self.read_inheritable_attribute(:establish_connection)
       end
       
       def self.connection_proxy
@@ -87,5 +87,17 @@ module Octopus::Model
     end
   end
 end
+
+class ActiveRecord::Base
+  def self.establish_connection_with_octopus(spec=nil)
+    write_inheritable_attribute(:establish_connection, true)
+    establish_connection_without_octopus(spec)
+  end
+  
+  class << self
+    alias_method_chain :establish_connection, :octopus
+  end  
+end
+
 
 ActiveRecord::Base.extend(Octopus::Model)

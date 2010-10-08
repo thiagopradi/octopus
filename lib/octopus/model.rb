@@ -3,6 +3,9 @@ module Octopus::Model
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
     base.hijack_connection()
+    class << base 
+      alias_method_chain(:establish_connection, :octopus)
+    end
   end
 
   module SharedMethods
@@ -84,20 +87,13 @@ module Octopus::Model
     
     def sharded_model()
       write_inheritable_attribute(:sharded, true)      
+    end    
+    
+    def establish_connection_with_octopus(spec=nil)
+      write_inheritable_attribute(:establish_connection, true)
+      establish_connection_without_octopus(spec)
     end
   end
 end
-
-class ActiveRecord::Base
-  def self.establish_connection_with_octopus(spec=nil)
-    write_inheritable_attribute(:establish_connection, true)
-    establish_connection_without_octopus(spec)
-  end
-  
-  class << self
-    alias_method_chain :establish_connection, :octopus
-  end  
-end
-
 
 ActiveRecord::Base.extend(Octopus::Model)

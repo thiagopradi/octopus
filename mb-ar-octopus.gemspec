@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{ar-octopus}
+  s.name = %q{mb-ar-octopus}
   s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
      "README.mkdn",
      "Rakefile",
      "TODO.txt",
-     "ar-octopus.gemspec",
+     "mb-ar-octopus.gemspec",
      "init.rb",
      "lib/octopus.rb",
      "lib/octopus/association.rb",

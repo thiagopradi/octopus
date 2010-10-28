@@ -4,6 +4,7 @@ gem 'activerecord', '3.0.0'
 gem 'actionpack', '3.0.0'
 
 group :test do
+  gem "rake", ">= 0.8.7"
 	gem "jeweler", ">= 1.4"
 	gem "rspec", "2.0.0.beta.19"
 	gem "mysql", ">= 2.8.1"

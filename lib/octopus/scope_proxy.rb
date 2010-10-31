@@ -7,6 +7,7 @@ class Octopus::ScopeProxy
   end
   
   def using(shard)
+    raise "Nonexistent Shard Name: #{shard}" if @klass.connection.instance_variable_get(:@shards)[shard].nil?
     @shard = shard
     return self
   end

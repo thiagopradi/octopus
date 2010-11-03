@@ -173,8 +173,7 @@ describe Octopus::Model do
 
   describe "AR basic methods" do
     it "establish_connection" do
-      pending("TODO")
-      # CustomConnection.connection.current_database.should == "octopus_shard2" 
+      CustomConnection.connection.current_database.should == "octopus_shard2" 
     end
 
     it "increment" do

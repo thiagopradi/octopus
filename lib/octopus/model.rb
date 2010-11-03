@@ -85,6 +85,11 @@ module Octopus::Model
     def sharded_model()
       write_inheritable_attribute(:sharded, true)      
     end    
+    
+    def octopus_establish_connection(spec = nil)
+      write_inheritable_attribute(:establish_connection, true)      
+      establish_connection(spec)
+    end
   end
 end
 

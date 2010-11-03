@@ -127,11 +127,12 @@ Sometimes, when a connection isn't used for much time, this will makes ActiveRec
 This will tell Octopus to verify the connection before sending the query.
 
 ## Mixing Octopus with the Rails multiple database model
-Octopus will respect if you declare some model to use a specific connection, with the rails syntax, like this example:
+If you want to set a custom connection to a specific model, use this syntax:
 
     #This class sets its own connection
+    # establish_connection will not work, use octopus_establish_connection instead.
     class CustomConnection < ActiveRecord::Base
-      establish_connection(:adapter => "mysql", :database => "octopus_shard2")
+      octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
     end
     
 ## Contributing with Octopus

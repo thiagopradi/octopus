@@ -35,6 +35,7 @@ class Part < ActiveRecord::Base
 end
 
 class Keyboard < ActiveRecord::Base
+  replicated_model
   validates_uniqueness_of :name
   belongs_to :computer
 end

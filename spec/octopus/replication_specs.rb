@@ -58,5 +58,15 @@ describe "when the database is replicated and the entire application is replicat
       Client.find_by_name("Slave Client").should be_nil
     end
   end  
+  
+  it "should work with validate_uniquess_of" do
+    Keyboard.create!(:name => "thiago")
+    
+    using_enviroment :production_fully_replicated do 
+      k = Keyboard.new(:name => "thiago")
+      k.save.should be_false
+      k.errors.should == {:name=>["has already been taken"]}
+    end
+  end
 end
 

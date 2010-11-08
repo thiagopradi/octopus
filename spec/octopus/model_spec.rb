@@ -5,6 +5,14 @@ describe Octopus::Model do
     it "should return self after calling the #using method" do
       User.using(:canada).should == Octopus::ScopeProxy.new(:canada, User)
     end
+    
+    it "should allow to send a block to the master shard" do
+      Octopus.using(:master) do 
+        User.create!(:name => "Block test")
+      end
+      
+      User.using(:master).find_by_name("Block test").should_not be_nil
+    end
 
     it "should allow selecting the shards on scope" do
       User.using(:canada).create!(:name => 'oi')

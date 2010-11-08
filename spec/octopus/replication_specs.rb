@@ -25,6 +25,14 @@ describe "when the database is replicated" do
       Cat.find_by_name("Slave Cat 2").should be_nil
     end
   end
+  
+  it "should allow #using syntax to send queries to master" do
+    Cat.create!(:name => "Master Cat")    
+    
+    using_enviroment :production_fully_replicated do 
+      Cat.using(:master).find_by_name("Master Cat").should_not be_nil
+    end
+  end
 
   it "should send the count query to a slave" do
     pending()

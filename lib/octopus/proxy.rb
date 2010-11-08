@@ -160,7 +160,7 @@ class Octopus::Proxy
   end
 
   def should_send_queries_to_replicated_databases?(method)
-    @replicated && method.to_s =~ /select/
+    @replicated && method.to_s =~ /select/ && !@block
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        

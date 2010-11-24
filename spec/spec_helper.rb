@@ -21,8 +21,4 @@ RSpec.configure do |config|
     require "database_models"
     clean_all_shards()
   end
-
-  config.after(:each) do
-    clean_all_shards()
-  end
 end

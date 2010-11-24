@@ -53,8 +53,6 @@ end
 RSpec::Core::RakeTask.new(:rcov) do |spec|
 end
 
-task :spec => :check_dependencies
-
 task :default => :spec
 
 

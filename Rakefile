@@ -79,7 +79,7 @@ namespace :db do
     end
     
     %x( dropdb -U #{postgres_user} octopus_shard1 )
-    %x(rm /tmp/database.sqlite3)
+    %x(rm -f /tmp/database.sqlite3)
   end
 
   desc 'Create tables on tests databases'

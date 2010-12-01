@@ -76,7 +76,7 @@ describe Octopus::Migration do
 
   describe "when using replication" do    
     it "should run writes on master when you use replication" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         migrating_to_version 10 do 
           Cat.find_by_name("Replication").should be_nil
         end
@@ -84,7 +84,7 @@ describe Octopus::Migration do
     end
 
     it "should run in all shards, master or another shards" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         migrating_to_version 11 do 
           [:slave4, :slave1, :slave2, :slave3].each do |sym|
             Cat.find_by_name("Slaves").should_not be_nil

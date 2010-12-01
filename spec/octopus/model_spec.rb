@@ -350,13 +350,13 @@ describe Octopus::Model do
 
   describe "#replicated_model method" do
     it "should be replicated" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated).should be_true
       end
     end
 
     it "should mark the Cat model as replicated" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         User.read_inheritable_attribute(:replicated).should be_false
         Cat.read_inheritable_attribute(:replicated).should be_true
       end

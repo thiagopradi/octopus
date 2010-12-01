@@ -13,8 +13,8 @@ module Octopus
   def self.config()
     @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(Octopus.directory() + "/config/shards.yml").read()).result))[Octopus.env()]
 
-    if @config && @config['enviroments']
-      self.enviroments = @config['enviroments']
+    if @config && @config['environments']
+      self.environments = @config['environments']
     end
 
     @config
@@ -33,12 +33,12 @@ module Octopus
     yield self
   end
 
-  def self.enviroments=(enviroments)
-    @enviroments = enviroments.map { |element| element.to_s }
+  def self.environments=(environments)
+    @environments = environments.map { |element| element.to_s }
   end
 
-  def self.enviroments
-    @enviroments || ['production']
+  def self.environments
+    @environments || ['production']
   end
 
   def self.rails3?

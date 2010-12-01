@@ -19,9 +19,9 @@ def migrating_to_version(version, &block)
   end
 end
 
-def using_enviroment(enviroment, &block)
+def using_environment(environment, &block)
   begin
-    set_octopus_env(enviroment.to_s)
+    set_octopus_env(environment.to_s)
     clean_connection_proxy()
     yield
   ensure

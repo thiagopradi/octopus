@@ -10,7 +10,7 @@ describe "when the database is not entire sharded" do
     pending()
     # User.create!(:name => "Thiago")
     # 
-    # using_enviroment :not_entire_sharded do 
+    # using_environment :not_entire_sharded do 
     #   Octopus.using(:russia) do
     #     User.create!(:name => "Thiago")
     #   end
@@ -22,7 +22,7 @@ describe "when the database is not entire sharded" do
   it "should pick the shard based on current_shard when you have a sharded model" do
     Cat.create!(:name => "Thiago")
 
-    using_enviroment :not_entire_sharded do 
+    using_environment :not_entire_sharded do 
       Octopus.using(:russia) do
         Cat.create!(:name => "Thiago")
       end

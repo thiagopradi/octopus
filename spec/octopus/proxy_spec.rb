@@ -37,7 +37,7 @@ describe Octopus::Proxy do
 
     describe "should initialize just the master when you don't have a shards.yml file" do
       before(:each) do
-        set_octopus_env("crazy_enviroment")              
+        set_octopus_env("crazy_environment")              
       end
 
       it "should initialize just the master shard" do
@@ -54,7 +54,7 @@ describe Octopus::Proxy do
     end
   end
 
-  describe "when you have a replicated enviroment" do
+  describe "when you have a replicated environment" do
     before(:each) do
       set_octopus_env("production_replicated")      
     end
@@ -74,23 +74,23 @@ describe Octopus::Proxy do
       set_octopus_env("octopus_rails")
     end
 
-    it "should initialize correctly octopus common variables for the enviroments" do
+    it "should initialize correctly octopus common variables for the environments" do
       Rails.stub!(:env).and_return('staging')
       Octopus.instance_variable_set(:@rails_env, nil)
       Octopus.config()
 
       proxy.instance_variable_get(:@replicated).should be_true
       proxy.instance_variable_get(:@verify_connection).should be_true
-      Octopus.enviroments.should == ["staging", "production"] 
+      Octopus.environments.should == ["staging", "production"] 
     end
 
-    it "should initialize correctly the shards for the staging enviroment" do
+    it "should initialize correctly the shards for the staging environment" do
       Rails.stub!(:env).and_return('staging')
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave1, :slave2, :master])
     end
 
-    it "should initialize correctly the shards for the production enviroment" do
+    it "should initialize correctly the shards for the production environment" do
       Rails.stub!(:env).and_return('production')
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave3, :slave4, :master])

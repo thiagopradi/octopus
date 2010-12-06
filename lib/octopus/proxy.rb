@@ -89,13 +89,14 @@ class Octopus::Proxy
   
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
+    last_block = self.block
     self.block = true
     self.current_shard = shard
 
     begin
       yield
     ensure
-      self.block = false
+      self.block = last_block || false
       self.current_shard = older_shard
     end
   end

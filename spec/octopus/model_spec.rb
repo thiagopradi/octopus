@@ -271,10 +271,30 @@ describe Octopus::Model do
         @user2.delete
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
       end
+      
+      it "delete within block shouldn't lose shard" do
+        Octopus.using(:brazil) do
+          @user2.delete
+          @user3 = User.create(:name => "User3")
+          
+          User.connection.current_shard.should == :brazil
+          User.find(@user3.id).should == @user3
+        end
+      end
 
       it "destroy" do
         @user2.destroy
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
+      end
+      
+      it "destroy within block shouldn't lose shard" do
+        Octopus.using(:brazil) do
+          @user2.destroy
+          @user3 = User.create(:name => "User3")
+          
+          User.connection.current_shard.should == :brazil
+          User.find(@user3.id).should == @user3
+        end
       end
     end
   end

@@ -22,6 +22,8 @@ module Octopus::Model
     end
 
     def hijack_initializer()
+      return if self.instance_methods.include?("current_shard")
+      
       attr_accessor :current_shard
       after_initialize :set_current_shard
       before_save :reload_connection

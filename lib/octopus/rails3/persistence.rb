@@ -16,9 +16,9 @@ module Octopus
         super
       end
 
-      def reload
+      def reload(options = {})
         reload_connection()
-        super
+        super(options)
       end
 
       def delete

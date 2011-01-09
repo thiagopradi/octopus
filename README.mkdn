@@ -153,8 +153,7 @@ To run our integrations tests inside sample_app, you need to following commands:
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
 
 ## Contributors:
-- <a href="http://github.com/carlosbrando">Carlos Brando</a>
-- <a href="http://github.com/bjones">Brian Jones</a>
+- <a href="https://github.com/tchandy/octopus/contributors">All Contributors</a>
 
 ## Thanks
 

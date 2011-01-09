@@ -49,6 +49,12 @@ module Octopus
     defined?(Rails) 
   end
   
+  def self.shards=(shards)
+    @config ||= HashWithIndifferentAccess.new
+    @config[rails_env()] = HashWithIndifferentAccess.new(shards)
+    ActiveRecord::Base.connection.initialize_shards(@config)
+  end
+  
   def self.using(shard, &block)
     ActiveRecord::Base.hijack_initializer()
     conn = ActiveRecord::Base.connection

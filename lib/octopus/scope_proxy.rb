@@ -24,7 +24,7 @@ class Octopus::ScopeProxy
     @klass.connection()
   end
   
-  def method_missing(method, *args, &block)
+  def method_missing(method, *args, &block)    
     @klass.connection.run_queries_on_shard(@shard) do
       @klass = @klass.send(method, *args, &block)
     end

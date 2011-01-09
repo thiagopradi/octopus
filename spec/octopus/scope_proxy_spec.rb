@@ -14,6 +14,6 @@ describe Octopus::ScopeProxy do
   end
   
   it "should raise a exception when trying to send a query to a shard that don't exists" do
-    lambda { User.where(:name => "Thiago").using(:dont_exists).all }.should raise_exception("Nonexistent Shard Name: dont_exists")
+    lambda { User.using(:dont_exists).all }.should raise_exception("Nonexistent Shard Name: dont_exists")
   end
 end

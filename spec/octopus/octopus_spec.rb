@@ -3,7 +3,18 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe Octopus do
   describe "#config" do
     it "should load shards.yml file to start working" do
-      Octopus.config().should be_kind_of(Hash)
+      Octopus.config().should be_kind_of(HashWithIndifferentAccess)
+    end
+    
+    describe "when config file doesn't exist" do
+      before(:each) do
+        Octopus.stub!(:directory).and_return('/tmp')
+        Octopus.instance_variable_set(:@config, nil)        
+      end
+      
+      it "should return an empty HashWithIndifferentAccess" do
+        Octopus.config().should == HashWithIndifferentAccess.new
+      end      
     end
   end
 

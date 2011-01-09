@@ -11,10 +11,16 @@ module Octopus
   end
 
   def self.config()
-    @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(Octopus.directory() + "/config/shards.yml").read()).result))[Octopus.env()]
+    file_name = Octopus.directory() + "/config/shards.yml"
 
-    if @config && @config['environments']
-      self.environments = @config['environments']
+    if File.exists? file_name
+      @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(file_name).read()).result))[Octopus.env()]
+
+      if @config && @config['environments']
+        self.environments = @config['environments']
+      end
+    else
+      @config ||= HashWithIndifferentAccess.new
     end
 
     @config

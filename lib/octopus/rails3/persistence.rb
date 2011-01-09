@@ -16,7 +16,7 @@ module Octopus
         super
       end
 
-      def reload(options = {})
+      def reload(options = nil)
         reload_connection()
         super(options)
       end

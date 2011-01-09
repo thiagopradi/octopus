@@ -136,6 +136,13 @@ describe Octopus::Model do
         u.reload
         u.name.should == "Alone"
       end
+      
+      it "should work passing some arguments to reload method" do
+        User.using(:alone_shard).create!(:name => "Alone")
+        u = User.using(:alone_shard).find_by_name("Alone")
+        u.reload(:lock => true)
+        u.name.should == "Alone"
+      end
     end
 
     describe "passing a block" do

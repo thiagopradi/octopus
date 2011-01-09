@@ -14,7 +14,7 @@ module Octopus::Model
       return self if defined?(::Rails) && !Octopus.environments.include?(Rails.env.to_s)
       
       clean_table_name()
-      hijack_initializer()
+      hijack_initializer() if !respond_to?(:set_current_shard)
 
       self.connection_proxy.using_enabled = true
 
@@ -22,8 +22,6 @@ module Octopus::Model
     end
 
     def hijack_initializer()
-      return if respond_to?(:set_current_shard)
-      
       attr_accessor :current_shard
       after_initialize :set_current_shard
       before_save :reload_connection

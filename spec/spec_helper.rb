@@ -1,12 +1,8 @@
 require "rubygems"
-if ENV["VERSION"]
-  gem 'activerecord', ENV["VERSION"]
-  gem 'activesupport', ENV["VERSION"]
-  gem 'actionpack', ENV["VERSION"]
-end
-
 require "bundler"
+
 Bundler.setup()
+
 require File.expand_path(File.dirname(__FILE__)) + "/database_connection"
 require "octopus"
 require "octopus_helper"

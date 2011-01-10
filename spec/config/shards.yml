@@ -10,7 +10,7 @@ octopus:
     
     postgresql_shard:
       adapter: postgresql
-      username: postgres
+      username: <%= ENV['POSTGRES_USER'] || 'postgres'%>
       password:
       database: octopus_shard1
       encoding: unicode
@@ -127,5 +127,3 @@ not_entire_sharded:
     russia:
       database: octopus_shard5
       <<: *mysql
-  
-      

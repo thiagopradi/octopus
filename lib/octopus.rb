@@ -83,6 +83,7 @@ require "octopus/association"
 if Octopus.rails3?
   require "octopus/rails3/association"
   require "octopus/rails3/persistence"
+  require "octopus/rails3/arel"
 else
   require "octopus/rails2/association"
   require "octopus/rails2/persistence"

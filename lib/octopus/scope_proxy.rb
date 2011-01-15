@@ -24,11 +24,11 @@ class Octopus::ScopeProxy
     @klass.connection()
   end
   
-  def method_missing(method, *args, &block)    
+  def method_missing(method, *args, &block)        
     @klass.connection.run_queries_on_shard(@shard) do
       @klass = @klass.send(method, *args, &block)
     end
-
+                
     return @klass if @klass.is_a?(ActiveRecord::Base) or @klass.is_a?(Array) or @klass.is_a?(Fixnum) or @klass.nil?
     return self
   end

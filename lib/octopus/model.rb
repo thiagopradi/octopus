@@ -7,7 +7,14 @@ module Octopus::Model
 
   module SharedMethods
     def clean_table_name
-      self.reset_table_name() if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
+      if self != ActiveRecord::Base && self.respond_to?(:reset_table_name)
+        self.reset_table_name() 
+      end
+
+      if Octopus.rails3?
+        self.reset_column_information
+        self.instance_variable_set(:@quoted_table_name, nil)
+      end
     end
 
     def using(shard)

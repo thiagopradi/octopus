@@ -180,15 +180,15 @@ describe Octopus::Model do
     end
 
     it "should works with writes and reads" do
-      pending "Probably an Arel/ActiveRecord bug is making this test fail in rails 3.0.3"
-      #u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
-      #User.using(:postgresql_shard).find(:all).should == [u]
-      #User.using(:alone_shard).find(:all).should == []
+      u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
+      User.using(:postgresql_shard).find(:all).should == [u]
+      User.using(:alone_shard).find(:all).should == []      
+      User.connection_handler.connection_pools["ActiveRecord::Base"] = User.connection.instance_variable_get(:@shards)[:master]
     end
   end
 
   describe "AR basic methods" do
-    it "establish_connection" do
+    it "octopus_establish_connection" do
       CustomConnection.connection.current_database.should == "octopus_shard2" 
     end
 

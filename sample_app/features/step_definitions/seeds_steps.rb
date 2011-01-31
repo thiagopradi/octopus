@@ -11,5 +11,5 @@ Then /^the version of "([^"]*)" shard should be "([^"]*)"$/ do |shard_name, vers
 end
 
 When /^I run inside my Rails project "([^"]*)" with enviroment "([^"]*)"$/ do |command, enviroment|
-  run(unescape("cd #{Rails.root.to_s} && RAILS_ENV=#{enviroment} #{command}"), false)
+  run("cd #{Rails.root.to_s} && RAILS_ENV=#{enviroment} #{command}")
 end

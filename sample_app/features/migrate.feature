@@ -39,6 +39,8 @@ Feature: rake db:migrate
     When I run inside my Rails project "rake db:abort_if_pending_migrations" with enviroment "development"  
     Then the output should contain "pending migrations"
     When I run inside my Rails project "rake db:migrate" with enviroment "development"  
-    When I run inside my Rails project "rake db:abort_if_pending_migrations" with enviroment "development"  
+    When I run inside my Rails project "rake db:abort_if_pending_migrations RAILS_ENV=development" with enviroment "development"  
+    Then I should debug
     Then the output should not contain "pending migrations"
+    
   

@@ -91,4 +91,4 @@ end
 
 require "octopus/proxy"
 require "octopus/scope_proxy"
-
+require "octopus/logger"

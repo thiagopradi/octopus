@@ -5,4 +5,3 @@
 - Basic algorithm to do load balancing between slaves server (handling servers down)
 - Support replication + sharding
 - Wiki about validation
-- Show where the query is sent in the log

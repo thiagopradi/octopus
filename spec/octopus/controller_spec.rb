@@ -22,7 +22,7 @@ describe "Rails Controllers" do
 
     if Octopus.rails3?
       a = UsersControllers.new
-      a.stub!(:request).and_return(mock({:fullpath => "", :filtered_parameters => {}, :formats => ["xml"], :method => "GET"}))
+      a.stub!(:request).and_return(mock({:fullpath => "", :filtered_parameters => {}, :formats => [mock(:to_sym => :xml, :ref => "xml")], :method => "GET"}))
       a.instance_variable_set(:@_response, mock(:content_type => "xml", :body= => "", :status => 401))
       a.process(:create)
       User.using(:brazil).find_by_name("ActionController").should_not be_nil

@@ -167,16 +167,19 @@ class Octopus::Proxy
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
     
-    if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
-      self.current_shard = @slaves_list.shift.to_sym
-      @slaves_list << self.current_shard
-    else
-      self.current_shard = :master
-    end
+    begin
+      if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
+        self.current_shard = @slaves_list.shift.to_sym
+        @slaves_list << self.current_shard
+      else
+        self.current_shard = :master
+      end
     
-    sql = select_connection().send(method, *args, &block)     
-    self.current_shard = old_shard
-    @using_enabled = nil
-    return sql    
+      sql = select_connection().send(method, *args, &block)     
+      return sql    
+    ensure
+      self.current_shard = old_shard
+      @using_enabled = nil
+    end
   end
 end

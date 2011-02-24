@@ -68,5 +68,18 @@ describe "when the database is replicated and the entire application is replicat
       k.errors.should == {:name=>["has already been taken"]}
     end
   end
+  
+  it "should reset current shard if slave throws an exception" do
+  
+    using_environment :production_fully_replicated do
+      Cat.create!(:name => "Slave Cat")
+      Cat.connection.current_shard.should eql(:master)
+      begin
+        Cat.find(:all, :conditions => 'rubbish = true')
+      rescue
+      end
+      Cat.connection.current_shard.should eql(:master)
+    end
+  end
 end
 

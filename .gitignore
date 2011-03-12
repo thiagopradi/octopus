@@ -3,3 +3,4 @@ tmp/*
 *.sqlite3
 .rvmrc
 .bundle/*
+*.rbc

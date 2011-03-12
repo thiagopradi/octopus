@@ -155,6 +155,9 @@ If you are having issues running the octopus spec suite, verify your database us
 ## Contributors:
 - <a href="https://github.com/tchandy/octopus/contributors">All Contributors</a>
 
+## Mailing List:
+- <a href="http://groups.google.com/group/octopus-activerecord/">Octopus Mailing List</a>
+
 ## Thanks
 
 This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,

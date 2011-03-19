@@ -70,3 +70,8 @@ end
 class Comment < ActiveRecord::Base
   belongs_to :commentable, :polymorphic => true
 end
+
+
+class Bacon < ActiveRecord::Base
+  octopus_set_table_name "yummy"
+end

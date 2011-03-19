@@ -134,7 +134,10 @@ If you want to set a custom connection to a specific model, use this syntax:
     class CustomConnection < ActiveRecord::Base
       octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
     end
-    
+
+## Set table names
+If you want to use specific table names, please visit: <a href="https://github.com/tchandy/octopus/wiki/Table-names"> this link</a>
+
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 

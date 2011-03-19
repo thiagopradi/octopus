@@ -1,3 +1,5 @@
+require "set"
+
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard, :config
 
@@ -9,6 +11,7 @@ class Octopus::Proxy
   def initialize_shards(config)
     @shards = {}
     @groups = {}
+    @adapters = Set.new
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
     @current_shard = :master
@@ -87,6 +90,10 @@ class Octopus::Proxy
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
   
+  def should_clean_table_name?
+    @adapters.size > 1
+  end
+  
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     last_block = self.block
@@ -149,6 +156,7 @@ class Octopus::Proxy
   end
 
   def initialize_adapter(adapter)
+    @adapters << adapter
     begin
       require "active_record/connection_adapters/#{adapter}_adapter"
     rescue LoadError

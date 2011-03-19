@@ -307,6 +307,21 @@ describe Octopus::Model do
     end
   end
 
+  describe "when using set_table_name" do
+    it 'should work correctly' do
+      Bacon.using(:brazil).create!(:name => "YUMMMYYYY")
+    end
+  end
+
+  describe "when using a environment with a single adapter" do
+    it 'should not clean the table name' do
+      using_environment :production_fully_replicated do 
+        Keyboard.should_not_receive(:reset_table_name)
+        Keyboard.using(:master).create!("Master Cat")
+      end
+    end
+  end
+
   describe "when you have joins/include" do 
     before(:each) do
       @client1 = Client.using(:brazil).create(:name => "Thiago")

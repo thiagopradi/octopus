@@ -153,6 +153,10 @@ namespace :db do
         u.string :name
         u.integer :item_id
       end
+
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:yummy) do |u|
+        u.string :name
+      end
     end
   end
   

@@ -31,6 +31,14 @@ describe Octopus::Proxy do
       adapters.to_a.should == ["sqlite3", "mysql", "postgresql"]
     end
 
+    it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do
+      proxy.respond_to?(:pk_and_sequence_for).should be_true
+    end
+
+    it 'should respond correctly to respond_to?(:primary_key)' do
+      proxy.respond_to?(:primary_key).should be_true
+    end
+
     describe "#should_clean_table_name?" do
       it 'should return true when you have a environment with multiple database types' do
         proxy.should_clean_table_name?.should be_true

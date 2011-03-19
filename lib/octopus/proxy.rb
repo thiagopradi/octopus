@@ -150,6 +150,10 @@ class Octopus::Proxy
     end
   end
 
+  def respond_to?(method, include_private = false)
+    super || select_connection.respond_to?(method, include_private)
+  end
+
   protected
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))

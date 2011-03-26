@@ -9,8 +9,8 @@ class Octopus::Proxy
   end
 
   def initialize_shards(config)
-    @shards = {}
-    @groups = {}
+    @shards = HashWithIndifferentAccess.new
+    @groups = HashWithIndifferentAccess.new
     @adapters = Set.new
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)

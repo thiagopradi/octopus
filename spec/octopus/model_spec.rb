@@ -14,6 +14,20 @@ describe Octopus::Model do
       User.using(:master).find_by_name("Block test").should_not be_nil
     end
 
+    it 'should allow to pass a string as the shard name to a AR subclass' do
+      User.using('canada').create!(:name => 'Rafael Pilha')
+
+      User.using('canada').find_by_name('Rafael Pilha').should_not be_nil
+    end
+
+    it 'should allow to pass a string as the shard name to a block' do
+      Octopus.using('canada') do
+        User.create!(:name => 'Rafael Pilha')
+      end
+
+      User.using('canada').find_by_name('Rafael Pilha').should_not be_nil
+    end
+
     it "should allow selecting the shards on scope" do
       User.using(:canada).create!(:name => 'oi')
       User.using(:canada).count.should == 1

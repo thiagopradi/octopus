@@ -5,8 +5,8 @@ describe Octopus::Proxy do
 
   describe "creating a new instance" do    
     it "should initialize all shards and groups" do
-      proxy.instance_variable_get(:@shards).keys.to_set.should == [:postgresql_shard, :alone_shard, :aug2011, :canada, :brazil, :aug2009, :russia, :aug2010, :master, :sqlite_shard].to_set
-      proxy.instance_variable_get(:@groups).should == {:country_shards=>[:canada, :brazil, :russia], :history_shards=>[:aug2009, :aug2010, :aug2011]}
+      proxy.instance_variable_get(:@shards).keys.to_set.should == ["canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard", "aug2009", "postgresql_shard", "aug2010", "aug2011"].to_set
+      proxy.instance_variable_get(:@groups).should == {"country_shards" => [:canada, :brazil, :russia], "history_shards" => [:aug2009, :aug2010, :aug2011]}
     end
 
     it "should initialize the block attribute as false" do
@@ -71,7 +71,7 @@ describe Octopus::Proxy do
       end
 
       it "should initialize just the master shard" do
-        proxy.instance_variable_get(:@shards).keys.should == [:master]
+        proxy.instance_variable_get(:@shards).keys.should == ["master"]
       end
 
       it "should not initialize the groups variable" do
@@ -117,13 +117,13 @@ describe Octopus::Proxy do
     it "should initialize correctly the shards for the staging environment" do
       Rails.stub!(:env).and_return('staging')
 
-      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave1, :slave2, :master])
+      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave1", "slave2", "master"])
     end
 
     it "should initialize correctly the shards for the production environment" do
       Rails.stub!(:env).and_return('production')
 
-      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new([:slave3, :slave4, :master])
+      proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave3", "slave4", "master"])
     end
 
     describe "using the master connection" do

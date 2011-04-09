@@ -33,7 +33,7 @@ GEM
       bundler (~> 1.0.0)
       git (>= 1.2.5)
       rake
-    mysql (2.8.1)
+    mysql2 (0.2.6)
     pg (0.10.1)
     rack (1.2.2)
     rack-mount (0.6.14)
@@ -61,7 +61,7 @@ DEPENDENCIES
   actionpack (= 3.0.6)
   activerecord (= 3.0.6)
   jeweler (>= 1.4)
-  mysql (>= 2.8.1)
+  mysql2
   pg (>= 0.9.0)
   rake (>= 0.8.7)
   rspec

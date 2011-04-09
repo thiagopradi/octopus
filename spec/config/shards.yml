@@ -1,5 +1,5 @@
 mysql: &mysql
-  adapter: <%= 'mysql' %>
+  adapter: <%= 'mysql2' %>
   host: localhost
 
 octopus:
@@ -7,18 +7,18 @@ octopus:
     alone_shard:
       database: octopus_shard5
       <<: *mysql
-    
+
     postgresql_shard:
       adapter: postgresql
       username: <%= ENV['POSTGRES_USER'] || 'postgres'%>
       password:
       database: octopus_shard1
       encoding: unicode
-    
+
     sqlite_shard:
       adapter: sqlite3
       database: /tmp/database.sqlite3
-    
+
     history_shards:
       aug2009:
         database: octopus_shard2
@@ -29,7 +29,7 @@ octopus:
       aug2011:
         database: octopus_shard4
         <<: *mysql
-    
+
     country_shards:
       canada:
         database: octopus_shard2
@@ -40,24 +40,24 @@ octopus:
       russia:
         database: octopus_shard4
         <<: *mysql
-        
-        
+
+
 production_raise_error:
   shards:
     history_shards:
       duplicated_shard_name:
         database: octopus_shard5
         <<: *mysql
-    
+
     country_shards:
       duplicated_shard_name:
         database: octopus_shard4
         <<: *mysql
-        
+
 production_replicated:
   replicated: true
   fully_replicated: false
-  
+
   shards:
     slave1:
       database: octopus_shard2
@@ -88,7 +88,7 @@ production_fully_replicated:
     slave4:
       database: octopus_shard5
       <<: *mysql
-      
+
 octopus_rails:
   replicated: true
   verify_connection: true

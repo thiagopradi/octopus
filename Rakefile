@@ -31,7 +31,7 @@ begin
     gem.homepage = "http://github.com/tchandy/octopus"
     gem.authors = ["Thiago Pradi", "Mike Perham"]
     gem.add_development_dependency "rspec", ">= 2.0.0.beta.19"
-    gem.add_development_dependency "mysql", ">= 2.8.1"
+    gem.add_development_dependency "mysql2"
     gem.add_development_dependency "pg", ">= 0.9.0"
     gem.add_development_dependency "sqlite3-ruby", ">= 1.3.1"
     gem.add_development_dependency "jeweler", ">= 1.4"
@@ -64,7 +64,7 @@ namespace :db do
     (1..5).each do |idx|
       %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{mysql_user})
     end
-    
+
     %x( createdb -E UTF8 -U #{postgres_user} octopus_shard1 )
   end
 
@@ -75,7 +75,7 @@ namespace :db do
     (1..5).each do |idx|
       %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
     end
-    
+
     %x( dropdb -U #{postgres_user} octopus_shard1 )
     %x(rm -f /tmp/database.sqlite3)
   end
@@ -87,68 +87,68 @@ namespace :db do
     require "octopus"
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
       ActiveRecord::Base.using(shard_symbol).connection.initialize_schema_migrations_table()
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
         u.integer :number
         u.boolean :admin
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:clients) do |u|
         u.string :country
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:cats) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:items) do |u|
         u.string :name
         u.integer :client_id
       end
-            
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:computers) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:keyboards) do |u|
         u.string :name
         u.integer :computer_id
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:roles) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions_roles, :id => false) do |u|
         u.integer :role_id
         u.integer :permission_id
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:assignments) do |u|
         u.integer :programmer_id
         u.integer :project_id
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:programmers) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:projects) do |u|
         u.string :name
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:comments) do |u|
         u.string :name
         u.string :commentable_type
         u.integer :commentable_id
       end
-      
+
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:parts) do |u|
         u.string :name
         u.integer :item_id
@@ -159,7 +159,7 @@ namespace :db do
       end
     end
   end
-  
+
   desc 'Prepare the test databases'
   task :prepare => [:drop_databases, :build_databases, :create_tables]
 end

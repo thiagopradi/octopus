@@ -31,7 +31,6 @@ module Octopus::Model
 
     def hijack_initializer()
       attr_accessor :current_shard
-      after_initialize :set_current_shard
       before_save :reload_connection
 
       def set_current_shard
@@ -42,7 +41,9 @@ module Octopus::Model
         end
       end
 
-      if !Octopus.rails3?
+      if Octopus.rails3?
+        after_initialize :set_current_shard
+      else
         def after_initialize
           set_current_shard()
         end

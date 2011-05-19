@@ -12,4 +12,8 @@ module Octopus::AssociationCollection
   end
 end
 
-ActiveRecord::Associations::AssociationCollection.send(:include, Octopus::AssociationCollection)
+if ActiveRecord::VERSION::MAJOR >= 3 && ActiveRecord::VERSION::MINOR >=1
+  ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)
+else
+  ActiveRecord::Associations::AssociationCollection.send(:include, Octopus::AssociationCollection)
+end

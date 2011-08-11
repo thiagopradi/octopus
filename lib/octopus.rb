@@ -29,7 +29,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory()
-    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd     
+    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
   end
 
   # This is the default way to do Octopus Setup
@@ -52,25 +52,25 @@ module Octopus
   end
 
   def self.rails?
-    defined?(Rails) 
+    defined?(Rails)
   end
-  
+
   def self.shards=(shards)
     @config ||= HashWithIndifferentAccess.new
     @config[rails_env()] = HashWithIndifferentAccess.new(shards)
     ActiveRecord::Base.connection.initialize_shards(@config)
   end
-  
+
   def self.using(shard, &block)
     ActiveRecord::Base.hijack_initializer()
     conn = ActiveRecord::Base.connection
-    
+
     if conn.is_a?(Octopus::Proxy)
       conn.run_queries_on_shard(shard, &block)
     else
       yield
     end
-  end  
+  end
 end
 
 

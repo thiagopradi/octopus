@@ -1,6 +1,6 @@
 class RaiseExceptionWithMultipleInvalidGroupNames < ActiveRecord::Migration
   using_group(:country_shards,:invalid_group)
-  
+
   def self.up
     User.create!(:name => "Error")
   end

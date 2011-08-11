@@ -1,6 +1,6 @@
 class RaiseExceptionWithInvalidGroupName < ActiveRecord::Migration
   using_group(:invalid_group)
-  
+
   def self.up
     User.create!(:name => "Error")
   end

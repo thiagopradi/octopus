@@ -7,7 +7,7 @@ describe Octopus::Association do
       @computer_master = Computer.create!(:name => "Computer Brazil")
       @keyboard_brazil = Keyboard.using(:brazil).create!(:name => "Keyboard Brazil", :computer => @computer_brazil)
       @keyboard_master = Keyboard.create!(:name => "Keyboard Master", :computer => @computer_master)
-    end    
+    end
 
     it "should find the models" do
       @keyboard_master.computer.should == @computer_master
@@ -23,7 +23,7 @@ describe Octopus::Association do
       @keyboard_brazil.computer_id.should ==  new_computer_brazil.id
       @keyboard_brazil.computer.should ==  new_computer_brazil
       new_computer_brazil.save()
-      new_computer_brazil.reload      
+      new_computer_brazil.reload
       new_computer_brazil.keyboard.should == @keyboard_brazil
     end
 
@@ -56,7 +56,7 @@ describe Octopus::Association do
       @permission_master = Permission.using(:master).create!(:name => "Master Permission")
       @brazil_role.permissions << @permission_brazil
       @brazil_role.save()
-      Client.using(:master).create!(:name => "teste")        
+      Client.using(:master).create!(:name => "teste")
     end
 
     it "should find all models in the specified shard" do
@@ -122,12 +122,12 @@ describe Octopus::Association do
 
       it "create" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
-        @permission_brazil_2.roles.to_set.should == [role].to_set          
+        @permission_brazil_2.roles.to_set.should == [role].to_set
       end
 
       it "create" do
         role = @permission_brazil_2.roles.create!(:name => "Builded Role")
-        @permission_brazil_2.roles.to_set.should == [role].to_set          
+        @permission_brazil_2.roles.to_set.should == [role].to_set
       end
 
       it "count" do
@@ -163,37 +163,37 @@ describe Octopus::Association do
 
       it "delete_all" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
-        @permission_brazil_2.roles.empty?.should be_false     
-        @permission_brazil_2.roles.delete_all                
+        @permission_brazil_2.roles.empty?.should be_false
+        @permission_brazil_2.roles.delete_all
         @permission_brazil_2.roles.empty?.should be_true
       end
 
       it "destroy_all" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
-        @permission_brazil_2.roles.empty?.should be_false     
-        @permission_brazil_2.roles.destroy_all                
+        @permission_brazil_2.roles.empty?.should be_false
+        @permission_brazil_2.roles.destroy_all
         @permission_brazil_2.roles.empty?.should be_true
       end
 
       it "find" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.find(:first).should == role
-        @permission_brazil_2.roles.destroy_all                
+        @permission_brazil_2.roles.destroy_all
         @permission_brazil_2.roles.find(:first).should be_nil
       end
 
       it "exists?" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
         @permission_brazil_2.roles.exists?(role).should be_true
-        @permission_brazil_2.roles.destroy_all                
-        @permission_brazil_2.roles.exists?(role).should be_false     
+        @permission_brazil_2.roles.destroy_all
+        @permission_brazil_2.roles.exists?(role).should be_false
       end
 
       it "clear" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
-        @permission_brazil_2.roles.empty?.should be_false     
-        @permission_brazil_2.roles.clear                
-        @permission_brazil_2.roles.empty?.should be_true          
+        @permission_brazil_2.roles.empty?.should be_false
+        @permission_brazil_2.roles.clear
+        @permission_brazil_2.roles.empty?.should be_true
       end
 
       it "delete" do
@@ -277,12 +277,12 @@ describe Octopus::Association do
 
       it "create" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.to_set.should == [role].to_set          
+        @new_brazil_programmer.projects.to_set.should == [role].to_set
       end
 
       it "create" do
         role = @new_brazil_programmer.projects.create!(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.to_set.should == [role].to_set          
+        @new_brazil_programmer.projects.to_set.should == [role].to_set
       end
 
       it "count" do
@@ -318,37 +318,37 @@ describe Octopus::Association do
 
       it "delete_all" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.empty?.should be_false     
-        @new_brazil_programmer.projects.delete_all                
+        @new_brazil_programmer.projects.empty?.should be_false
+        @new_brazil_programmer.projects.delete_all
         @new_brazil_programmer.projects.empty?.should be_true
       end
 
       it "destroy_all" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.empty?.should be_false     
-        @new_brazil_programmer.projects.destroy_all                
+        @new_brazil_programmer.projects.empty?.should be_false
+        @new_brazil_programmer.projects.destroy_all
         @new_brazil_programmer.projects.empty?.should be_true
       end
 
       it "find" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
         @new_brazil_programmer.projects.find(:first).should == role
-        @new_brazil_programmer.projects.destroy_all                
+        @new_brazil_programmer.projects.destroy_all
         @new_brazil_programmer.projects.find(:first).should be_nil
       end
 
       it "exists?" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
         @new_brazil_programmer.projects.exists?(role).should be_true
-        @new_brazil_programmer.projects.destroy_all                
-        @new_brazil_programmer.projects.exists?(role).should be_false     
+        @new_brazil_programmer.projects.destroy_all
+        @new_brazil_programmer.projects.exists?(role).should be_false
       end
 
       it "clear" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.empty?.should be_false     
-        @new_brazil_programmer.projects.clear                
-        @new_brazil_programmer.projects.empty?.should be_true          
+        @new_brazil_programmer.projects.empty?.should be_false
+        @new_brazil_programmer.projects.clear
+        @new_brazil_programmer.projects.empty?.should be_true
       end
 
       it "delete" do
@@ -370,7 +370,7 @@ describe Octopus::Association do
       @item_brazil = Item.using(:brazil).create!(:name => "Brazil Item", :client => @brazil_client)
       @item_master = Item.create!(:name => "Master Item", :client => @master_client)
       @brazil_client = Client.using(:brazil).find_by_name("Brazil Client")
-      Client.using(:master).create!(:name => "teste")        
+      Client.using(:master).create!(:name => "teste")
     end
 
     it "should find all models in the specified shard" do
@@ -383,7 +383,7 @@ describe Octopus::Association do
     end
 
     it "should raise error if you try to add a record from a different shard" do
-      lambda do 
+      lambda do
         @brazil_client.items << Item.using(:canada).create!(:name => "New User")
       end.should raise_error("Association Error: Records are from different shards")
     end
@@ -410,7 +410,7 @@ describe Octopus::Association do
     describe "it should works when using" do
       before(:each) do
         @item_brazil_2 = Item.using(:brazil).create!(:name => "Brazil Item 2")
-        @brazil_client.items.to_set.should == [@item_brazil].to_set 
+        @brazil_client.items.to_set.should == [@item_brazil].to_set
       end
 
 
@@ -439,7 +439,7 @@ describe Octopus::Association do
 
       it "create" do
         item = @brazil_client.items.create(:name => "Builded Item")
-        @brazil_client.items.to_set.should == [@item_brazil, item].to_set          
+        @brazil_client.items.to_set.should == [@item_brazil, item].to_set
       end
 
       it "count" do
@@ -449,20 +449,20 @@ describe Octopus::Association do
       end
 
       it "size" do
-        @brazil_client.items.size.should == 1          
+        @brazil_client.items.size.should == 1
         item = @brazil_client.items.create(:name => "Builded Item")
-        @brazil_client.items.size.should == 2          
+        @brazil_client.items.size.should == 2
       end
 
       it "create!" do
         item = @brazil_client.items.create!(:name => "Builded Item")
-        @brazil_client.items.to_set.should == [@item_brazil, item].to_set                    
+        @brazil_client.items.to_set.should == [@item_brazil, item].to_set
       end
 
       it "length" do
-        @brazil_client.items.length.should == 1          
+        @brazil_client.items.length.should == 1
         item = @brazil_client.items.create(:name => "Builded Item")
-        @brazil_client.items.length.should == 2                    
+        @brazil_client.items.length.should == 2
       end
 
       it "empty?" do
@@ -482,37 +482,37 @@ describe Octopus::Association do
       end
 
       it "delete_all" do
-        @brazil_client.items.empty?.should be_false     
-        @brazil_client.items.delete_all                
+        @brazil_client.items.empty?.should be_false
+        @brazil_client.items.delete_all
         @brazil_client.items.empty?.should be_true
       end
 
       it "destroy_all" do
-        @brazil_client.items.empty?.should be_false     
-        @brazil_client.items.destroy_all                
+        @brazil_client.items.empty?.should be_false
+        @brazil_client.items.destroy_all
         @brazil_client.items.empty?.should be_true
       end
 
       it "find" do
         @brazil_client.items.find(:first).should == @item_brazil
-        @brazil_client.items.destroy_all                
+        @brazil_client.items.destroy_all
         @brazil_client.items.find(:first).should be_nil
       end
 
       it "exists?" do
         @brazil_client.items.exists?(@item_brazil).should be_true
-        @brazil_client.items.destroy_all                
-        @brazil_client.items.exists?(@item_brazil).should be_false     
+        @brazil_client.items.destroy_all
+        @brazil_client.items.exists?(@item_brazil).should be_false
       end
 
       it "uniq" do
-        @brazil_client.items.uniq.should == [@item_brazil]                
-      end        
+        @brazil_client.items.uniq.should == [@item_brazil]
+      end
 
       it "clear" do
-        @brazil_client.items.empty?.should be_false     
-        @brazil_client.items.clear                
-        @brazil_client.items.empty?.should be_true          
+        @brazil_client.items.empty?.should be_false
+        @brazil_client.items.clear
+        @brazil_client.items.empty?.should be_true
       end
     end
   end
@@ -524,7 +524,7 @@ describe Octopus::Association do
       @comment_brazil = Comment.using(:brazil).create!(:name => "Brazil Comment", :commentable => @brazil_client)
       @comment_master = Comment.create!(:name => "Master Comment", :commentable => @master_client)
       @brazil_client = Client.using(:brazil).find_by_name("Brazil Client")
-      Client.using(:master).create!(:name => "teste")        
+      Client.using(:master).create!(:name => "teste")
     end
 
     it "should find all models in the specified shard" do
@@ -549,7 +549,7 @@ describe Octopus::Association do
     describe "it should works when using" do
       before(:each) do
         @comment_brazil_2 = Comment.using(:brazil).create!(:name => "Brazil Comment 2")
-        @brazil_client.comments.to_set.should == [@comment_brazil].to_set 
+        @brazil_client.comments.to_set.should == [@comment_brazil].to_set
       end
 
       it "update_attributes" do
@@ -577,7 +577,7 @@ describe Octopus::Association do
 
       it "create" do
         comment = @brazil_client.comments.create(:name => "Builded Comment")
-        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set          
+        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set
       end
 
       it "count" do
@@ -587,20 +587,20 @@ describe Octopus::Association do
       end
 
       it "size" do
-        @brazil_client.comments.size.should == 1          
+        @brazil_client.comments.size.should == 1
         comment = @brazil_client.comments.create(:name => "Builded Comment")
-        @brazil_client.comments.size.should == 2          
+        @brazil_client.comments.size.should == 2
       end
 
       it "create!" do
         comment = @brazil_client.comments.create!(:name => "Builded Comment")
-        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set                    
+        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set
       end
 
       it "length" do
-        @brazil_client.comments.length.should == 1          
+        @brazil_client.comments.length.should == 1
         comment = @brazil_client.comments.create(:name => "Builded Comment")
-        @brazil_client.comments.length.should == 2                    
+        @brazil_client.comments.length.should == 2
       end
 
       it "empty?" do
@@ -620,37 +620,37 @@ describe Octopus::Association do
       end
 
       it "delete_all" do
-        @brazil_client.comments.empty?.should be_false     
-        @brazil_client.comments.delete_all                
+        @brazil_client.comments.empty?.should be_false
+        @brazil_client.comments.delete_all
         @brazil_client.comments.empty?.should be_true
       end
 
       it "destroy_all" do
-        @brazil_client.comments.empty?.should be_false     
-        @brazil_client.comments.destroy_all                
+        @brazil_client.comments.empty?.should be_false
+        @brazil_client.comments.destroy_all
         @brazil_client.comments.empty?.should be_true
       end
 
       it "find" do
         @brazil_client.comments.find(:first).should == @comment_brazil
-        @brazil_client.comments.destroy_all                
+        @brazil_client.comments.destroy_all
         @brazil_client.comments.find(:first).should be_nil
       end
 
       it "exists?" do
         @brazil_client.comments.exists?(@comment_brazil).should be_true
-        @brazil_client.comments.destroy_all                
-        @brazil_client.comments.exists?(@comment_brazil).should be_false     
+        @brazil_client.comments.destroy_all
+        @brazil_client.comments.exists?(@comment_brazil).should be_false
       end
 
       it "uniq" do
-        @brazil_client.comments.uniq.should == [@comment_brazil]                
-      end        
+        @brazil_client.comments.uniq.should == [@comment_brazil]
+      end
 
       it "clear" do
-        @brazil_client.comments.empty?.should be_false     
-        @brazil_client.comments.clear                
-        @brazil_client.comments.empty?.should be_true          
+        @brazil_client.comments.empty?.should be_false
+        @brazil_client.comments.clear
+        @brazil_client.comments.empty?.should be_true
       end
     end
   end

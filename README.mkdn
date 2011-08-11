@@ -16,14 +16,14 @@ Octopus supports:
 When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a>
 
 ### Sharding
- When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> 
+ When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a>
 
 ### Replication + Sharding
  Replication + Sharding isn't supported yet. This is on our TODO list and will be done ASAP. If you need, feel free to fork and implement it.
 
-## Install 
+## Install
 
-### Rails 2.x 
+### Rails 2.x
 
 Install  the octopus gem:
 
@@ -33,7 +33,7 @@ Add this line to enviroment.rb:
 
     config.gem 'ar-octopus', :lib => "octopus"
 
-### Rails 3.x 
+### Rails 3.x
 
 Add this line to Gemfile:
 
@@ -43,19 +43,19 @@ Runs a bundle install:
 
     bundle install
 
-## How to use Octopus? 
+## How to use Octopus?
 
 First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a>.
 
-### Syntax 
+### Syntax
 
-Octopus adds a method to each AR Class and object: the using method is used to select the shard like this: 
+Octopus adds a method to each AR Class and object: the using method is used to select the shard like this:
 
     User.where(:name => "Thiago").limit(3).using(:slave_one)
 
-Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. 
+Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard.
 
-    Octopus.using(:slave_two) do 
+    Octopus.using(:slave_two) do
       User.create(:name => "Mike")
     end
 
@@ -70,7 +70,7 @@ Each model instance knows which shard it came from so this will work automatical
     #Sets the name
     @user.name = "Mike"
 
-    # Save the user in the correct shard, shard1. 
+    # Save the user in the correct shard, shard1.
     @user.save
 
 ### Migrations
@@ -89,7 +89,7 @@ In migrations, you also have access to the using method. The syntax is basically
       end
     end
 
-You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml: 
+You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml:
 
     class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
       using_group(:history_shards)
@@ -106,13 +106,13 @@ You also could send a migration to a group of shards.  This migration will be se
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
-  
+
     class ApplicationController < ActionController::Base
-      around_filter :select_shard      
-    
+      around_filter :select_shard
+
       def select_shard(&block)
         Octopus.using(:brazil, &block)
-      end    
+      end
     end
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>

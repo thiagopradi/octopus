@@ -58,7 +58,7 @@ module Octopus
       def collection_reader_method(reflection, association_proxy_class)
         define_method(reflection.name) do |*params|
           force_reload = params.first unless params.empty?
-          reload_connection() 
+          reload_connection()
           association = association_instance_get(reflection.name)
 
           unless association
@@ -72,7 +72,7 @@ module Octopus
         end
 
         define_method("#{reflection.name.to_s.singularize}_ids") do
-          reload_connection() 
+          reload_connection()
           if send(reflection.name).loaded? || reflection.options[:finder_sql]
             send(reflection.name).map(&:id)
           else
@@ -103,7 +103,7 @@ module Octopus
 
       def association_constructor_method(constructor, reflection, association_proxy_class)
         define_method("#{constructor}_#{reflection.name}") do |*params|
-          reload_connection() 
+          reload_connection()
           attributees      = params.first unless params.empty?
           replace_existing = params[1].nil? ? true : params[1]
           association      = association_instance_get(reflection.name)

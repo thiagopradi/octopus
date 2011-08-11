@@ -1,5 +1,5 @@
-module Octopus::Model  
-  def self.extended(base) 
+module Octopus::Model
+  def self.extended(base)
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
     base.hijack_connection()
@@ -9,7 +9,7 @@ module Octopus::Model
     def clean_table_name
       return unless self.connection_proxy.should_clean_table_name?
       if self != ActiveRecord::Base && self.respond_to?(:reset_table_name) && !self.read_inheritable_attribute(:set_table_name)
-        self.reset_table_name() 
+        self.reset_table_name()
       end
 
       if Octopus.rails3?
@@ -20,7 +20,7 @@ module Octopus::Model
 
     def using(shard)
       return self if defined?(::Rails) && !Octopus.environments.include?(Rails.env.to_s)
-      
+
       hijack_initializer() if !respond_to?(:set_current_shard)
       clean_table_name()
 
@@ -35,9 +35,9 @@ module Octopus::Model
 
       def set_current_shard
         if new_record? || self.class.connection_proxy.block
-          self.current_shard = self.class.connection_proxy.current_shard    
+          self.current_shard = self.class.connection_proxy.current_shard
         else
-          self.current_shard = self.class.connection_proxy.last_current_shard  
+          self.current_shard = self.class.connection_proxy.last_current_shard
         end
       end
 
@@ -54,7 +54,7 @@ module Octopus::Model
       def self.should_use_normal_connection?
         (defined?(Rails) && Octopus.config() && !Octopus.environments.include?(Rails.env.to_s)) || self.read_inheritable_attribute(:establish_connection)
       end
-      
+
       def self.connection_proxy
         Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
       end
@@ -90,18 +90,18 @@ module Octopus::Model
     def replicated_model()
       write_inheritable_attribute(:replicated, true)
     end
-    
+
     def sharded_model()
-      write_inheritable_attribute(:sharded, true)      
-    end    
-    
+      write_inheritable_attribute(:sharded, true)
+    end
+
     def octopus_establish_connection(spec = nil)
-      write_inheritable_attribute(:establish_connection, true)      
+      write_inheritable_attribute(:establish_connection, true)
       establish_connection(spec)
     end
 
     def octopus_set_table_name(value = nil, &block)
-      write_inheritable_attribute(:set_table_name, true)      
+      write_inheritable_attribute(:set_table_name, true)
       set_table_name(value, &block)
     end
   end

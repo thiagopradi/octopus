@@ -4,7 +4,7 @@ class CreateUsersUsingBlock < ActiveRecord::Migration
       User.create!(:name => "UsingBlock1")
       User.create!(:name => "UsingBlock2")
     end
-    
+
     Octopus.using(:canada) do
       User.create!(:name => "UsingCanada")
       User.create!(:name => "UsingCanada2")
@@ -15,7 +15,7 @@ class CreateUsersUsingBlock < ActiveRecord::Migration
     Octopus.using(:brazil) do
       User.delete_all()
     end
-    
+
     Octopus.using(:canada) do
       User.delete_all()
     end

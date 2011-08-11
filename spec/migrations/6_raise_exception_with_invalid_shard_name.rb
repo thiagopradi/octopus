@@ -1,6 +1,6 @@
 class RaiseExceptionWithInvalidShardName < ActiveRecord::Migration
   using(:amazing_shard)
-  
+
   def self.up
     User.create!(:name => "Error")
   end

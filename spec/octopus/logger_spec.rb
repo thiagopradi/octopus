@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Octopus::Logger do 
+describe Octopus::Logger do
 
 	before :each do
 		@out = StringIO.new
@@ -8,8 +8,8 @@ describe Octopus::Logger do
 		ActiveRecord::Base.logger = @log
 	end
 	
-	after :each do 
-		ActiveRecord::Base.logger = nil  
+	after :each do
+		ActiveRecord::Base.logger = nil
   end
 
 	it "should add to the default logger what shard the query was sent" do

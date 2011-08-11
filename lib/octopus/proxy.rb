@@ -15,18 +15,18 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool()
     @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
     @current_shard = :master
-    
+
     if !config.nil? && config.has_key?("verify_connection")
       @verify_connection = config["verify_connection"]
     else
       @verify_connection = false
     end
-    
+
     if !config.nil?
-      @entire_sharded = config['entire_sharded']  
-      shards_config = config[Octopus.rails_env()] 
+      @entire_sharded = config['entire_sharded']
+      shards_config = config[Octopus.rails_env()]
     end
-    
+
     shards_config ||= []
 
     shards_config.each do |key, value|
@@ -53,8 +53,8 @@ class Octopus::Proxy
     else
       @fully_replicated = true
     end
-    @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
-    @slaves_list.delete('master')   
+    @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
+    @slaves_list.delete('master')
   end
 
   def current_shard=(shard_symbol)
@@ -82,18 +82,18 @@ class Octopus::Proxy
   end
 
   def select_connection()
-    @shards[shard_name].verify_active_connections! if @verify_connection 
+    @shards[shard_name].verify_active_connections! if @verify_connection
     @shards[shard_name].connection()
   end
 
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
-  
+
   def should_clean_table_name?
     @adapters.size > 1
   end
-  
+
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     last_block = self.block
@@ -107,26 +107,26 @@ class Octopus::Proxy
       self.current_shard = older_shard
     end
   end
-  
+
   def send_queries_to_multiple_shards(shards, &block)
     shards.each do |shard|
       self.run_queries_on_shard(shard, &block)
     end
   end
-  
+
   def clean_proxy()
     @using_enabled = nil
     @current_shard = :master
     @current_group = nil
     @block = false
   end
-  
+
   def check_schema_migrations(shard)
     if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-      ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+      ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table
     end
   end
-  
+
   def transaction(options = {}, &block)
     if @replicated && (current_model.read_inheritable_attribute(:replicated) || @fully_replicated)
       self.run_queries_on_shard(:master) do
@@ -144,7 +144,7 @@ class Octopus::Proxy
       clean_proxy()
       conn.send(method, *args, &block)
     elsif should_send_queries_to_replicated_databases?(method)
-      send_queries_to_selected_slave(method, *args, &block)      
+      send_queries_to_selected_slave(method, *args, &block)
     else
       select_connection().send(method, *args, &block)
     end
@@ -176,9 +176,9 @@ class Octopus::Proxy
     @replicated && method.to_s =~ /select/ && !@block
   end
 
-  def send_queries_to_selected_slave(method, *args, &block)        
+  def send_queries_to_selected_slave(method, *args, &block)
     old_shard = self.current_shard
-    
+
     begin
       if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
         self.current_shard = @slaves_list.shift.to_sym
@@ -186,9 +186,9 @@ class Octopus::Proxy
       else
         self.current_shard = :master
       end
-    
-      sql = select_connection().send(method, *args, &block)     
-      return sql    
+
+      sql = select_connection().send(method, *args, &block)
+      return sql
     ensure
       self.current_shard = old_shard
       @using_enabled = nil

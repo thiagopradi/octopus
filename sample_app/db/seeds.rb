@@ -9,7 +9,7 @@ Octopus.using(:asia) do
   User.create!(:name => "Asia User")
 end
 
-Octopus.using(:america) do 
+Octopus.using(:america) do
   users_america = User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
 end
 

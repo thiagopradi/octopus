@@ -1,6 +1,6 @@
 class CreateUsersOnCanada < ActiveRecord::Migration
   using(:canada)
-  
+
   def self.up
     User.create!(:name => "Sharding")
   end

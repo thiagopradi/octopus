@@ -3,21 +3,21 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "Rails Controllers" do
   it "should use #using method to in all requests" do
     class UsersControllers < ActionController::Base
-      around_filter :select_shard      
+      around_filter :select_shard
       def create
         User.create!(:name => "ActionController")
         render :nothing => true
       end
-      
+
       def select_shard(&block)
         Octopus.using(:brazil, &block)
       end
-      
+
       def self._routes
         ActionDispatch::Routing::RouteSet.new
-      end      
+      end
     end
-    
+
     UsersControllers.action_methods.include?("create").should be_true
 
     if Octopus.rails3?

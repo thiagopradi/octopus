@@ -2,7 +2,7 @@ module Octopus
   module Rails2
     module Persistence
       def self.included(base)
-        base.instance_eval do 
+        base.instance_eval do
           alias_method_chain :destroy, :octopus
           alias_method_chain :delete, :octopus
           alias_method_chain :reload, :octopus

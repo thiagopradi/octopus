@@ -1,6 +1,6 @@
-pkg/*.*
-tmp/*
+*.gem
 *.sqlite3
+.bundle
 .rvmrc
-.bundle/*
-*.rbc
+Gemfile.lock
+pkg/*

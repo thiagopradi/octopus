@@ -58,8 +58,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  actionpack (= 3.0.6)
-  activerecord (= 3.0.6)
+  actionpack (~> 3.0.6)
+  activerecord (~> 3.0.6)
   jeweler (>= 1.4)
   mysql2
   pg (>= 0.9.0)

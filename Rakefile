@@ -1,60 +1,24 @@
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
-$LOAD_PATH << (File.dirname(__FILE__) + '/spec')
-require 'rubygems'
-require 'rake'
-require 'rake/tasklib'
-require "yaml"
-require "bundler"
-Bundler.setup()
-
-begin
-  require 'metric_fu'
-  MetricFu::Configuration.run do |config|
-    config.metrics  = [:churn,:flay, :flog, :reek, :roodi, :saikuro]
-    config.graphs   = [:flog, :flay, :reek, :roodi]
-    config.flay     = { :dirs_to_flay => ['spec', 'lib']  }
-    config.flog     = { :dirs_to_flog => ['spec', 'lib']  }
-    config.reek     = { :dirs_to_reek => ['spec', 'lib']  }
-    config.roodi    = { :dirs_to_roodi => ['spec', 'lib'] }
-    config.churn    = { :start_date => "1 year ago", :minimum_churn_count => 10}
-  end
-rescue LoadError
-end
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "ar-octopus"
-    gem.summary = "Easy Database Sharding for ActiveRecord"
-    gem.description = "This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards."
-    gem.email = "tchandy@gmail.com"
-    gem.homepage = "http://github.com/tchandy/octopus"
-    gem.authors = ["Thiago Pradi", "Mike Perham"]
-    gem.add_development_dependency "rspec", ">= 2.0.0.beta.19"
-    gem.add_development_dependency "mysql2"
-    gem.add_development_dependency "pg", ">= 0.9.0"
-    gem.add_development_dependency "sqlite3-ruby", ">= 1.3.1"
-    gem.add_development_dependency "jeweler", ">= 1.4"
-    gem.add_development_dependency "actionpack", ">= 2.3"
-    gem.add_dependency('activerecord', '>= 2.3')
-    gem.version = "0.4.0"
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
-end
-
-require 'rspec/core'
+require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
+require 'metric_fu'
+
+task :default => :spec
+
+MetricFu::Configuration.run do |config|
+  config.metrics = [:churn,:flay, :flog, :reek, :roodi, :saikuro]
+  config.graphs  = [:flog, :flay, :reek, :roodi]
+  config.flay    = { :dirs_to_flay => ['spec', 'lib']  }
+  config.flog    = { :dirs_to_flog => ['spec', 'lib']  }
+  config.reek    = { :dirs_to_reek => ['spec', 'lib']  }
+  config.roodi   = { :dirs_to_roodi => ['spec', 'lib'] }
+  config.churn   = { :start_date => "1 year ago", :minimum_churn_count => 10 }
+end
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
 end
 
 RSpec::Core::RakeTask.new(:rcov) do |spec|
 end
-
-task :default => :spec
-
 
 namespace :db do
   desc 'Build the databases for tests'
@@ -163,6 +127,3 @@ namespace :db do
   desc 'Prepare the test databases'
   task :prepare => [:drop_databases, :build_databases, :create_tables]
 end
-
-
-

@@ -1,13 +1,11 @@
 require "rubygems"
-require "bundler"
-
-Bundler.setup()
-
 require File.expand_path(File.dirname(__FILE__)) + "/database_connection"
+require "bundler/setup"
+require "mysql2"
+require "active_record"
+require "action_controller"
 require "octopus"
 require "octopus_helper"
-require "action_controller"
-require 'rspec/core'
 
 MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migrations'))
 

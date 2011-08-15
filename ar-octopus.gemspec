@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency 'activerecord', '>= 2.3'
+  s.add_development_dependency 'rake', '>= 0.8.7'
   s.add_development_dependency 'rspec', '>= 2.0'
   s.add_development_dependency 'mysql', '>= 2.8.1'
   s.add_development_dependency 'pg', '>= 0.11.0'

@@ -41,7 +41,7 @@ describe Octopus do
       lambda { User.using(:crazy_shard).create!(:name => "Joaquim") }.should raise_error
 
       Octopus.setup do |config|
-        config.shards = {:crazy_shard => {:adapter => "mysql2", :database => "octopus_shard5", :username => "root", :password => ""}}
+        config.shards = {:crazy_shard => {:adapter => "mysql", :database => "octopus_shard5", :username => "root", :password => ""}}
       end
 
       lambda { User.using(:crazy_shard).create!(:name => "Joaquim")  }.should_not raise_error

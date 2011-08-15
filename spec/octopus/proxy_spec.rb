@@ -22,13 +22,13 @@ describe Octopus::Proxy do
     end
 
     it "should work with thiking sphinx" do
-      proxy.instance_variable_get(:@config).should == {:adapter=>"mysql2", :password=>"", :database=>"octopus_shard1", :username=>"root", :flags=>2}
+      proxy.instance_variable_get(:@config).should == {:adapter=>"mysql", :password=>"", :database=>"octopus_shard1", :username=>"root", :flags=>2}
     end
 
     it 'should create a set with all adapters, to ensure that is needed to clean the table name.' do
       adapters = proxy.instance_variable_get(:@adapters)
       adapters.should be_kind_of(Set)
-      adapters.to_a.should == ["sqlite3", "mysql2", "postgresql"]
+      adapters.to_a.should == ["sqlite3", "mysql", "postgresql"]
     end
 
     it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do

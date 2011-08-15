@@ -1,1 +1,1 @@
-ActiveRecord::Base.establish_connection(:adapter => "mysql2", :database => "octopus_shard1", :username => "root", :password => "")
+ActiveRecord::Base.establish_connection(:adapter => "mysql", :database => "octopus_shard1", :username => "root", :password => "")

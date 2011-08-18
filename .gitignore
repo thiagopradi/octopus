@@ -4,3 +4,5 @@
 .rvmrc
 Gemfile.lock
 pkg/*
+*.rbc
+tmp/*

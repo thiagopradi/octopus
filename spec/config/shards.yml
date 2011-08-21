@@ -1,5 +1,5 @@
 mysql: &mysql
-  adapter: <%= 'mysql2' %>
+  adapter: mysql
   host: localhost
 
 octopus:

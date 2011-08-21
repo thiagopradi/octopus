@@ -16,12 +16,12 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency 'activerecord', '>= 2.3'
+  s.add_dependency 'activerecord', '>= 2.3.0'
   s.add_development_dependency 'rake', '>= 0.8.7'
-  s.add_development_dependency 'rspec', '>= 2.0'
+  s.add_development_dependency 'appraisal', '>= 0.3.8'
+  s.add_development_dependency 'rspec', '>= 2.0.0'
   s.add_development_dependency 'mysql', '>= 2.8.1'
   s.add_development_dependency 'pg', '>= 0.11.0'
   s.add_development_dependency 'sqlite3', '>= 1.3.4'
-  s.add_development_dependency 'actionpack', '>= 2.3'
   s.add_development_dependency 'metric_fu', '>= 2.1.1'
 end

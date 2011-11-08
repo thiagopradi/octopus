@@ -28,7 +28,7 @@ describe Octopus::Proxy do
     it 'should create a set with all adapters, to ensure that is needed to clean the table name.' do
       adapters = proxy.instance_variable_get(:@adapters)
       adapters.should be_kind_of(Set)
-      adapters.to_a.should == ["sqlite3", "mysql", "postgresql"]
+      adapters.to_a.should =~ ["sqlite3", "mysql", "postgresql"]
     end
 
     it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do

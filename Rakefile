@@ -41,8 +41,8 @@ namespace :db do
       %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
     end
 
-    %x( dropdb -U #{postgres_user} octopus_shard1 ) rescue
-    %x(rm -f /tmp/database.sqlite3)
+    %x( dropdb -U #{postgres_user} octopus_shard1 )
+    %x( rm -f /tmp/database.sqlite3 )
   end
 
   desc 'Create tables on tests databases'

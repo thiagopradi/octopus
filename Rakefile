@@ -41,85 +41,91 @@ namespace :db do
       %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
     end
 
-    %x( dropdb -U #{postgres_user} octopus_shard1 )
+    %x( dropdb -U #{postgres_user} octopus_shard1 ) rescue
     %x(rm -f /tmp/database.sqlite3)
   end
 
   desc 'Create tables on tests databases'
   task :create_tables do
     Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
-    require "database_connection"
+    require 'active_support/core_ext/class/inheritable_attributes'
+    require 'active_record'
+    require "support/database_connection"
     require "octopus"
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
-      ActiveRecord::Base.using(shard_symbol).connection.initialize_schema_migrations_table()
+      # Rails 3.1 needs to do some introspection around the base class, which requires
+      # the model be a descendent of ActiveRecord::Base.
+      class BlankModel < ActiveRecord::Base; end;
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:users) do |u|
+      BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table()
+
+      BlankModel.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
         u.integer :number
         u.boolean :admin
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:clients) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:clients) do |u|
         u.string :country
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:cats) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:cats) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:items) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:items) do |u|
         u.string :name
         u.integer :client_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:computers) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:computers) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:keyboards) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:keyboards) do |u|
         u.string :name
         u.integer :computer_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:roles) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:roles) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:permissions) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:permissions_roles, :id => false) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:permissions_roles, :id => false) do |u|
         u.integer :role_id
         u.integer :permission_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:assignments) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:assignments) do |u|
         u.integer :programmer_id
         u.integer :project_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:programmers) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:programmers) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:projects) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:projects) do |u|
         u.string :name
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:comments) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:comments) do |u|
         u.string :name
         u.string :commentable_type
         u.integer :commentable_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:parts) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:parts) do |u|
         u.string :name
         u.integer :item_id
       end
 
-      ActiveRecord::Base.using(shard_symbol).connection.create_table(:yummy) do |u|
+      BlankModel.using(shard_symbol).connection.create_table(:yummy) do |u|
         u.string :name
       end
     end

@@ -122,8 +122,8 @@ class Octopus::Proxy
   end
 
   def check_schema_migrations(shard)
-    if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-      ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table
+    if !OctopusModel.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
+      OctopusModel.using(shard).connection.initialize_schema_migrations_table
     end
   end
 

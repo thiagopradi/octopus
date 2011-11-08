@@ -1,3 +1,4 @@
+require 'active_support/core_ext/class/inheritable_attributes'
 require "yaml"
 require "erb"
 

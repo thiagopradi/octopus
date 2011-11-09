@@ -3,6 +3,7 @@ module Octopus::Model
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
     base.hijack_connection()
+    base.hijack_initializer()
   end
 
   module SharedMethods
@@ -21,7 +22,6 @@ module Octopus::Model
     def using(shard)
       return self if defined?(::Rails) && !Octopus.environments.include?(Rails.env.to_s)
 
-      hijack_initializer() if !respond_to?(:set_current_shard)
       clean_table_name()
 
       self.connection_proxy.using_enabled = true
@@ -66,8 +66,14 @@ module Octopus::Model
         self.connection_proxy()
       end
 
+      def self.connection_pool_with_octopus()
+        return connection_pool_without_octopus if self.should_use_normal_connection?
+        self.connection_proxy.connection_pool      
+      end
+
       class << self
         alias_method_chain :connection, :octopus
+        alias_method_chain :connection_pool, :octopus
       end
     end
   end

@@ -1,7 +1,8 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard, :config
+  attr_accessor :current_model, :current_shard, :current_group, :block, 
+      :using_enabled, :last_current_shard, :config
 
   def initialize(config)
     initialize_shards(config)
@@ -12,8 +13,8 @@ class Octopus::Proxy
     @shards = HashWithIndifferentAccess.new
     @groups = HashWithIndifferentAccess.new
     @adapters = Set.new
-    @shards[:master] = ActiveRecord::Base.connection_pool()
-    @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
+    @shards[:master] = ActiveRecord::Base.connection_pool_without_octopus()
+    @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
     @current_shard = :master
 
     if !config.nil? && config.has_key?("verify_connection")
@@ -81,8 +82,15 @@ class Octopus::Proxy
     @current_model = model.is_a?(ActiveRecord::Base) ? model.class : model
   end
 
-  def select_connection()
+  def select_connection
     @shards[shard_name].verify_active_connections! if @verify_connection
+    # Rails 3.1 sets automatic_reconnect to false when it removes
+    # connection pool.  Octopus can potentially retain a reference to a closed
+    # connection pool.  Previously, that would work since the pool would just
+    # reconnect, but in Rails 3.1 the flag prevents this. 
+    if !@shards[shard_name].automatic_reconnect
+      @shards[shard_name].automatic_reconnect = true
+    end
     @shards[shard_name].connection()
   end
 
@@ -97,7 +105,7 @@ class Octopus::Proxy
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     last_block = self.block
-
+        
     begin
       self.block = true
       self.current_shard = shard
@@ -153,12 +161,16 @@ class Octopus::Proxy
   def respond_to?(method, include_private = false)
     super || select_connection.respond_to?(method, include_private)
   end
+  
+  def connection_pool
+    return @shards[current_shard]
+  end
 
   protected
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
-
+  
   def initialize_adapter(adapter)
     @adapters << adapter
     begin

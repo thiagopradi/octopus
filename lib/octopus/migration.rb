@@ -11,6 +11,18 @@ module Octopus::Migration
     end
   end
 
+  def self.included(base)
+    base.class_eval do 
+      def announce_with_octopus(message)
+        announce_without_octopus("#{message} - #{get_current_shard}")
+      end
+
+      alias_method_chain :migrate, :octopus
+      alias_method_chain :announce, :octopus
+      attr_accessor :current_shard
+    end
+  end
+
   def using(*args)
     if self.connection().is_a?(Octopus::Proxy)
       args.each do |shard|

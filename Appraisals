@@ -4,8 +4,8 @@ appraise "rails2" do
 end
 
 appraise "rails3" do
-  gem 'activerecord', '~> 3.0'
-  gem 'actionpack', '~> 3.0'
+  gem 'activerecord', '~> 3.0.10'
+  gem 'actionpack', '~> 3.0.10'
 end
 
 appraise "rails31" do

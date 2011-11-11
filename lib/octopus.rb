@@ -67,7 +67,6 @@ module Octopus
   end
 
   def self.using(shard, &block)
-    ActiveRecord::Base.hijack_initializer()
     conn = ActiveRecord::Base.connection
 
     if conn.is_a?(Octopus::Proxy)

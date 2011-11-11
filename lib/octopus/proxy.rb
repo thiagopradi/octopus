@@ -87,9 +87,11 @@ class Octopus::Proxy
     # Rails 3.1 sets automatic_reconnect to false when it removes
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just
-    # reconnect, but in Rails 3.1 the flag prevents this. 
-    if !@shards[shard_name].automatic_reconnect
-      @shards[shard_name].automatic_reconnect = true
+    # reconnect, but in Rails 3.1 the flag prevents this.
+    if Octopus.rails31? 
+      if !@shards[shard_name].automatic_reconnect
+        @shards[shard_name].automatic_reconnect = true
+      end
     end
     @shards[shard_name].connection()
   end

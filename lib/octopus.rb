@@ -93,6 +93,10 @@ else
   require "octopus/rails2/persistence"
 end
 
+if Octopus.rails31?
+  require "octopus/rails3.1/singular_association"
+end
+
 require "octopus/proxy"
 require "octopus/scope_proxy"
 require "octopus/logger"

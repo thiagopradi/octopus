@@ -68,7 +68,7 @@ module Octopus::Model
 
       def self.connection_pool_with_octopus()
         return connection_pool_without_octopus if self.should_use_normal_connection?
-        self.connection_proxy.connection_pool      
+        self.connection_proxy.connection_pool
       end
 
       class << self
@@ -85,8 +85,18 @@ module Octopus::Model
       self.respond_to?(:current_shard) && !self.current_shard.nil?
     end
 
+    def reload_connection_safe(&block)
+      return yield unless should_set_current_shard?
+      original = self.class.connection_proxy.current_shard
+      self.class.connection_proxy.current_shard = self.current_shard
+      result = yield
+      self.class.connection_proxy.current_shard = original
+      result
+    end
+
     def reload_connection()
-      self.class.connection_proxy.current_shard = self.current_shard() if should_set_current_shard?
+      return unless should_set_current_shard?
+      self.class.connection_proxy.current_shard = self.current_shard
     end
   end
 

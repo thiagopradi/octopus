@@ -10,28 +10,23 @@ module Octopus::SingularAssociation
   end
 
   def reader_with_octopus(*args)
-    owner.reload_connection
-    reader_without_octopus(*args)
+    owner.reload_connection_safe { reader_without_octopus(*args) }
   end
 
   def writer_with_octopus(*args)
-    owner.reload_connection
-    writer_without_octopus(*args)
+    owner.reload_connection_safe { writer_without_octopus(*args) }
   end
 
   def create_with_octopus(*args)
-    owner.reload_connection
-    create_without_octopus(*args)
+    owner.reload_connection_safe { create_without_octopus(*args) }
   end
 
   def create_with_octopus!(*args)
-    owner.reload_connection
-    create_without_octopus!(*args)
+    owner.reload_connection_safe { create_without_octopus!(*args) }
   end
 
   def build_with_octopus(*args)
-    owner.reload_connection
-    build_without_octopus(*args)
+    owner.reload_connection_safe { build_without_octopus(*args) }
   end
 
 end

@@ -12,7 +12,7 @@ module Octopus::Migration
   end
 
   def self.included(base)
-    base.class_eval do 
+    base.class_eval do
       def announce_with_octopus(message)
         announce_without_octopus("#{message} - #{get_current_shard}")
       end
@@ -82,7 +82,7 @@ module Octopus::Migration
   end
 end
 
-if ActiveRecord::VERSION::MAJOR >= 3 && ActiveRecord::VERSION::MINOR >=1
+if Octopus.rails31?
   ActiveRecord::Migration.send :include, Octopus::Migration
 else
   ActiveRecord::Migration.extend(Octopus::Migration)

@@ -1,3 +1,7 @@
+# Rails 3.1 needs to do some introspection around the base class, which requires
+# the model be a descendent of ActiveRecord::Base.
+class BlankModel < ActiveRecord::Base; end;
+
 #The user class is just sharded, not replicated
 class User < ActiveRecord::Base
   def awesome_queries

@@ -7,7 +7,7 @@ describe Octopus::Logger do
 		@log = Octopus::Logger.new(@out)
 		ActiveRecord::Base.logger = @log
 	end
-	
+
 	after :each do
 		ActiveRecord::Base.logger = nil
   end

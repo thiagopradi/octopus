@@ -1,3 +1,4 @@
+require 'active_support/core_ext/class/inheritable_attributes'
 require "yaml"
 require "erb"
 
@@ -51,6 +52,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 3
   end
 
+  def self.rails31?
+    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR >= 1
+  end
+
   def self.rails?
     defined?(Rails)
   end
@@ -62,7 +67,6 @@ module Octopus
   end
 
   def self.using(shard, &block)
-    ActiveRecord::Base.hijack_initializer()
     conn = ActiveRecord::Base.connection
 
     if conn.is_a?(Octopus::Proxy)
@@ -87,6 +91,10 @@ if Octopus.rails3?
 else
   require "octopus/rails2/association"
   require "octopus/rails2/persistence"
+end
+
+if Octopus.rails31?
+  require "octopus/rails3.1/singular_association"
 end
 
 require "octopus/proxy"

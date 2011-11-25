@@ -85,8 +85,8 @@ describe Octopus::Model do
     end
 
     it "should clean #current_shard from proxy when using execute" do
-      ActiveRecord::Base.using(:canada).connection().execute("select * from users limit 1;")
-      ActiveRecord::Base.connection.current_shard.should == :master
+      User.using(:canada).connection().execute("select * from users limit 1;")
+      User.connection.current_shard.should == :master
     end
 
     it "should allow scoping dynamically" do

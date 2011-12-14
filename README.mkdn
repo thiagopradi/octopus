@@ -144,9 +144,11 @@ Contributors are welcome! To run the test suite, you need mysql, postgresql and 
     git clone http://github.com/tchandy/octopus.git
     cd octopus
     bundle install
-    rake db:prepare
-    rake
+    bundle exec rake db:prepare
+    bundle exec rake appraisal:install
+    bundle exec rake spec
 
+This command will run the spec suite for all rails versions supported (Rails 2.3, Rails 3.0 and Rails 3.1).
 To run our integrations tests inside sample_app, you need to following commands:
 
     cd sample_app

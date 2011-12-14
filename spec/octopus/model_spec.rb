@@ -189,7 +189,7 @@ describe Octopus::Model do
     it "should update the Arel Engine" do
       if ActiveRecord::VERSION::STRING > '2.4.0'
         User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
-        User.using(:alone_shard).arel_engine.connection.adapter_name.should == "Mysql2"
+        User.using(:alone_shard).arel_engine.connection.adapter_name.should == "MySQL"
       end
     end
 
@@ -331,7 +331,7 @@ describe Octopus::Model do
     it 'should not clean the table name' do
       using_environment :production_fully_replicated do
         Keyboard.should_not_receive(:reset_table_name)
-        Keyboard.using(:master).create!("Master Cat")
+        Keyboard.using(:master).create!(:name => "Master Cat")
       end
     end
   end

@@ -59,13 +59,22 @@ describe "when the database is replicated and the entire application is replicat
     end
   end
 
+  it "should send all writes queries to master" do
+    using_environment :production_fully_replicated do
+      Cat.create!(:name => "Slave Cat")
+      Cat.find_by_name("Slave Cat").should be_nil
+      Client.create!(:name => "Slave Client")
+      Client.find_by_name("Slave Client").should be_nil
+    end
+  end
+
   it "should work with validate_uniquess_of" do
     Keyboard.create!(:name => "thiago")
 
     using_environment :production_fully_replicated do
       k = Keyboard.new(:name => "thiago")
       k.save.should be_false
-      k.errors.should == {:name=>["has already been taken"]}
+      k.errors.full_messages.should == ["Name has already been taken"]
     end
   end
 

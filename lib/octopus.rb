@@ -12,19 +12,21 @@ module Octopus
   end
 
   def self.config()
-    file_name = Octopus.directory() + "/config/shards.yml"
+    @config ||= begin
+      file_name = Octopus.directory() + "/config/shards.yml"
 
-    if File.exists? file_name
-      @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(file_name).read()).result))[Octopus.env()]
+      if File.exists? file_name
+        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(file_name).read()).result))[Octopus.env()]
 
-      if @config && @config['environments']
-        self.environments = @config['environments']
+        if config && config['environments']
+          self.environments = config['environments']
+        end
+      else
+        config ||= HashWithIndifferentAccess.new
       end
-    else
-      @config ||= HashWithIndifferentAccess.new
-    end
 
-    @config
+      config
+    end
   end
 
   # Returns the Rails.root_to_s when you are using rails

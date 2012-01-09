@@ -16,3 +16,5 @@ RSpec.configure do |config|
     clean_all_shards()
   end
 end
+
+$: << File.expand_path(File.join(File.dirname(__FILE__), "support"))

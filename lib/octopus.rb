@@ -1,4 +1,4 @@
-if Gem.loaded_specs['activesupport'].version > Gem::Version.create('3.2.0.pre') # ActiveSupport 3.2
+if ActiveSupport::VERSION::MAJOR == 3 && ActiveSupport::VERSION::MINOR > 1 # ActiveSupport 3.2
   require 'active_support/core_ext/class/attribute'
 else # ActiveSupport 3.0, 3.1                      
   require 'active_support/core_ext/class/inheritable_attributes'

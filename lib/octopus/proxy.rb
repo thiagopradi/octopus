@@ -1,7 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :current_model, :current_shard, :current_group, :block, 
+  attr_accessor :current_model, :current_shard, :current_group, :block,
       :using_enabled, :last_current_shard, :config
 
   def initialize(config)
@@ -40,7 +40,8 @@ class Octopus::Proxy
         value.each do |k, v|
           raise "You have duplicated shard names!" if @shards.has_key?(k.to_sym)
           initialize_adapter(v['adapter'])
-          @shards[k.to_sym] = connection_pool_for(v, "#{v['adapter']}_connection")
+          config_with_octopus_shard = v.merge(:octopus_shard => k)
+          @shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
           @groups[key.to_sym] << k.to_sym
         end
       end
@@ -89,7 +90,7 @@ class Octopus::Proxy
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just
     # reconnect, but in Rails 3.1 the flag prevents this.
-    if Octopus.rails31? 
+    if Octopus.rails31?
       if !@shards[shard_name].automatic_reconnect
         @shards[shard_name].automatic_reconnect = true
       end
@@ -108,7 +109,7 @@ class Octopus::Proxy
   def run_queries_on_shard(shard, &block)
     older_shard = self.current_shard
     last_block = self.block
-        
+
     begin
       self.block = true
       self.current_shard = shard
@@ -164,7 +165,7 @@ class Octopus::Proxy
   def respond_to?(method, include_private = false)
     super || select_connection.respond_to?(method, include_private)
   end
-  
+
   def connection_pool
     return @shards[current_shard]
   end
@@ -173,7 +174,7 @@ class Octopus::Proxy
   def connection_pool_for(adapter, config)
     ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter, config))
   end
-  
+
   def initialize_adapter(adapter)
     @adapters << adapter
     begin

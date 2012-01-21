@@ -1,4 +1,9 @@
-require 'active_support/core_ext/class/inheritable_attributes'
+if ActiveSupport::VERSION::MAJOR == 3 && ActiveSupport::VERSION::MINOR > 1 # ActiveSupport 3.2
+  require 'active_support/core_ext/class/attribute'
+else # ActiveSupport 3.0, 3.1                      
+  require 'active_support/core_ext/class/inheritable_attributes'
+end
+
 require "yaml"
 require "erb"
 

@@ -43,6 +43,18 @@ describe Octopus::Proxy do
       proxy.respond_to?(:primary_key).should be_true
     end
 
+    context 'when an adapter that modifies the config' do
+      before(:all) {set_octopus_env("modify_config")}
+      after(:all) {set_octopus_env("octopus")}
+
+      it 'should not fail with missing adapter second time round' do
+        proxy.current_shard = :modify_config_read
+        proxy.connection_pool.checkout
+        
+        lambda { Octopus::Proxy.new(Octopus.config()) }.should_not raise_error("Please install the  adapter: `gem install activerecord--adapter` (cannot load such file -- active_record/connection_adapters/_adapter)")
+      end
+    end
+
     describe "#should_clean_table_name?" do
       it 'should return true when you have a environment with multiple database types' do
         proxy.should_clean_table_name?.should be_true

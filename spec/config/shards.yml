@@ -127,3 +127,11 @@ not_entire_sharded:
     russia:
       database: octopus_shard5
       <<: *mysql
+
+modify_config:
+  replicated: true
+  shards:
+    modify_config_read:
+      adapter: modify_config
+      database: octopus_shard1
+      host: localhost

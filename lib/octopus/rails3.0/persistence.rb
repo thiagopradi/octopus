@@ -1,17 +1,17 @@
 module Octopus
-  module Rails31
+  module Rails30
     module Persistence
       def update_attribute(name, value)
         reload_connection()
         super
       end
 
-      def update_attributes(attributes, options = {})
+      def update_attributes(attributes)
         reload_connection()
         super
       end
 
-      def update_attributes!(attributes, options = {})
+      def update_attributes!(attributes)
         reload_connection()
         super
       end
@@ -34,4 +34,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Base.send(:include, Octopus::Rails31::Persistence)
+ActiveRecord::Base.send(:include, Octopus::Rails30::Persistence)

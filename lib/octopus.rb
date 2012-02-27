@@ -60,6 +60,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 3
   end
 
+  def self.rails30?
+    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 0
+  end
+
   def self.rails31?
     ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR >= 1
   end
@@ -98,14 +102,18 @@ if Octopus.rails3?
   require "octopus/rails3/arel"
   require "octopus/rails3/log_subscriber"
   require "octopus/rails3/abstract_adapter"
+  require "octopus/rails3/persistence" unless Octopus.rails30?
 else
   require "octopus/rails2/association"
   require "octopus/rails2/persistence"
 end
 
+if Octopus.rails30?
+  require "octopus/rails3.0/persistence"
+end
+
 if Octopus.rails31?
   require "octopus/rails3.1/singular_association"
-  require "octopus/rails3.1/persistence"
 end
 
 require "octopus/proxy"

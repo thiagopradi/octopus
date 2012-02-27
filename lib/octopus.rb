@@ -105,6 +105,7 @@ end
 
 if Octopus.rails31?
   require "octopus/rails3.1/singular_association"
+  require "octopus/rails3.1/persistence"
 end
 
 require "octopus/proxy"

@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require "spec_helper"
 
 describe Octopus::Association do
   describe "when you have a 1 x 1 relationship" do

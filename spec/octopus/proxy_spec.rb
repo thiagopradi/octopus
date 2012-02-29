@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require "spec_helper"
 
 describe Octopus::Proxy do
   let(:proxy) { Octopus::Proxy.new(Octopus.config()) }

@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require "spec_helper"
 
 describe "when the database is replicated" do
   it "should send all writes/reads queries to master when you have a non replicated model" do

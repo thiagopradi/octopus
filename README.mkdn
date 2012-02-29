@@ -37,7 +37,7 @@ Add this line to enviroment.rb:
 
 Add this line to Gemfile:
 
-    gem 'ar-octopus', :require => "octopus"
+    gem 'ar-octopus'
 
 Runs a bundle install:
 

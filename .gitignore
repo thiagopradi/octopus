@@ -7,3 +7,4 @@ gemfiles/*.lock
 pkg/*
 *.rbc
 tmp/*
+.*.sw[a-z]

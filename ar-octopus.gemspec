@@ -16,7 +16,8 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency 'activerecord', '>= 2.3.0'
+  # I don't think octopus and 3.2 are going steady yet.
+  s.add_dependency 'activerecord', '>= 2.3.0', '< 3.2.0'
   s.add_development_dependency 'rake', '>= 0.8.7'
   s.add_development_dependency 'appraisal', '>= 0.3.8'
   s.add_development_dependency 'rspec', '>= 2.0.0'

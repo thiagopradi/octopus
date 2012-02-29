@@ -2,7 +2,7 @@ require "set"
 
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block,
-      :using_enabled, :last_current_shard, :config
+      :using_enabled, :last_current_shard, :config, :write_occurred
 
   def initialize(config)
     initialize_shards(config)
@@ -55,6 +55,13 @@ class Octopus::Proxy
     else
       @fully_replicated = true
     end
+
+    if config.has_key?("read_from_master_following_write")
+      @read_from_master_following_write = true
+    else
+      @read_from_master_following_write = false
+    end
+
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
     @slave_index = 0
@@ -95,6 +102,7 @@ class Octopus::Proxy
         @shards[shard_name].automatic_reconnect = true
       end
     end
+
     @shards[shard_name].connection()
   end
 
@@ -113,6 +121,7 @@ class Octopus::Proxy
     begin
       self.block = true
       self.current_shard = shard
+
       yield
     ensure
       self.block = last_block || false
@@ -131,6 +140,7 @@ class Octopus::Proxy
     @current_shard = :master
     @current_group = nil
     @block = false
+    @write_occurred = nil
   end
 
   def check_schema_migrations(shard)
@@ -150,14 +160,15 @@ class Octopus::Proxy
   end
 
   def method_missing(method, *args, &block)
-    if should_clean_connection?(method)
+    if !@write_occurred && should_clean_connection?(method)
       conn = select_connection()
       self.last_current_shard = self.current_shard
       clean_proxy()
       conn.send(method, *args, &block)
-    elsif should_send_queries_to_replicated_databases?(method)
+    elsif !@write_occurred && should_send_queries_to_replicated_databases?(method)
       send_queries_to_selected_slave(method, *args, &block)
     else
+      @write_occurred ||= true if @read_from_master_following_write
       select_connection().send(method, *args, &block)
     end
   end

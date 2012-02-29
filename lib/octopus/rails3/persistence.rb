@@ -1,24 +1,24 @@
 module Octopus
   module Rails3
     module Persistence
-      def update_attribute(name, value)
+      def update_attribute(*args)
         reload_connection()
         super
       end
 
-      def update_attributes(attributes, options = {})
+      def update_attributes(*args)
         reload_connection()
         super
       end
 
-      def update_attributes!(attributes, options = {})
+      def update_attributes!(*args)
         reload_connection()
         super
       end
 
-      def reload(options = nil)
+      def reload(*args)
         reload_connection()
-        super(options)
+        super
       end
 
       def delete

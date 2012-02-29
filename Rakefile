@@ -12,22 +12,27 @@ namespace :db do
   task :build_databases do
     mysql_user = ENV['MYSQL_USER'] || "root"
     postgres_user = ENV['POSTGRES_USER'] || "postgres"
-    (1..5).each do |idx|
-      %x( echo "create DATABASE octopus_shard#{idx} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci " | mysql --user=#{mysql_user})
-    end
 
-    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard1 )
+    sql = (1..5).map do |i|
+      "CREATE DATABASE octopus_shard_#{i} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci;"
+    end.join
+
+    %x( echo "#{sql}" | mysql -u #{mysql_user} )
+
+    # Postgres
+    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard_1 )
   end
 
   desc 'Drop the tests databases'
   task :drop_databases do
     mysql_user = ENV['MYSQL_USER'] || "root"
     postgres_user = ENV['POSTGRES_USER'] || "postgres"
-    (1..5).each do |idx|
-      %x( mysqladmin --user=#{mysql_user} -f drop octopus_shard#{idx} )
-    end
 
-    %x( dropdb -U #{postgres_user} octopus_shard1 )
+    sql = (1..5).map { |i| "DROP DATABASE IF EXISTS octopus_shard_#{i};" }.join
+
+    %x( echo "#{sql}" | mysql -u "#{mysql_user}" )
+
+    %x( dropdb -U #{postgres_user} octopus_shard_1 )
     %x( rm -f /tmp/database.sqlite3 )
   end
 

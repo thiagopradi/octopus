@@ -24,8 +24,7 @@ describe Octopus::Proxy do
     it "should work with thiking sphinx" do
       config = proxy.instance_variable_get(:@config)
       config[:adapter].should == "mysql"
-      config[:password].should == ""
-      config[:database].should == "octopus_shard1"
+      config[:database].should == "octopus_shard_1"
       config[:username].should == "root"
     end
 

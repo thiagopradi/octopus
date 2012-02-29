@@ -72,6 +72,23 @@ production_replicated:
       database: octopus_shard5
       <<: *mysql
 
+production_fully_replicated_with_read_from_master_following_write:
+  replicated: true
+  read_from_master_following_write: true
+  shards:
+    slave1:
+      database: octopus_shard2
+      <<: *mysql
+    slave2:
+      database: octopus_shard3
+      <<: *mysql
+    slave3:
+      database: octopus_shard4
+      <<: *mysql
+    slave4:
+      database: octopus_shard5
+      <<: *mysql
+
 
 production_fully_replicated:
   replicated: true

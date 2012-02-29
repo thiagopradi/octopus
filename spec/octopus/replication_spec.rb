@@ -9,6 +9,13 @@ describe "when the database is replicated" do
     end
   end
 
+  it "sends all reads to master following a write if master_read_following_write is true" do
+    using_environment :production_fully_replicated_with_read_from_master_following_write do
+      Cat.create!(:name => "Slave Cat")
+      Cat.find_by_name("Slave Cat").should_not be_nil
+    end
+  end
+
   it "should send all writes queries to master" do
     using_environment :production_replicated do
       Cat.create!(:name => "Slave Cat")

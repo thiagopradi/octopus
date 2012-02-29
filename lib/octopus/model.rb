@@ -9,7 +9,8 @@ module Octopus::Model
   module SharedMethods
     def clean_table_name
       return unless self.connection_proxy.should_clean_table_name?
-      if self != ActiveRecord::Base && self.respond_to?(:reset_table_name) && !self.read_inheritable_attribute(:set_table_name)
+
+      if self != ActiveRecord::Base && self.respond_to?(:reset_table_name) && !self.custom_octopus_table_name
         self.reset_table_name()
       end
 
@@ -52,7 +53,7 @@ module Octopus::Model
 
     def hijack_connection()
       def self.should_use_normal_connection?
-        (defined?(Rails) && Octopus.config() && !Octopus.environments.include?(Rails.env.to_s)) || self.read_inheritable_attribute(:establish_connection)
+        (defined?(Rails) && Octopus.config() && !Octopus.environments.include?(Rails.env.to_s)) || self.custom_octopus_connection
       end
 
       def self.connection_proxy
@@ -103,22 +104,29 @@ module Octopus::Model
   module ClassMethods
     include SharedMethods
 
-    def replicated_model()
-      write_inheritable_attribute(:replicated, true)
+    def self.extended(base)
+      base.class_attribute(:replicated)
+      base.class_attribute(:sharded)
+      base.class_attribute(:custom_octopus_connection)
+      base.class_attribute(:custom_octopus_table_name)
     end
 
-    def sharded_model()
-      write_inheritable_attribute(:sharded, true)
+    def replicated_model
+      self.replicated = true
+    end
+
+    def sharded_model
+      self.sharded = true
     end
 
     def octopus_establish_connection(spec = nil)
-      write_inheritable_attribute(:establish_connection, true)
+      self.custom_octopus_connection = true
       establish_connection(spec)
     end
 
-    def octopus_set_table_name(value = nil, &block)
-      write_inheritable_attribute(:set_table_name, true)
-      set_table_name(value, &block)
+    def octopus_set_table_name(value = nil)
+      self.custom_octopus_table_name = true
+      self.table_name = value
     end
   end
 end

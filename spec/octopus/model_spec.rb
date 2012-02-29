@@ -414,8 +414,8 @@ describe Octopus::Model do
 
     it "should mark the Cat model as replicated" do
       using_environment :production_replicated do
-        User.read_inheritable_attribute(:replicated).should be_false
-        Cat.read_inheritable_attribute(:replicated).should be_true
+        User.replicated.should be_false
+        Cat.replicated.should be_true
       end
     end
   end

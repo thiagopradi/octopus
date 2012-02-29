@@ -47,11 +47,11 @@ namespace :db do
 
   desc 'Create tables on tests databases'
   task :create_tables do
-    Dir.chdir(File.expand_path(File.dirname(__FILE__) + "/spec"))
-    require 'active_support/core_ext/class/inheritable_attributes'
-    require 'active_record'
-    require "support/database_connection"
+    Dir.chdir(File.expand_path("../spec", __FILE__))
+
     require "octopus"
+    require "support/database_connection"
+
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
       # the model be a descendent of ActiveRecord::Base.

@@ -14,11 +14,11 @@ module Octopus
     @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
   end
 
-  def self.config()
+  def self.config
     @config ||= begin
       file_name = Octopus.directory() + "/config/shards.yml"
 
-      if File.exists? file_name
+      if File.exists?(file_name)
         config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(file_name).read()).result))[Octopus.env()]
 
         if config && config['environments']
@@ -29,6 +29,21 @@ module Octopus
       end
 
       config
+    end
+  end
+
+  # Public: Whether or not Octopus is configured and should hook into the
+  # current environment. Checks the environments config option for the Rails
+  # environment by default.
+  #
+  # Returns a boolean
+  def self.enabled?
+    if defined?(::Rails)
+      Octopus.environments.include?(Rails.env.to_s)
+    else
+      # TODO: This doens't feel right but !Octopus.config.blank? is breaking a
+      #       test. Also, Octopus.config is always returning a hash.
+      Octopus.config
     end
   end
 
@@ -66,8 +81,7 @@ module Octopus
   end
 
   def self.shards=(shards)
-    @config ||= HashWithIndifferentAccess.new
-    @config[rails_env()] = HashWithIndifferentAccess.new(shards)
+    config[rails_env()] = HashWithIndifferentAccess.new(shards)
     ActiveRecord::Base.connection.initialize_shards(@config)
   end
 

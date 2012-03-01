@@ -21,11 +21,12 @@ module Octopus::Model
     end
 
     def using(shard)
-      return self if defined?(::Rails) && !Octopus.environments.include?(Rails.env.to_s)
-
-      clean_table_name()
-
-      return Octopus::ScopeProxy.new(shard, self)
+      if Octopus.enabled?
+        clean_table_name
+        Octopus::ScopeProxy.new(shard, self)
+      else
+        self
+      end
     end
 
     def hijack_initializer()
@@ -51,7 +52,7 @@ module Octopus::Model
 
     def hijack_connection()
       def self.should_use_normal_connection?
-        (defined?(Rails) && Octopus.config() && !Octopus.environments.include?(Rails.env.to_s)) || self.custom_octopus_connection
+        !Octopus.enabled? || self.custom_octopus_connection?
       end
 
       def self.connection_proxy

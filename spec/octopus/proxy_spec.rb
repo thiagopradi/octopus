@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Octopus::Proxy do
-  let(:proxy) { Octopus::Proxy.new(Octopus.config()) }
+  let(:proxy) { Octopus::Proxy.new }
 
   describe "creating a new instance" do
     it "should initialize all shards and groups" do

@@ -57,7 +57,7 @@ module Octopus::Model
       end
 
       def self.connection_proxy
-        Thread.current[:connection_proxy] ||= Octopus::Proxy.new(Octopus.config())
+        Thread.current[:connection_proxy] ||= Octopus::Proxy.new
       end
 
       def self.connection_with_octopus()

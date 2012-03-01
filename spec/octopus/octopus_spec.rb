@@ -34,7 +34,7 @@ describe Octopus do
   describe "#shards=" do
     after(:each) do
       Octopus.instance_variable_set(:@config, nil)
-      Thread.current[:connection_proxy] = Octopus::Proxy.new(Octopus.config())
+      Thread.current[:connection_proxy] = Octopus::Proxy.new
     end
 
     it "should permit users to configure shards on initializer files, instead of on a yml file." do

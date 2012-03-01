@@ -60,16 +60,21 @@ module Octopus::Model
         Thread.current[:connection_proxy] ||= Octopus::Proxy.new
       end
 
-      def self.connection_with_octopus()
-        return connection_without_octopus() if should_use_normal_connection?
-
-        self.connection_proxy().current_model = self
-        self.connection_proxy()
+      def self.connection_with_octopus
+        if should_use_normal_connection?
+          connection_without_octopus
+        else
+          self.connection_proxy.current_model = self
+          self.connection_proxy
+        end
       end
 
-      def self.connection_pool_with_octopus()
-        return connection_pool_without_octopus if self.should_use_normal_connection?
-        self.connection_proxy.connection_pool
+      def self.connection_pool_with_octopus
+        if should_use_normal_connection?
+          connection_pool_without_octopus
+        else
+          connection_proxy.connection_pool
+        end
       end
 
       class << self

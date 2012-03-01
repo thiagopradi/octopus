@@ -2,7 +2,7 @@ require "set"
 
 class Octopus::Proxy
   attr_accessor :current_model, :current_shard, :current_group, :block,
-      :using_enabled, :last_current_shard, :config
+      :last_current_shard, :config
 
   def initialize(config = Octopus.config)
     initialize_shards(config)
@@ -127,7 +127,6 @@ class Octopus::Proxy
   end
 
   def clean_proxy()
-    @using_enabled = nil
     @current_shard = :master
     @current_group = nil
     @block = false
@@ -202,11 +201,9 @@ class Octopus::Proxy
         self.current_shard = :master
       end
 
-      sql = select_connection().send(method, *args, &block)
-      return sql
+      select_connection.send(method, *args, &block)
     ensure
       self.current_shard = old_shard
-      @using_enabled = nil
     end
   end
 end

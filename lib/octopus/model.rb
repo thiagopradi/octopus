@@ -25,8 +25,6 @@ module Octopus::Model
 
       clean_table_name()
 
-      self.connection_proxy.using_enabled = true
-
       return Octopus::ScopeProxy.new(shard, self)
     end
 

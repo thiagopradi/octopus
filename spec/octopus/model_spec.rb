@@ -203,7 +203,7 @@ describe Octopus::Model do
 
   describe "AR basic methods" do
     it "octopus_establish_connection" do
-      CustomConnection.connection.current_database.should == "octopus_shard2"
+      CustomConnection.connection.current_database.should == "octopus_shard_2"
     end
 
     it "increment" do

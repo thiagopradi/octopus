@@ -1,12 +1,21 @@
 require "spec_helper"
 
 describe Octopus::Proxy do
-  let(:proxy) { Octopus::Proxy.new }
+  let(:proxy) { subject }
 
   describe "creating a new instance" do
     it "should initialize all shards and groups" do
-      proxy.instance_variable_get(:@shards).keys.to_set.should == ["canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard", "aug2009", "postgresql_shard", "aug2010", "aug2011"].to_set
-      proxy.instance_variable_get(:@groups).should == {"country_shards" => [:canada, :brazil, :russia], "history_shards" => [:aug2009, :aug2010, :aug2011]}
+      # FIXME: Don't test implementation details
+      proxy.instance_variable_get(:@shards).keys.to_set.should == [
+        "canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
+        "aug2009", "postgresql_shard", "aug2010", "aug2011"
+      ].to_set
+
+      proxy.has_group?("country_shards").should be_true
+      proxy.shards_for_group("country_shards").should include(:canada, :brazil, :russia)
+
+      proxy.has_group?("history_shards").should be_true
+      proxy.shards_for_group("history_shards").should include(:aug2009, :aug2010, :aug2011)
     end
 
     it "should initialize the block attribute as false" do
@@ -87,10 +96,6 @@ describe Octopus::Proxy do
 
       it "should initialize just the master shard" do
         proxy.instance_variable_get(:@shards).keys.should == ["master"]
-      end
-
-      it "should not initialize the groups variable" do
-        proxy.instance_variable_get(:@groups).should == {}
       end
 
       it "should not initialize replication" do

@@ -11,7 +11,7 @@ class Octopus::Proxy
 
   def initialize_shards(config)
     @shards = HashWithIndifferentAccess.new
-    @groups = HashWithIndifferentAccess.new
+    @groups = {}
     @adapters = Set.new
     @shards[:master] = ActiveRecord::Base.connection_pool_without_octopus()
     @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
@@ -35,14 +35,16 @@ class Octopus::Proxy
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
       else
-        @groups[key.to_sym] = []
+        @groups[key.to_s] = []
 
         value.each do |k, v|
           raise "You have duplicated shard names!" if @shards.has_key?(k.to_sym)
+
           initialize_adapter(v['adapter'])
           config_with_octopus_shard = v.merge(:octopus_shard => k)
+
           @shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
-          @groups[key.to_sym] << k.to_sym
+          @groups[key.to_s] << k.to_sym
         end
       end
     end
@@ -71,10 +73,9 @@ class Octopus::Proxy
   end
 
   def current_group=(group_symbol)
-    if group_symbol.is_a?(Array)
-      group_symbol.each {|symbol| raise "Nonexistent Group Name: #{symbol}" if @groups[symbol].nil? }
-    else
-      raise "Nonexistent Group Name: #{group_symbol}" if @groups[group_symbol].nil?
+    # TODO: Error message should include all groups if given more than one bad name.
+    [group_symbol].flatten.each do |group|
+      raise "Nonexistent Group Name: #{group}" unless has_group?(group)
     end
 
     @current_group = group_symbol
@@ -82,6 +83,22 @@ class Octopus::Proxy
 
   def current_model=(model)
     @current_model = model.is_a?(ActiveRecord::Base) ? model.class : model
+  end
+
+  # Public: Whether or not a group exists with the given name converted to a
+  # string.
+  #
+  # Returns a boolean.
+  def has_group?(group)
+    @groups.has_key?(group.to_s)
+  end
+
+  # Public: Retrieves the defined shards for a given group.
+  #
+  # Returns an array of shard names as symbols or nil if the group is not
+  # defined.
+  def shards_for_group(group)
+    @groups.fetch(group.to_s, nil)
   end
 
   def select_connection

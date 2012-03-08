@@ -37,53 +37,59 @@ module Octopus::Migration
     return self
   end
 
-  def using_group(*args)
-    if self.connection().is_a?(Octopus::Proxy)
-      args.each do |group_shard|
-        shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
+  def using_group(*groups)
+    if self.connection.is_a?(Octopus::Proxy)
+      groups.each do |group|
+        shards = self.connection.shards_for_group(group) || []
 
         shards.each do |shard|
-          self.connection().check_schema_migrations(shard)
+          self.connection.check_schema_migrations(shard)
         end
       end
 
-      self.connection().block = true
-      self.connection().current_group = args
+      self.connection.block = true
+      self.connection.current_group = groups
     end
 
-    return self
+    self
   end
 
   def get_current_shard
     "Shard: #{ActiveRecord::Base.connection.current_shard()}" if ActiveRecord::Base.connection.respond_to?(:current_shard)
   end
 
-
   def migrate_with_octopus(direction)
     conn = ActiveRecord::Base.connection
     return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
     self.connection().current_shard = self.current_shard if self.current_shard != nil
 
-    groups = conn.instance_variable_get(:@groups)
-
     begin
-      if conn.current_group.is_a?(Array)
-        conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } }
-      elsif conn.current_group.is_a?(Symbol)
-        conn.send_queries_to_multiple_shards(groups[conn.current_group]) { migrate_without_octopus(direction) }
+      shards = Set.new
+
+      if conn.current_group
+        [conn.current_group].flatten.each do |group|
+          group_shards = conn.shards_for_group(group)
+          shards.merge(group_shards) if group_shards
+        end
       elsif conn.current_shard.is_a?(Array)
-        conn.send_queries_to_multiple_shards(conn.current_shard) { migrate_without_octopus(direction) }
+        shards.merge(conn.current_shard)
+      end
+
+      if shards.any?
+        conn.send_queries_to_multiple_shards(shards.to_a) do
+          migrate_without_octopus(direction)
+        end
       else
         migrate_without_octopus(direction)
       end
     ensure
-      conn.clean_proxy()
+      conn.clean_proxy
     end
   end
 end
 
 if Octopus.rails31?
-  ActiveRecord::Migration.send :include, Octopus::Migration
+  ActiveRecord::Migration.send(:include, Octopus::Migration)
 else
   ActiveRecord::Migration.extend(Octopus::Migration)
 end

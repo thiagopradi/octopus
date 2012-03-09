@@ -14,9 +14,9 @@ module Octopus::AssociationCollection
     end
   end
 
-  def build_with_octopus(*args)
+  def build_with_octopus(*args, &block)
     owner.reload_connection
-    build_without_octopus(*args)
+    build_without_octopus(*args, &block)
   end
 
   def reader_with_octopus(*args)
@@ -39,14 +39,14 @@ module Octopus::AssociationCollection
     ids_writer_without_octopus(*args)
   end
 
-  def create_with_octopus(*args)
+  def create_with_octopus(*args, &block)
     owner.reload_connection
-    create_without_octopus(*args)
+    create_without_octopus(*args, &block)
   end
 
-  def create_with_octopus!(*args)
+  def create_with_octopus!(*args, &block)
     owner.reload_connection
-    create_without_octopus!(*args)
+    create_without_octopus!(*args, &block)
   end
 
   def should_wrap_the_connection?

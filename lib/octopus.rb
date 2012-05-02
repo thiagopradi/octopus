@@ -38,7 +38,7 @@ module Octopus
   #
   # Returns a boolean
   def self.enabled?
-    if defined?(::Rails)
+    if defined?(::Rails) && !Octopus.config.blank? # force load of octopus config
       Octopus.environments.include?(Rails.env.to_s)
     else
       # TODO: This doens't feel right but !Octopus.config.blank? is breaking a

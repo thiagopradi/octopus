@@ -120,7 +120,7 @@ Want to see sample rails applications using octopus features? please check it ou
 
 
 ## Important!
-Sometimes, when a connection isn't used for much time, this will makes ActiveRecord raising an exception. if you have this kind of applications, please, add the following line to your configuration:
+Occasionally, an application might lose a connection to a database; when this happens, ActiveRecord will raise an exception. Add the following line to your application configuration if you are experiencing this issue:
 
     verify_connection: true
 

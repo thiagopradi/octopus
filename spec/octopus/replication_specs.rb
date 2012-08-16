@@ -68,5 +68,15 @@ describe "when the database is replicated and the entire application is replicat
       k.errors.should == {:name=>["has already been taken"]}
     end
   end
+
+  it "should not send writes to a slave after a failed query" do
+    using_environment :production_fully_replicated do 
+      Cat.count
+      Cat.connection.select "SELECT fail" rescue Mysql::Error
+      Cat.create!(:name => "Master Cat")
+      Cat.using(:master).find_by_name("Master Cat").should_not be_nil
+    end
+  end  
+  
 end
 

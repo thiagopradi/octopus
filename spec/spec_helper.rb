@@ -1,21 +1,17 @@
 require "rubygems"
+require "bundler"
+
+Bundler.setup()
+
+require File.expand_path(File.dirname(__FILE__)) + "/database_connection"
+require "octopus"
+require "octopus_helper"
+require "action_controller"
+require 'rspec/core'
+
 MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migrations'))
 
-if ENV["VERSION"]
-  gem 'activerecord', ENV["VERSION"]
-  gem 'activesupport', ENV["VERSION"]
-  gem 'actionpack', ENV["VERSION"]
-end
-
-require 'spec'
-require 'spec/autorun'
-require "spec/database_connection"
-require "action_controller"
-require 'octopus'
-require "octopus_helper"
-
-
-Spec::Runner.configure do |config|  
+RSpec.configure do |config|
   config.before(:each) do
     Octopus.stub!(:directory).and_return(File.dirname(__FILE__))
     require "database_models"

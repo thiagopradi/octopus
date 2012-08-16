@@ -1,18 +1,29 @@
 class Octopus::Proxy
-  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard
+  attr_accessor :current_model, :current_shard, :current_group, :block, :using_enabled, :last_current_shard, :config
 
-  def initialize(config)    
+  def initialize(config)
     initialize_shards(config)
-    initialize_replication(config) if have_config_for_enviroment?(config) && config[Octopus.env()]["replicated"]
+    initialize_replication(config) if !config.nil? && config["replicated"]
   end
 
   def initialize_shards(config)
     @shards = {}
     @groups = {}
     @shards[:master] = ActiveRecord::Base.connection_pool()
+    @config = ActiveRecord::Base.connection_pool.connection.instance_variable_get(:@config)
     @current_shard = :master
     
-    shards_config = config[Octopus.env()]["shards"] if have_config_for_enviroment?(config)
+    if !config.nil? && config.has_key?("verify_connection")
+      @verify_connection = config["verify_connection"]
+    else
+      @verify_connection = false
+    end
+    
+    if !config.nil?
+      @entire_sharded = config['entire_sharded']  
+      shards_config = config[Octopus.rails_env()] 
+    end
+    
     shards_config ||= []
 
     shards_config.each do |key, value|
@@ -34,7 +45,11 @@ class Octopus::Proxy
 
   def initialize_replication(config)
     @replicated = true
-    @entire_replicated = config[Octopus.env()]["entire_replicated"]
+    if config.has_key?("fully_replicated")
+      @fully_replicated = config["fully_replicated"]
+    else
+      @fully_replicated = true
+    end
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
   end
@@ -64,30 +79,54 @@ class Octopus::Proxy
   end
 
   def select_connection()
+    @shards[shard_name].verify_active_connections! if @verify_connection 
     @shards[shard_name].connection()
   end
 
   def shard_name
     current_shard.is_a?(Array) ? current_shard.first : current_shard
   end
+  
+  def run_queries_on_shard(shard, &block)
+    older_shard = self.current_shard
+    last_block = self.block
 
-  def add_transaction_record(record)
-    if !select_connection().instance_variable_get(:@_current_transaction_records).nil?
-      select_connection().add_transaction_record(record)
+    begin
+      self.block = true
+      self.current_shard = shard
+      yield
+    ensure
+      self.block = last_block || false
+      self.current_shard = older_shard
     end
   end
-
+  
+  def send_queries_to_multiple_shards(shards, &block)
+    shards.each do |shard|
+      self.run_queries_on_shard(shard, &block)
+    end
+  end
+  
+  def clean_proxy()
+    @using_enabled = nil
+    @current_shard = :master
+    @current_group = nil
+    @block = false
+  end
+  
+  def check_schema_migrations(shard)
+    if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
+      ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+    end
+  end
+  
   def transaction(options = {}, &block)
-    if should_send_queries_to_multiple_shards?
-      self.send_transaction_to_multiple_shards(current_shard, options, &block)
-    elsif should_send_queries_to_multiple_groups?
-      self.send_transaction_to_multiple_groups(options, &block)
-      @current_group = nil      
-    elsif should_send_queries_to_a_group_of_shards?
-      self.send_transaction_to_multiple_shards(@groups[current_group], options, &block)
-      @current_group = nil      
+    if @replicated && (current_model.read_inheritable_attribute(:replicated) || @fully_replicated)
+      self.run_queries_on_shard(:master) do
+        select_connection.transaction(options, &block)
+      end
     else
-      select_connection.transaction(options, &block) 
+      select_connection.transaction(options, &block)
     end
   end
 
@@ -95,32 +134,12 @@ class Octopus::Proxy
     if should_clean_connection?(method)
       conn = select_connection()
       self.last_current_shard = self.current_shard
-      self.current_shard = :master
-      @using_enabled = nil
+      clean_proxy()
       conn.send(method, *args, &block)
     elsif should_send_queries_to_replicated_databases?(method)
       send_queries_to_selected_slave(method, *args, &block)      
-    elsif should_send_queries_to_multiple_groups?
-      send_queries_to_multiple_groups(method, *args, &block)
-    elsif should_send_queries_to_multiple_shards?
-      send_queries_to_shards(current_shard, method, *args, &block)
-    elsif should_send_queries_to_a_group_of_shards?
-      send_queries_to_shards(@groups[current_group], method, *args, &block)
     else
       select_connection().send(method, *args, &block)
-    end
-  end
-
-  def run_queries_on_shard(shard, &block)
-    older_shard = self.current_shard
-    self.block = true
-    self.current_shard = shard
-
-    begin
-      yield
-    ensure
-      self.block = false
-      self.current_shard = older_shard
     end
   end
 
@@ -131,88 +150,34 @@ class Octopus::Proxy
 
   def initialize_adapter(adapter)
     begin
-      gem "activerecord-#{adapter}-adapter"
       require "active_record/connection_adapters/#{adapter}_adapter"
     rescue LoadError
-      begin
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
-      end
+      raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
     end
   end
 
   def should_clean_connection?(method)
-    method.to_s =~ /insert|select|execute/ && !should_send_queries_to_multiple_shards? && !self.current_group && !@replicated && !self.block
-  end
-
-  def should_send_queries_to_multiple_shards?
-    current_shard.is_a?(Array)
-  end
-
-  def should_send_queries_to_multiple_groups?
-    current_group.is_a?(Array)
-  end
-
-  def should_send_queries_to_a_group_of_shards?
-    !current_group.nil?
+    method.to_s =~ /insert|select|execute/ && !@replicated && !self.block
   end
 
   def should_send_queries_to_replicated_databases?(method)
-    @replicated && method.to_s =~ /select/
-  end
-  
-  def have_config_for_enviroment?(config)
-    !config[Octopus.env()].nil?
-  end
-
-  def send_queries_to_multiple_groups(method, *args, &block)
-    method_return = nil
-
-    current_group.each do |group_symbol|
-      method_return = self.send_queries_to_shards(@groups[group_symbol], method, *args, &block)
-    end
-
-    return method_return
-  end
-
-  def send_queries_to_shards(shard_array, method, *args, &block)
-    method_return = nil
-
-    shard_array.each do |shard_symbol|
-      method_return = @shards[shard_symbol].connection().send(method, *args, &block) 
-    end
-
-    return method_return
+    @replicated && method.to_s =~ /select/ && !@block
   end
 
   def send_queries_to_selected_slave(method, *args, &block)        
     old_shard = self.current_shard
-
-    if current_model.read_inheritable_attribute(:replicated) || @entire_replicated
-      if !using_enabled
-        self.current_shard = @slaves_list.shift.to_sym
-        @slaves_list << self.current_shard
-      end
+    
+    if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
+      self.current_shard = @slaves_list.shift.to_sym
+      @slaves_list << self.current_shard
     else
       self.current_shard = :master
     end
-
+    
     sql = select_connection().send(method, *args, &block)     
+    return sql    
+  ensure
     self.current_shard = old_shard
     @using_enabled = nil
-    return sql    
-  end
-
-  def send_transaction_to_multiple_shards(shard_array, options, &block)
-    shard_array.each do |shard_symbol|
-      @shards[shard_symbol].connection().transaction(options, &block)
-    end
-  end
-
-  def send_transaction_to_multiple_groups(options, &block)
-    current_group.each do |group_symbol|
-      self.send_transaction_to_multiple_shards(@groups[group_symbol], options, &block)
-    end
   end
 end

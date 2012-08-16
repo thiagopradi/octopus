@@ -6,26 +6,17 @@ class Octopus::ScopeProxy
     @klass = klass
   end
   
-  def using(shard, &block)
+  def using(shard)
+    raise "Nonexistent Shard Name: #{shard}" if @klass.connection.instance_variable_get(:@shards)[shard].nil?
     @shard = shard
-    
-    if block_given?
-      @klass.connection.run_queries_on_shard(@shard, &block)
-    end
-    
     return self
   end
   
   # Transaction Method send all queries to a specified shard.
   def transaction(options = {}, &block)
-    @klass.connection().current_shard = @shard
-    @klass.connection().block = true
-    
-    begin
-      @klass.connection().transaction(options, &block)
-    ensure
-      @klass.connection().block = false    
-    end
+    @klass.connection.run_queries_on_shard(@shard) do
+      @klass = @klass.connection().transaction(options, &block)
+    end      
   end
     
   def connection
@@ -34,8 +25,10 @@ class Octopus::ScopeProxy
   end
   
   def method_missing(method, *args, &block)
-    @klass.connection().current_shard = @shard
-    @klass = @klass.send(method, *args, &block)
+    @klass.connection.run_queries_on_shard(@shard) do
+      @klass = @klass.send(method, *args, &block)
+    end
+
     return @klass if @klass.is_a?(ActiveRecord::Base) or @klass.is_a?(Array) or @klass.is_a?(Fixnum) or @klass.nil?
     return self
   end

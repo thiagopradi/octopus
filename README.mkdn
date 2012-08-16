@@ -1,50 +1,165 @@
-<h1> Octopus  - Easy Database Sharding for ActiveRecord</h1>
+# Octopus  - Easy Database Sharding for ActiveRecord
 
-<p> Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric), each project has its own limitations. The main goal of octopus project is to provide a nice and clean way of doing Database Sharding.</p>
+Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 
-<h2>Feature list: </h2>
-<p> The design of the api is made to be simple as possible. Octopus is focusing in the end user, giving the power of multiple databases, but with reliable code and flexibility. Octopus is focused on Rails 3,  but the branch named 'rails2' is compatible with Rails 2.x.</p>
+## Feature list:
+The api is designed to be simple as possible. Octopus focuses on the end user, giving the power of multiple databases but with reliable code and flexibility. Octopus is focused on Rails 3, but is compatible with Rails 2.x.
 
-<p> Octopus supports: </p>
+Octopus supports:
 
 - Sharding (with multiple shards, and grouped shards).
 - Replication (Master/slave support, with multiple slaves).
 - Moving data between shards with migrations.
 - Tools to manage database configurations. (soon)
 
-<p> To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a></p>
-<p>Wanna see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a> </p> 
+### Replication
+When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a>
+
+### Sharding
+ When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a> 
+
+### Replication + Sharding
+ Replication + Sharding isn't supported yet. This is on our TODO list and will be done ASAP. If you need, feel free to fork and implement it.
+
+## Install 
+
+### Rails 2.x 
+
+Install  the octopus gem:
+
+    sudo gem install ar-octopus
+
+Add this line to enviroment.rb:
+
+    config.gem 'ar-octopus', :lib => "octopus"
+
+### Rails 3.x 
+
+Add this line to Gemfile:
+
+    gem 'ar-octopus', :require => "octopus"
+
+Runs a bundle install:
+
+    bundle install
+
+## How to use Octopus? 
+
+First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a>.
+
+### Syntax 
+
+Octopus adds a method to each AR Class and object: the using method is used to select the shard like this: 
+
+    User.where(:name => "Thiago").limit(3).using(:slave_one)
+
+Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard. 
+
+    Octopus.using(:slave_two) do 
+      User.create(:name => "Mike")
+    end
+
+Each model instance knows which shard it came from so this will work automatically:
+
+    # This will find the user in the shard1
+    @user = User.using(:shard1).find_by_name("Joao")
+
+    # This will find the user in the master database
+    @user2 = User.find_by_name("Jose")
+
+    #Sets the name
+    @user.name = "Mike"
+
+    # Save the user in the correct shard, shard1. 
+    @user.save
+
+### Migrations
+
+In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in the brazil and canada shards.
+
+    class CreateUsersOnBothShards < ActiveRecord::Migration
+      using(:brazil, :canada)
+
+      def self.up
+        User.create!(:name => "Both")
+      end
+
+      def self.down
+        User.delete_all
+      end
+    end
+
+You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml: 
+
+    class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
+      using_group(:history_shards)
+
+      def self.up
+        User.create!(:name => "MultipleGroup")
+      end
+
+      def self.down
+        User.delete_all
+      end
+    end
+
+### Rails Controllers
+
+If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
   
-<h2>Thanks</h2>
+    class ApplicationController < ActionController::Base
+      around_filter :select_shard      
+    
+      def select_shard(&block)
+        Octopus.using(:brazil, &block)
+      end    
+    end
+
+ To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
+Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
+
+
+## Important!
+Sometimes, when a connection isn't used for much time, this will makes ActiveRecord raising an exception. if you have this kind of applications, please, add the following line to your configuration:
+
+    verify_connection: true
+
+This will tell Octopus to verify the connection before sending the query.
+
+## Mixing Octopus with the Rails multiple database model
+If you want to set a custom connection to a specific model, use this syntax:
+
+    #This class sets its own connection
+    # establish_connection will not work, use octopus_establish_connection instead.
+    class CustomConnection < ActiveRecord::Base
+      octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
+    end
+    
+## Contributing with Octopus
+Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
+
+    git clone http://github.com/tchandy/octopus.git
+    cd octopus
+    bundle install
+    rake db:prepare
+    rake
+
+To run our integrations tests inside sample_app, you need to following commands:
+
+    cd sample_app
+    bundle install
+    cucumber
+
+If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
+
+## Contributors:
+- <a href="https://github.com/tchandy/octopus/contributors">All Contributors</a>
+
+## Thanks
 
 This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
 and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
-
-<h3>If you are writing code that smells using octopus, the EVIL Octopus is going behind you, be careful.</h3>
-<pre>
-                                _________________
-                      ___       | I'm so EVIL!  |
-                   .-'   `'.    |______________ |
-                  /         \   /
-                  |         ;  /
-                  |         | /         ___.--,
-         _.._     |0) ~ (0) |    _.---'`__.-( (_.
-  __.--'`_.. '.__.\    '--. \_.-' ,.--'`     `""`
- ( ,.--'`   ',__ /./;   ;, '.__.'`    __
- _`) )  .---.__.' / |   |\   \__..--""  """--.,_
-`---' .'.''-._.-'`_./  /\ '.  \ _.-~~~````~~~-._`-.__.'
-      | |  .' _.-' |  |  \  \  '.               `~---`
-       \ \/ .'     \  \   '. '-._)
-        \/ /        \  \    `=.__`~-.
-        / /\         `) )    / / `"".`\
-  , _.-'.'\ \        / /    ( (     / /
-   `--~`   ) )    .-'.'      '.'.  | (
-          (/`    ( (`          ) )  '-;
-           `      '-;         (-'
-</pre>
-
-
-<h2>Copyright</h2>
+## Copyright
 
 Copyright (c) 2010 Thiago Pradi, released under the MIT license.

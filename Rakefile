@@ -1,9 +1,12 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
+$LOAD_PATH << (File.dirname(__FILE__) + '/spec')
 require 'rubygems'
 require 'rake'
+require 'rake/tasklib'
 require "yaml"
-require "active_support"
-require 'active_support/json'
+require "bundler"
+Bundler.setup()
+
 begin
   require 'metric_fu'
   MetricFu::Configuration.run do |config|
@@ -26,41 +29,34 @@ begin
     gem.description = "This gem allows you to use sharded databases with ActiveRecord. this also provides a interface for replication and for running migrations with multiples shards."
     gem.email = "tchandy@gmail.com"
     gem.homepage = "http://github.com/tchandy/octopus"
-    gem.authors = ["Thiago Pradi", "Mike Perham", "Amit Agarwal"]
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_dependency('activerecord', '>= 3.0.0beta')
-    gem.version = "0.0.19"
+    gem.authors = ["Thiago Pradi", "Mike Perham"]
+    gem.add_development_dependency "rspec", ">= 2.0.0.beta.19"
+    gem.add_development_dependency "mysql", ">= 2.8.1"
+    gem.add_development_dependency "pg", ">= 0.9.0"
+    gem.add_development_dependency "sqlite3-ruby", ">= 1.3.1"
+    gem.add_development_dependency "jeweler", ">= 1.4"
+    gem.add_development_dependency "actionpack", ">= 2.3"
+    gem.add_dependency('activerecord', '>= 2.3')
+    gem.version = "0.3.4"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+require 'rspec/core'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec) do |spec|
 end
 
-Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
+RSpec::Core::RakeTask.new(:rcov) do |spec|
 end
 
 task :spec => :check_dependencies
 
 task :default => :spec
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "octopus #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
 
 namespace :db do
   desc 'Build the databases for tests'
@@ -83,6 +79,7 @@ namespace :db do
     end
     
     %x( dropdb -U #{postgres_user} octopus_shard1 )
+    %x(rm /tmp/database.sqlite3)
   end
 
   desc 'Create tables on tests databases'
@@ -146,6 +143,17 @@ namespace :db do
       
       ActiveRecord::Base.using(shard_symbol).connection.create_table(:projects) do |u|
         u.string :name
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:comments) do |u|
+        u.string :name
+        u.string :commentable_type
+        u.integer :commentable_id
+      end
+      
+      ActiveRecord::Base.using(shard_symbol).connection.create_table(:parts) do |u|
+        u.string :name
+        u.integer :item_id
       end
     end
   end

@@ -1,61 +1,39 @@
-class ActiveRecord::Base
-  def delete
-    if should_set_current_shard?
-      self.using(self.current_shard) do
-        self.class.delete(id) unless new_record?
-        @destroyed = true
-        freeze
-      end
-    else
-      self.class.delete(id) unless new_record?
-      @destroyed = true
-      freeze
-    end
-  end
-
-  def destroy
-    if should_set_current_shard?
-      self.using(self.current_shard) do
-        unless new_record?
-          connection.delete(
-          "DELETE FROM #{self.class.quoted_table_name} " +
-          "WHERE #{connection.quote_column_name(self.class.primary_key)} = #{quoted_id}",
-          "#{self.class.name} Destroy"
-          )
+module Octopus
+  module Rails2
+    module Persistence
+      def self.included(base)
+        base.instance_eval do 
+          alias_method_chain :destroy, :octopus
+          alias_method_chain :delete, :octopus
+          alias_method_chain :reload, :octopus
         end
       end
-      @destroyed = true
-      freeze
-    else
-      self.using(self.current_shard) do
-        unless new_record?
-          connection.delete(
-          "DELETE FROM #{self.class.quoted_table_name} " +
-          "WHERE #{connection.quote_column_name(self.class.primary_key)} = #{quoted_id}",
-          "#{self.class.name} Destroy"
-          )
+
+      def delete_with_octopus()
+        if should_set_current_shard?
+          Octopus.using(self.current_shard) { delete_without_octopus() }
+        else
+          delete_without_octopus()
         end
       end
-      @destroyed = true
-      freeze
-    end
-  end
 
-  def reload(options = nil)
-    if should_set_current_shard?
-      self.using(self.current_shard) do
-        clear_aggregation_cache
-        clear_association_cache
-        @attributes.update(self.class.send(:with_exclusive_scope) { self.class.find(self.id, options) }.instance_variable_get('@attributes'))
-        @attributes_cache = {}
-        self
+      def destroy_with_octopus()
+        if should_set_current_shard?
+          Octopus.using(self.current_shard) { destroy_without_octopus() }
+        else
+          destroy_without_octopus()
+        end
       end
-    else
-      clear_aggregation_cache
-      clear_association_cache
-      @attributes.update(self.class.send(:with_exclusive_scope) { self.class.find(self.id, options) }.instance_variable_get('@attributes'))
-      @attributes_cache = {}
-      self
+
+      def reload_with_octopus(options = nil)
+        if should_set_current_shard?
+          Octopus.using(self.current_shard) { reload_without_octopus(options) }
+        else
+          reload_without_octopus(options)
+        end
+      end
     end
   end
 end
+
+ActiveRecord::Base.send(:include, Octopus::Rails2::Persistence)

@@ -1,0 +1,8 @@
+- Find the best way to move data along shards.
+- Improve documentation.
+- Automatic configuration file for shards.
+- Support specifics cases of sharding/replication.
+- Basic algorithm to do load balancing between slaves server (handling servers down)
+- Support replication + sharding
+- Wiki about validation
+- Show where the query is sent in the log

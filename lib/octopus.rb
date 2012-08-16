@@ -1,17 +1,22 @@
 require "yaml"
+require "erb"
 
 module Octopus
   def self.env()
-    @env ||= defined?(Rails) ? Rails.env.to_s : 'octopus'
+    @env ||= 'octopus'
   end
-  
+
+  def self.rails_env()
+    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
+  end
+
   def self.config()
-    @config ||= HashWithIndifferentAccess.new(YAML.load_file(Octopus.directory() + "/config/shards.yml"))
-    
-    if !@config[Octopus.env].nil? && @config[Octopus.env()]['excluded_enviroments']
-      self.excluded_enviroments = @config[Octopus.env()]['excluded_enviroments']
+    @config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(Octopus.directory() + "/config/shards.yml").read()).result))[Octopus.env()]
+
+    if @config && @config['environments']
+      self.environments = @config['environments']
     end
-    
+
     @config
   end
 
@@ -20,44 +25,57 @@ module Octopus
   def self.directory()
     @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd     
   end
-  
+
   # This is the default way to do Octopus Setup
   # Available variables:
-  # :excluded_enviroments => the enviroments that octopus will not run. default: :development, :cucumber and :test
+  # :enviroments => the enviroments that octopus will run. default: 'production'
   def self.setup
     yield self
   end
-  
-  def self.excluded_enviroments=(excluded_enviroments)
-    @excluded_enviroments = excluded_enviroments.map { |element| element.to_s }
+
+  def self.environments=(environments)
+    @environments = environments.map { |element| element.to_s }
   end
-  
-  def self.excluded_enviroments
-    @excluded_enviroments || ['development',"cucumber", "test"]
+
+  def self.environments
+    @environments || ['production']
   end
-  
+
   def self.rails3?
     ActiveRecord::VERSION::MAJOR == 3
   end
+
+  def self.rails?
+    defined?(Rails) 
+  end
+  
+  def self.using(shard, &block)
+    ActiveRecord::Base.hijack_initializer()
+    conn = ActiveRecord::Base.connection
+    
+    if conn.is_a?(Octopus::Proxy)
+      conn.run_queries_on_shard(shard, &block)
+    else
+      yield
+    end
+  end  
 end
 
 
 require "octopus/model"
 require "octopus/migration"
+require "octopus/association_collection"
+require "octopus/has_and_belongs_to_many_association"
+require "octopus/association"
 
 if Octopus.rails3?
   require "octopus/rails3/association"
-  require "octopus/rails3/association_collection"
-  require "octopus/rails3/has_and_belongs_to_many_association"
   require "octopus/rails3/persistence"
 else
   require "octopus/rails2/association"
-  require "octopus/rails2/association_collection"
-  require "octopus/rails2/has_and_belongs_to_many_association"
   require "octopus/rails2/persistence"
 end
 
 require "octopus/proxy"
 require "octopus/scope_proxy"
-require "octopus/controller"
 

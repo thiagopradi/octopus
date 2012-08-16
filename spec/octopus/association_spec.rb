@@ -99,9 +99,11 @@ describe Octopus::Association do
         @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
 
-      it "update_attribute" do
-        @permission_brazil_2.update_attribute(:role_ids, [@role.id])
-        @permission_brazil_2.roles.to_set.should == [@role].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @permission_brazil_2.update_attribute(:role_ids, [@role.id])
+          @permission_brazil_2.roles.to_set.should == [@role].to_set
+        end
       end
 
       it "<<" do
@@ -252,9 +254,11 @@ describe Octopus::Association do
         @new_brazil_programmer.projects.to_set.should == [@project].to_set
       end
 
-      it "update_attribute" do
-        @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
-        @new_brazil_programmer.projects.to_set.should == [@project].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
+          @new_brazil_programmer.projects.to_set.should == [@project].to_set
+        end
       end
 
       it "<<" do
@@ -378,6 +382,12 @@ describe Octopus::Association do
       @item_brazil.client.should == @brazil_client
     end
 
+    it "should raise error if you try to add a record from a different shard" do
+      lambda do 
+        @brazil_client.items << Item.using(:canada).create!(:name => "New User")
+      end.should raise_error("Association Error: Records are from different shards")
+    end
+
     it "should update the attribute for the item" do
       new_brazil_client = Client.using(:brazil).create!(:name => "new Client")
       @item_brazil.client = new_brazil_client
@@ -403,14 +413,17 @@ describe Octopus::Association do
         @brazil_client.items.to_set.should == [@item_brazil].to_set 
       end
 
+
       it "update_attributes" do
         @brazil_client.update_attributes(:item_ids => [@item_brazil_2.id, @item_brazil.id])
         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
       end
 
-      it "update_attribute" do
-        @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
-        @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
+          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
+        end
       end
 
       it "<<" do
@@ -500,6 +513,144 @@ describe Octopus::Association do
         @brazil_client.items.empty?.should be_false     
         @brazil_client.items.clear                
         @brazil_client.items.empty?.should be_true          
+      end
+    end
+  end
+
+  describe "when you have a 1 x N polymorphic relationship" do
+    before(:each) do
+      @brazil_client = Client.using(:brazil).create!(:name => "Brazil Client")
+      @master_client = Client.create!(:name => "Master Client")
+      @comment_brazil = Comment.using(:brazil).create!(:name => "Brazil Comment", :commentable => @brazil_client)
+      @comment_master = Comment.create!(:name => "Master Comment", :commentable => @master_client)
+      @brazil_client = Client.using(:brazil).find_by_name("Brazil Client")
+      Client.using(:master).create!(:name => "teste")        
+    end
+
+    it "should find all models in the specified shard" do
+      @brazil_client.comment_ids.should == [@comment_brazil.id]
+      @brazil_client.comments().should == [@comment_brazil]
+    end
+
+    it "should finds the client that the comment belongs" do
+      @comment_brazil.commentable.should == @brazil_client
+    end
+
+    it "should update the attribute for the comment" do
+      new_brazil_client = Client.using(:brazil).create!(:name => "new Client")
+      @comment_brazil.commentable = new_brazil_client
+      @comment_brazil.commentable.should == new_brazil_client
+      @comment_brazil.save()
+      @comment_brazil.reload
+      @comment_brazil.commentable_id.should == new_brazil_client.id
+      @comment_brazil.commentable().should == new_brazil_client
+    end
+
+    describe "it should works when using" do
+      before(:each) do
+        @comment_brazil_2 = Comment.using(:brazil).create!(:name => "Brazil Comment 2")
+        @brazil_client.comments.to_set.should == [@comment_brazil].to_set 
+      end
+
+      it "update_attributes" do
+        @brazil_client.update_attributes(:comment_ids => [@comment_brazil_2.id, @comment_brazil.id])
+        @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+      end
+
+      if !Octopus.rails3?
+        it "update_attribute" do
+          @brazil_client.update_attribute(:comment_ids, [@comment_brazil_2.id, @comment_brazil.id])
+          @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+        end
+      end
+
+      it "<<" do
+        @brazil_client.comments << @comment_brazil_2
+        @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+      end
+
+      it "build" do
+        comment = @brazil_client.comments.build(:name => "Builded Comment")
+        comment.save()
+        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set
+      end
+
+      it "create" do
+        comment = @brazil_client.comments.create(:name => "Builded Comment")
+        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set          
+      end
+
+      it "count" do
+        @brazil_client.comments.count.should == 1
+        comment = @brazil_client.comments.create(:name => "Builded Comment")
+        @brazil_client.comments.count.should == 2
+      end
+
+      it "size" do
+        @brazil_client.comments.size.should == 1          
+        comment = @brazil_client.comments.create(:name => "Builded Comment")
+        @brazil_client.comments.size.should == 2          
+      end
+
+      it "create!" do
+        comment = @brazil_client.comments.create!(:name => "Builded Comment")
+        @brazil_client.comments.to_set.should == [@comment_brazil, comment].to_set                    
+      end
+
+      it "length" do
+        @brazil_client.comments.length.should == 1          
+        comment = @brazil_client.comments.create(:name => "Builded Comment")
+        @brazil_client.comments.length.should == 2                    
+      end
+
+      it "empty?" do
+        @brazil_client.comments.empty?.should be_false
+        c = Client.create!(:name => "Client1")
+        c.comments.empty?.should be_true
+      end
+
+      it "delete" do
+        @brazil_client.comments.empty?.should be_false
+        @brazil_client.comments.delete(@comment_brazil)
+        @brazil_client.reload
+        @comment_brazil.reload
+        @comment_brazil.commentable.should be_nil
+        @brazil_client.comments.should == []
+        @brazil_client.comments.empty?.should be_true
+      end
+
+      it "delete_all" do
+        @brazil_client.comments.empty?.should be_false     
+        @brazil_client.comments.delete_all                
+        @brazil_client.comments.empty?.should be_true
+      end
+
+      it "destroy_all" do
+        @brazil_client.comments.empty?.should be_false     
+        @brazil_client.comments.destroy_all                
+        @brazil_client.comments.empty?.should be_true
+      end
+
+      it "find" do
+        @brazil_client.comments.find(:first).should == @comment_brazil
+        @brazil_client.comments.destroy_all                
+        @brazil_client.comments.find(:first).should be_nil
+      end
+
+      it "exists?" do
+        @brazil_client.comments.exists?(@comment_brazil).should be_true
+        @brazil_client.comments.destroy_all                
+        @brazil_client.comments.exists?(@comment_brazil).should be_false     
+      end
+
+      it "uniq" do
+        @brazil_client.comments.uniq.should == [@comment_brazil]                
+      end        
+
+      it "clear" do
+        @brazil_client.comments.empty?.should be_false     
+        @brazil_client.comments.clear                
+        @brazil_client.comments.empty?.should be_true          
       end
     end
   end

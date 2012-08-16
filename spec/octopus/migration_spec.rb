@@ -46,6 +46,15 @@ describe Octopus::Migration do
       User.using(:canada).find(:all, :conditions => {:name => "UsingCanada2"}).size.should == 1
     end
   end
+  
+  it "should send the query to the correct shard" do
+    migrating_to_version 13 do 
+      User.using(:brazil).find(:all, :conditions => {:name => "Brazil"}).size.should == 1
+      User.using(:brazil).find(:all, :conditions => {:name => "Canada"}).size.should == 0
+      User.using(:canada).find(:all, :conditions => {:name => "Brazil"}).size.should == 0
+      User.using(:canada).find(:all, :conditions => {:name => "Canada"}).size.should == 1
+    end    
+  end
 
   describe "should raise a exception when" do
     it "you specify a invalid shard name" do
@@ -67,22 +76,19 @@ describe Octopus::Migration do
 
   describe "when using replication" do    
     it "should run writes on master when you use replication" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         migrating_to_version 10 do 
-          Cat.using(:master).find_by_name("Replication").should_not be_nil
           Cat.find_by_name("Replication").should be_nil
         end
       end
     end
 
     it "should run in all shards, master or another shards" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         migrating_to_version 11 do 
           [:slave4, :slave1, :slave2, :slave3].each do |sym|
-            Cat.using(sym).find_by_name("Slaves").should_not be_nil
+            Cat.find_by_name("Slaves").should_not be_nil
           end
-
-          Cat.using(:master).find_by_name("Slaves").should be_nil
         end
       end
     end

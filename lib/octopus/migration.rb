@@ -1,64 +1,72 @@
 module Octopus::Migration  
   def self.extended(base)
     class << base
+      def announce_with_octopus(message)
+        announce_without_octopus("#{message} - #{get_current_shard}")
+      end
+      
       alias_method_chain :migrate, :octopus
+      alias_method_chain :announce, :octopus
+      attr_accessor :current_shard
     end
   end
-  
-  def using(*args, &block)
-    Octopus.config()
 
-    args.each do |shard|
-      if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-        ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+  def using(*args)
+    if self.connection().is_a?(Octopus::Proxy)
+      args.each do |shard|
+        self.connection().check_schema_migrations(shard)
       end
-    end
 
-    if args.size == 1
       self.connection().block = true
-      self.connection().current_shard = args.first
-    else
+      self.current_shard = args
       self.connection().current_shard = args        
     end
-
-
-    yield if block_given?
 
     return self
   end
 
   def using_group(*args)
-    Octopus.config()
+    if self.connection().is_a?(Octopus::Proxy)
+      args.each do |group_shard|
+        shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
 
-    args.each do |group_shard|
-      shards = self.connection().instance_variable_get(:@groups)[group_shard] || []
-
-      shards.each do |shard|
-        if !ActiveRecord::Base.using(shard).connection.table_exists?(ActiveRecord::Migrator.schema_migrations_table_name())
-          ActiveRecord::Base.using(shard).connection.initialize_schema_migrations_table 
+        shards.each do |shard|
+          self.connection().check_schema_migrations(shard)
         end
       end
-    end
 
-    if args.size == 1
       self.connection().block = true
-      self.connection().current_group = args.first
-    else
       self.connection().current_group = args
     end
-
+    
     return self
   end
   
-  def migrate_with_octopus(direction)
-    ret = migrate_without_octopus(direction)
-    # This Cleans the proxy
-    # TODO - REFACTOR!
-    ActiveRecord::Base.connection.instance_variable_set(:@current_shard, :master)
-    ActiveRecord::Base.connection.instance_variable_set(:@current_group, nil)
-    ActiveRecord::Base.connection().block = false
+  def get_current_shard
+    "Shard: #{ActiveRecord::Base.connection.current_shard()}" if ActiveRecord::Base.connection.respond_to?(:current_shard)
+  end
 
-    return ret
+
+  def migrate_with_octopus(direction)
+    conn = ActiveRecord::Base.connection
+    return migrate_without_octopus(direction) unless conn.is_a?(Octopus::Proxy)
+    self.connection().current_shard = self.current_shard if self.current_shard != nil
+    
+    groups = conn.instance_variable_get(:@groups)
+    
+    begin
+      if conn.current_group.is_a?(Array)
+        conn.current_group.each { |group| conn.send_queries_to_multiple_shards(groups[group]) { migrate_without_octopus(direction) } } 
+      elsif conn.current_group.is_a?(Symbol)       
+        conn.send_queries_to_multiple_shards(groups[conn.current_group]) { migrate_without_octopus(direction) }     
+      elsif conn.current_shard.is_a?(Array)
+        conn.send_queries_to_multiple_shards(conn.current_shard) { migrate_without_octopus(direction) }     
+      else
+        migrate_without_octopus(direction)
+      end
+    ensure
+      conn.clean_proxy()
+    end
   end
 end
 

@@ -5,21 +5,29 @@ describe Octopus::Model do
     it "should return self after calling the #using method" do
       User.using(:canada).should == Octopus::ScopeProxy.new(:canada, User)
     end
+    
+    it "should allow to send a block to the master shard" do
+      Octopus.using(:master) do 
+        User.create!(:name => "Block test")
+      end
+      
+      User.using(:master).find_by_name("Block test").should_not be_nil
+    end
 
     it "should allow selecting the shards on scope" do
       User.using(:canada).create!(:name => 'oi')
       User.using(:canada).count.should == 1
       User.count.should == 0
     end
-    
+
     it "should allow selecting the shard using #new" do
       u = User.using(:canada).new
       u.name = "Thiago"
       u.save
-      
+
       User.using(:canada).count.should == 1
       User.using(:brazil).count.should == 0
-      
+
       u1 = User.new
       u1.name = "Joaquim"
       u2 = User.using(:canada).new
@@ -37,11 +45,31 @@ describe Octopus::Model do
       User.count.should == 1
     end
     
+    it "should ensure that the connection will be cleaned" do
+      ActiveRecord::Base.connection.current_shard.should == :master
+      begin
+        Octopus.using(:canada) do 
+          raise "Some Exception"
+        end
+      rescue
+      end
+
+      ActiveRecord::Base.connection.current_shard.should == :master
+    end
+
+    it "should allow creating more than one user" do
+      User.using(:canada).create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
+      User.create!(:name => "Thiago")
+      User.using(:canada).find_by_name("America User 1").should_not be_nil
+      User.using(:canada).find_by_name("America User 2").should_not be_nil      
+      User.using(:master).find_by_name("Thiago").should_not be_nil
+    end
+
     it "should work when you have a SQLite3 shard" do
       u = User.using(:sqlite_shard).create!(:name => "Sqlite3")
       User.using(:sqlite_shard).find_by_name("Sqlite3").should == u
     end
-    
+
     it "should clean #current_shard from proxy when using execute" do
       ActiveRecord::Base.using(:canada).connection().execute("select * from users limit 1;")
       ActiveRecord::Base.connection.current_shard.should == :master
@@ -52,14 +80,14 @@ describe Octopus::Model do
       User.using(:canada).using(:master).count.should == 0
       User.using(:master).using(:canada).count.should == 1
     end
-    
+
     it "should allow find inside blocks" do
       @user = User.using(:brazil).create!(:name => "Thiago")
 
-      User.using(:brazil) do
+      Octopus.using(:brazil) do
         User.first.should == @user
       end
-      
+
       User.using(:brazil).find_by_name("Thiago").should == @user
     end
 
@@ -108,11 +136,18 @@ describe Octopus::Model do
         u.reload
         u.name.should == "Alone"
       end
+      
+      it "should work passing some arguments to reload method" do
+        User.using(:alone_shard).create!(:name => "Alone")
+        u = User.using(:alone_shard).find_by_name("Alone")
+        u.reload(:lock => true)
+        u.name.should == "Alone"
+      end
     end
 
     describe "passing a block" do
       it "should allow queries be executed inside the block, ponting to a specific shard" do
-        User.using(:canada) do
+        Octopus.using(:canada) do
           User.create(:name => "oi")
         end
 
@@ -152,6 +187,10 @@ describe Octopus::Model do
   end
 
   describe "AR basic methods" do
+    it "establish_connection" do
+      CustomConnection.connection.current_database.should == "octopus_shard2" 
+    end
+
     it "increment" do
       u = User.using(:brazil).create!(:name => "Teste", :number => 10)
       u = User.using(:brazil).find_by_number(10)
@@ -195,14 +234,14 @@ describe Octopus::Model do
       @user2.update_attributes(:name => "Joaquim")  
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil    
     end
-    
+
     it "using update_attributes inside a block" do
-      ActiveRecord::Base.using(:brazil) do
+      Octopus.using(:brazil) do
         @user = User.create!(:name => "User1")
         @user2 = User.find(@user.id)
         @user2.update_attributes(:name => "Joaquim")  
       end
-      
+
       User.find_by_name("Joaquim").should be_nil
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
@@ -210,21 +249,21 @@ describe Octopus::Model do
     it "update_attribute" do
       @user = User.using(:brazil).create!(:name => "User1")
       @user2 = User.using(:brazil).find(@user.id)
-      @user2.update_attributes(:name => "Joaquim")  
+      @user2.update_attribute(:name, "Joaquim")  
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
-    
+
     it "transaction" do
       u = User.create!(:name => "Thiago")
 
       User.using(:brazil).count.should == 0
       User.using(:master).count.should == 1
-      
+
       User.using(:brazil).transaction do
         User.find_by_name("Thiago").should be_nil
         User.create!(:name => "Brazil")
       end
-      
+
       User.using(:brazil).count.should == 1
       User.using(:master).count.should == 1
     end
@@ -239,23 +278,112 @@ describe Octopus::Model do
         @user2.delete
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
       end
+      
+      it "delete within block shouldn't lose shard" do
+        Octopus.using(:brazil) do
+          @user2.delete
+          @user3 = User.create(:name => "User3")
+          
+          User.connection.current_shard.should == :brazil
+          User.find(@user3.id).should == @user3
+        end
+      end
 
       it "destroy" do
         @user2.destroy
         lambda { User.using(:brazil).find(@user2.id) }.should raise_error(ActiveRecord::RecordNotFound)
       end
+      
+      it "destroy within block shouldn't lose shard" do
+        Octopus.using(:brazil) do
+          @user2.destroy
+          @user3 = User.create(:name => "User3")
+          
+          User.connection.current_shard.should == :brazil
+          User.find(@user3.id).should == @user3
+        end
+      end
+    end
+  end
+
+  describe "when you have joins/include" do 
+    before(:each) do
+      @client1 = Client.using(:brazil).create(:name => "Thiago")
+      
+      Octopus.using(:canada) do 
+        @client2 = Client.create(:name => "Mike")
+        @client3 = Client.create(:name => "Joao")
+        @item1 = Item.create(:client => @client2, :name => "Item 1")
+        @item2 = Item.create(:client => @client2, :name => "Item 2")
+        @item3 = Item.create(:client => @client3, :name => "Item 3")
+        @part1 = Part.create(:item => @item1, :name => "Part 1")
+        @part2 = Part.create(:item => @item1, :name => "Part 2")
+        @part3 = Part.create(:item => @item2, :name => "Part 3")
+      end
+      
+      @item4 = Item.using(:brazil).create(:client => @client1, :name => "Item 4")
+    end
+    
+    it "should work with the rails 2.x syntax" do
+      items = Item.using(:canada).find(:all, :joins => :client, :conditions => { :clients => { :id => @client2.id } })      
+      items.should == [@item1, @item2]
+    end
+    
+    it "should work using the rails 3.x syntax" do
+      if Octopus.rails3?
+        items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
+        items.should == [@item1, @item2]      
+      end
+    end
+    
+    it "should work for include also, rails 2.x syntax" do
+      items = Item.using(:canada).find(:all, :include => :client, :conditions => { :clients => { :id => @client2.id } })      
+      items.should == [@item1, @item2]
+    end
+
+    it "should work for include also, rails 3.x syntax" do
+      if Octopus.rails3?
+        items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
+        items.should == [@item1, @item2]
+      end
+    end
+    
+    it "should work for multiple includes, with rails 2.x syntax" do
+      parts = Part.using(:canada).find(:all, :include => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
+      parts.should == [@part1, @part2, @part3]
+      parts.first.item.client.should == @client2
+    end
+    
+    it "should work for multiple join, with rails 2.x syntax" do
+      parts = Part.using(:canada).find(:all, :joins => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
+      parts.should == [@part1, @part2, @part3]
+      parts.first.item.client.should == @client2
+    end
+  end
+
+  describe "ActiveRecord::Base Validations" do
+    it "should work correctly when using validations" do
+      @key = Keyboard.create!(:name => "Key")
+      lambda { Keyboard.using(:brazil).create!(:name => "Key") }.should_not raise_error()
+      lambda { Keyboard.create!(:name => "Key") }.should raise_error()
+    end
+
+    it "should work correctly when using validations with using syntax" do
+      @key = Keyboard.using(:brazil).create!(:name => "Key")
+      lambda { Keyboard.create!(:name => "Key") }.should_not raise_error()
+      lambda { Keyboard.using(:brazil).create!(:name => "Key") }.should raise_error()
     end
   end
 
   describe "#replicated_model method" do
     it "should be replicated" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated).should be_true
       end
     end
 
     it "should mark the Cat model as replicated" do
-      using_enviroment :production_replicated do 
+      using_environment :production_replicated do 
         User.read_inheritable_attribute(:replicated).should be_false
         Cat.read_inheritable_attribute(:replicated).should be_true
       end

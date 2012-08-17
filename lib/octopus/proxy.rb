@@ -174,8 +174,7 @@ class Octopus::Proxy
       self.current_shard = :master
     end
     
-    sql = select_connection().send(method, *args, &block)     
-    return sql    
+    select_connection().send(method, *args, &block)     
   ensure
     self.current_shard = old_shard
     @using_enabled = nil

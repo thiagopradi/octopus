@@ -21,6 +21,7 @@ namespace :db do
 
     # Postgres
     %x( createdb -E UTF8 -U #{postgres_user} octopus_shard_1 )
+    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard_2 )
   end
 
   desc 'Drop the tests databases'
@@ -33,6 +34,7 @@ namespace :db do
     %x( echo "#{sql}" | mysql -u "#{mysql_user}" )
 
     %x( dropdb -U #{postgres_user} octopus_shard_1 )
+    %x( dropdb -U #{postgres_user} octopus_shard_2 )
     %x( rm -f /tmp/database.sqlite3 )
   end
 
@@ -43,7 +45,7 @@ namespace :db do
     require "octopus"
     require "support/database_connection"
 
-    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard].each do |shard_symbol|
+    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard, :protocol_shard].each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
       # the model be a descendent of ActiveRecord::Base.
       class BlankModel < ActiveRecord::Base; end;

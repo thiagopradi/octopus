@@ -8,7 +8,7 @@ describe Octopus::Proxy do
       # FIXME: Don't test implementation details
       proxy.instance_variable_get(:@shards).keys.to_set.should == [
         "canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
-        "aug2009", "postgresql_shard", "aug2010", "aug2011"
+        "aug2009", "postgresql_shard", "aug2010", "aug2011", "protocol_shard"
       ].to_set
 
       proxy.has_group?("country_shards").should be_true
@@ -58,7 +58,7 @@ describe Octopus::Proxy do
       it 'should not fail with missing adapter second time round' do
         proxy.current_shard = :modify_config_read
         proxy.connection_pool.checkout
-        
+
         lambda { Octopus::Proxy.new(Octopus.config()) }.should_not raise_error("Please install the  adapter: `gem install activerecord--adapter` (cannot load such file -- active_record/connection_adapters/_adapter)")
       end
     end

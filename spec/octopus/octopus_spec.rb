@@ -65,4 +65,26 @@ describe Octopus do
       end
     end
   end
+
+  describe "#enabled?" do
+    before do
+      Rails = mock()
+    end
+
+    after do
+      Object.send(:remove_const, :Rails)
+    end
+
+    it "should be if octopus is configured and should hook into current environment" do
+      Rails.stub!(:env).and_return('production')
+
+      Octopus.should be_enabled
+    end
+
+    it "should not be if octopus should not hook into current environment" do
+      Rails.stub!(:env).and_return('staging')
+
+      Octopus.should_not be_enabled
+    end
+  end
 end

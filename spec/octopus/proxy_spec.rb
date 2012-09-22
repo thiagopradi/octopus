@@ -127,6 +127,7 @@ describe Octopus::Proxy do
     it "should initialize correctly octopus common variables for the environments" do
       Rails.stub!(:env).and_return('staging')
       Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@environments, nil)
       Octopus.config()
 
       proxy.instance_variable_get(:@replicated).should be_true

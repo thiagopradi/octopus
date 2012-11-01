@@ -53,6 +53,21 @@ describe Octopus::Model do
       User.all.should == [u1]
     end
 
+    describe "multiple calls to the same scope" do
+      it "works with nil response" do
+        scope = User.using(:canada)
+        scope.count.should == 0
+        scope.first.should be_nil
+      end
+
+      it "works with non-nil response" do
+        user = User.using(:canada).create!(:name => 'oi')
+        scope = User.using(:canada)
+        scope.count.should == 1
+        scope.first.should == user
+      end
+    end
+
     it "should select the correct shard" do
       User.using(:canada)
       User.create!(:name => 'oi')

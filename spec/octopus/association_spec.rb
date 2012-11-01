@@ -657,8 +657,8 @@ describe Octopus::Association do
 
   it "block" do
     @brazil_role = Role.using(:brazil).create!(:name => "Brazil Role")
-    @brazil_role.permissions.build{|o|o.name = "ok"}.name.should == "ok"
-    @brazil_role.permissions.create{|o|o.name = "ok"}.name.should == "ok"
-    @brazil_role.permissions.create!{|o|o.name = "ok"}.name.should == "ok"
+    @brazil_role.permissions.build(:name => "ok").name.should == "ok"
+    @brazil_role.permissions.create(:name => "ok").name.should == "ok"
+    @brazil_role.permissions.create!(:name => "ok").name.should == "ok"
   end
 end

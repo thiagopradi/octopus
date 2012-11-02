@@ -29,7 +29,7 @@ class Octopus::ScopeProxy
       @klass = @klass.send(method, *args, &block)
     end
 
-    return @klass if @klass.is_a?(ActiveRecord::Base) or @klass.is_a?(Array) or @klass.is_a?(Fixnum) or @klass.nil?
+    return @klass unless @klass.is_a?(ActiveRecord::Relation)
     return self
   end
 

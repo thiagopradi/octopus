@@ -186,10 +186,10 @@ describe Octopus::Model do
   end
 
   describe "using a postgresql shard" do
-    it "should update the Arel Engine" do
+    it "should update connection adapter" do
       if ActiveRecord::VERSION::STRING > '2.4.0'
-        User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
-        User.using(:alone_shard).arel_engine.connection.adapter_name.should == "MySQL"
+        User.using(:postgresql_shard).connection.adapter_name.should == "PostgreSQL"
+        User.using(:alone_shard).connection.adapter_name.should == "MySQL"
       end
     end
 

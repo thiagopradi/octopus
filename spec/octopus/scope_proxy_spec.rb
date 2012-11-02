@@ -10,6 +10,7 @@ describe Octopus::ScopeProxy do
       User.using(:brazil).where(:name => "Thiago").where(:number => 4).order(:number).all.should == []
       User.using(:brazil).where(:name => "Thiago").using(:canada).where(:number => 2).using(:brazil).order(:number).all.should == [@user3]
       User.using(:brazil).where(:name => "Thiago").using(:canada).where(:number => 4).using(:brazil).order(:number).all.should == []
+      User.using(:brazil).where(:name => "Ghost Thiago").exists?.should be_false
     end
   end
 

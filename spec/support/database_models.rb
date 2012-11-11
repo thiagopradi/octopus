@@ -25,7 +25,7 @@ end
 
 #This class sets its own connection
 class CustomConnection < ActiveRecord::Base
-  octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard_2", :username => "root", :password => "")
+  establish_connection(:adapter => "mysql", :database => "octopus_shard_2", :username => "root", :password => "")
 end
 
 #This items belongs to a client
@@ -77,5 +77,11 @@ end
 
 
 class Bacon < ActiveRecord::Base
-  octopus_set_table_name "yummy"
+  set_table_name "yummy"
+end
+
+if Octopus.rails32?
+  class Ham < ActiveRecord::Base
+    self.table_name = "yummy"
+  end
 end

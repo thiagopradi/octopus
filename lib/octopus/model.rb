@@ -1,3 +1,5 @@
+require 'active_support/deprecation'
+
 module Octopus::Model
   def self.extended(base)
     base.send(:include, InstanceMethods)
@@ -52,7 +54,7 @@ module Octopus::Model
 
     def hijack_connection()
       def self.should_use_normal_connection?
-        !Octopus.enabled? || self.custom_octopus_connection?
+        !Octopus.enabled? || self.custom_octopus_connection
       end
 
       def self.connection_proxy
@@ -111,8 +113,7 @@ module Octopus::Model
     def self.extended(base)
       base.class_attribute(:replicated)
       base.class_attribute(:sharded)
-      base.class_attribute(:custom_octopus_connection)
-      base.class_attribute(:custom_octopus_table_name)
+      base.hijack_methods
     end
 
     def replicated_model
@@ -123,14 +124,44 @@ module Octopus::Model
       self.sharded = true
     end
 
+    def hijack_methods
+      class << self
+        attr_accessor :custom_octopus_connection
+        attr_accessor :custom_octopus_table_name
+
+        alias_method_chain(:establish_connection, :octopus)
+        alias_method_chain(:set_table_name, :octopus)
+
+        if Octopus.rails32?
+          def table_name=(value = nil)
+            self.custom_octopus_table_name = true
+            super
+          end
+        end
+      end
+    end
+
+    def establish_connection_with_octopus(spec = nil)
+      # Checking for self != ActiveRecord::Base is probably unnecessary in real-world usage,
+      # but the test suite uses establish_connection instead of a database.yml to set the
+      # master database.
+      self.custom_octopus_connection = true if spec && self != ActiveRecord::Base
+      establish_connection_without_octopus(spec)
+    end
+
+    def set_table_name_with_octopus(value = nil)
+      self.custom_octopus_table_name = true
+      set_table_name_without_octopus(value)
+    end
+
     def octopus_establish_connection(spec = nil)
-      self.custom_octopus_connection = true
+      ActiveSupport::Deprecation.warn "Calling `octopus_establish_connection` is deprecated and will be removed in Octopus 1.0.", caller
       establish_connection(spec)
     end
 
     def octopus_set_table_name(value = nil)
-      self.custom_octopus_table_name = true
-      self.table_name = value
+      ActiveSupport::Deprecation.warn "Calling `octopus_set_table_name` is deprecated and will be removed in Octopus 1.0.", caller
+      set_table_name(value)
     end
   end
 end

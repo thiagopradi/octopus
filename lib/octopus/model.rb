@@ -34,10 +34,12 @@ module Octopus::Model
       before_save :reload_connection
 
       def set_current_shard
+        return unless Octopus.enabled?
+
         if new_record? || self.class.connection_proxy.block
           self.current_shard = self.class.connection_proxy.current_shard
         else
-          self.current_shard = self.class.connection_proxy.last_current_shard
+          self.current_shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
         end
       end
 
@@ -86,6 +88,12 @@ module Octopus::Model
   module InstanceMethods
     include SharedMethods
 
+    def self.included(base)
+      base.send(:alias_method, :equality_without_octopus, :==)
+      base.send(:alias_method, :==, :equality_with_octopus)
+      base.send(:alias_method, :eql?, :==)
+    end
+
     def should_set_current_shard?
       self.respond_to?(:current_shard) && !self.current_shard.nil?
     end
@@ -102,6 +110,10 @@ module Octopus::Model
     def reload_connection()
       return unless should_set_current_shard?
       self.class.connection_proxy.current_shard = self.current_shard
+    end
+
+    def equality_with_octopus(comparison_object)
+      equality_without_octopus(comparison_object) && comparison_object.current_shard == current_shard
     end
   end
 

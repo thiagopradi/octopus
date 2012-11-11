@@ -3,7 +3,7 @@ require "spec_helper"
 describe Octopus::Model do
   describe "#using method" do
     it "should return self after calling the #using method" do
-      User.using(:canada).should == Octopus::ScopeProxy.new(:canada, User)
+      User.using(:canada).should be_a(Octopus::ScopeProxy)
     end
 
     it "should allow to send a block to the master shard" do
@@ -196,6 +196,47 @@ describe Octopus::Model do
     describe "raising errors" do
       it "should raise a error when you specify a shard that doesn't exist" do
         lambda { User.using(:crazy_shard).create!(:name => 'Thiago') }.should raise_error("Nonexistent Shard Name: crazy_shard")
+      end
+    end
+
+    describe "equality" do
+      let(:canada1) do
+        u = User.new
+        u.id = 1
+        u.current_shard = :canada
+        u
+      end
+
+      let(:canada1_dup) do
+        u = User.new
+        u.id = 1
+        u.current_shard = :canada
+        u
+      end
+
+      let(:brazil1) do
+        u = User.new
+        u.id = 1
+        u.current_shard = :brazil
+        u
+      end
+
+      it "should work with persisted objects" do
+        u = User.using(:brazil).create(:name => "Mike")
+        User.using(:brazil).find_by_name("Mike").should == u
+      end
+
+      if Octopus.rails31?
+        # Rails <= 3.0 doesn't support equality checks on non-persisted objects
+        it "should check current_shard when determining equality" do
+          canada1.should_not == brazil1
+          canada1.should == canada1_dup
+        end
+
+        it "delegates equality check on scopes" do
+          u = User.using(:brazil).create!(:name => "Mike")
+          User.using(:brazil).where(:name => "Mike").should == [u]
+        end
       end
     end
   end

@@ -217,7 +217,7 @@ describe Octopus::Model do
   end
 
   describe "AR basic methods" do
-    it "octopus_establish_connection" do
+    it "establish_connection" do
       CustomConnection.connection.current_database.should == "octopus_shard_2"
     end
 
@@ -353,6 +353,14 @@ describe Octopus::Model do
   describe "when using set_table_name" do
     it 'should work correctly' do
       Bacon.using(:brazil).create!(:name => "YUMMMYYYY")
+    end
+  end
+
+  if Octopus.rails32?
+    describe "when using table_name=" do
+      it 'should work correctly' do
+        Ham.using(:brazil).create!(:name => "YUMMMYYYY")
+      end
     end
   end
 

@@ -64,16 +64,24 @@ module Octopus
     @environments ||= config['environments'] || ['production']
   end
 
+  def self.rails2?
+    ActiveRecord::VERSION::MAJOR == 2
+  end
+
   def self.rails3?
     ActiveRecord::VERSION::MAJOR == 3
   end
 
+  def self.rails30?
+    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 0
+  end
+
   def self.rails31?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR >= 1
+    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 1
   end
 
   def self.rails32?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR >= 2
+    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 2
   end
 
   def self.rails?
@@ -103,18 +111,23 @@ require "octopus/association_collection"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association"
 
-if Octopus.rails3?
-  require "octopus/rails3/association"
-  require "octopus/rails3/persistence"
-  require "octopus/rails3/arel"
-  require "octopus/rails3/log_subscriber"
-  require "octopus/rails3/abstract_adapter"
-else
+if Octopus.rails2?
   require "octopus/rails2/association"
   require "octopus/rails2/persistence"
 end
 
-if Octopus.rails31?
+if Octopus.rails3?
+  require "octopus/rails3/persistence"
+  require "octopus/rails3/arel"
+  require "octopus/rails3/log_subscriber"
+  require "octopus/rails3/abstract_adapter"
+end
+
+if Octopus.rails30?
+  require "octopus/rails2/association"
+end
+
+if Octopus.rails31? || Octopus.rails32?
   require "octopus/rails3.1/singular_association"
 end
 

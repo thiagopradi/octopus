@@ -31,7 +31,11 @@ class Octopus::Proxy
     shards_config ||= []
 
     shards_config.each do |key, value|
-      if value.has_key?("adapter")
+      if value.is_a?(String)
+        value = resolve_string_connection(value)
+        initialize_adapter(value['adapter'])
+        @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+      elsif value.has_key?("adapter")
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
       else
@@ -198,6 +202,10 @@ class Octopus::Proxy
     rescue LoadError
       raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$!})"
     end
+  end
+
+  def resolve_string_connection(spec)
+    ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {}).spec.config.stringify_keys
   end
 
   def should_clean_connection?(method)

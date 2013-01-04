@@ -19,7 +19,7 @@ module Octopus
       file_name = Octopus.directory() + "/config/shards.yml"
 
       if File.exists?(file_name)
-        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.open(file_name).read()).result))[Octopus.env()]
+        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env()]
       else
         config ||= HashWithIndifferentAccess.new
       end

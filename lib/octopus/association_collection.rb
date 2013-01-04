@@ -1,7 +1,7 @@
 module Octopus::AssociationCollection
 
   def self.included(base)
-    if Octopus.rails31?
+    if Octopus.rails31? || Octopus.rails32?
       base.instance_eval do
         alias_method_chain :reader, :octopus
         alias_method_chain :writer, :octopus
@@ -62,7 +62,7 @@ module Octopus::AssociationCollection
   end
 end
 
-if Octopus.rails31?
+if Octopus.rails31? || Octopus.rails32?
   ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)
 else
   ActiveRecord::Associations::AssociationCollection.send(:include, Octopus::AssociationCollection)

@@ -5,6 +5,7 @@ module Octopus::Association
 
   module InstanceMethods
     def set_connection_on_association(record)
+      return unless ::Octopus.enabled?
       return if !self.connection.respond_to?(:current_shard) || !self.respond_to?(:current_shard)
       if !record.current_shard.nil? && !self.current_shard.nil? && record.current_shard != self.current_shard
         raise "Association Error: Records are from different shards"

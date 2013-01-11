@@ -154,10 +154,7 @@ module Octopus::Model
     end
 
     def establish_connection_with_octopus(spec = nil)
-      # Checking for self != ActiveRecord::Base is probably unnecessary in real-world usage,
-      # but the test suite uses establish_connection instead of a database.yml to set the
-      # master database.
-      self.custom_octopus_connection = true if spec && self != ActiveRecord::Base
+      self.custom_octopus_connection = true if spec
       establish_connection_without_octopus(spec)
     end
 

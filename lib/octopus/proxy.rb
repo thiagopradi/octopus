@@ -97,6 +97,13 @@ class Octopus::Proxy
     @groups.has_key?(group.to_s)
   end
 
+  # Public: Retrieves names of all loaded shards.
+  #
+  # Returns an array of shard names as symbols
+  def shard_names
+    @shards.keys
+  end
+
   # Public: Retrieves the defined shards for a given group.
   #
   # Returns an array of shard names as symbols or nil if the group is not

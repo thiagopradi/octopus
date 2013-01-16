@@ -46,6 +46,15 @@ describe Octopus::Association do
       k.computer_id.should == c.id
       k.computer.should == c
     end
+
+    it "should include models" do
+      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+      k = c.create_keyboard(:name => "Building keyboard")
+      c.save()
+      k.save()
+
+      Computer.includes(:keyboard).find(c.id)
+    end
   end
 
   describe "when you have a N x N reliationship" do

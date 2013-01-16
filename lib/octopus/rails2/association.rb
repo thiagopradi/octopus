@@ -11,7 +11,7 @@ module Octopus
 
         define_method("loaded_#{reflection.name}_with_octopus?") do
           reload_connection
-          send("#{reflection.name}_without_octopus?")
+          send("loaded_#{reflection.name}_without_octopus?")
         end
 
         define_method("#{reflection.name}_with_octopus=") do |new_value|

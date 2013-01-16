@@ -53,7 +53,7 @@ describe Octopus::Association do
       c.save()
       k.save()
 
-      Computer.includes(:keyboard).find(c.id)
+      Computer.includes(:keyboard).find(c.id).should == c
     end
   end
 

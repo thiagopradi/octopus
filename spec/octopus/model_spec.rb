@@ -407,6 +407,10 @@ describe Octopus::Model do
     it 'should work correctly' do
       Bacon.using(:brazil).create!(:name => "YUMMMYYYY")
     end
+
+    it 'should work correctly with a block' do
+      Cheese.using(:brazil).create!(:name => "YUMMMYYYY")
+    end
   end
 
   if Octopus.rails32?

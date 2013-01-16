@@ -158,9 +158,9 @@ module Octopus::Model
       establish_connection_without_octopus(spec)
     end
 
-    def set_table_name_with_octopus(value = nil)
+    def set_table_name_with_octopus(value = nil, &block)
       self.custom_octopus_table_name = true
-      set_table_name_without_octopus(value)
+      set_table_name_without_octopus(value, &block)
     end
 
     def octopus_establish_connection(spec = ENV['DATABASE_URL'])

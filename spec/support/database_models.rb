@@ -80,6 +80,10 @@ class Bacon < ActiveRecord::Base
   set_table_name "yummy"
 end
 
+class Cheese < ActiveRecord::Base
+  set_table_name { "yummy" }
+end
+
 if Octopus.rails32?
   class Ham < ActiveRecord::Base
     self.table_name = "yummy"

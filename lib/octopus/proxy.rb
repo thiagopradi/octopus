@@ -31,14 +31,14 @@ class Octopus::Proxy
     shards_config ||= []
 
     shards_config.each do |key, value|
-      if value.is_a?(String)
+      if value.is_a?(String) && Octopus.rails32?
         value = resolve_string_connection(value)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
-      elsif value.has_key?("adapter")
+      elsif value.is_a?(Hash) && value.has_key?("adapter")
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
-      else
+      elsif value.is_a?(Hash)
         @groups[key.to_s] = []
 
         value.each do |k, v|

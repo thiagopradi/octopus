@@ -6,10 +6,10 @@ describe Octopus::Proxy do
   describe "creating a new instance" do
     it "should initialize all shards and groups" do
       # FIXME: Don't test implementation details
-      proxy.instance_variable_get(:@shards).keys.to_set.should == [
-        "canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
-        "aug2009", "postgresql_shard", "aug2010", "aug2011", "protocol_shard"
-      ].to_set
+      proxy.instance_variable_get(:@shards).should include("canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
+                                                           "aug2009", "postgresql_shard", "aug2010", "aug2011")
+
+      proxy.instance_variable_get(:@shards).should include("protocol_shard") if Octopus.rails32?
 
       proxy.has_group?("country_shards").should be_true
       proxy.shards_for_group("country_shards").should include(:canada, :brazil, :russia)

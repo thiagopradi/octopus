@@ -64,10 +64,6 @@ module Octopus
     @environments ||= config['environments'] || ['production']
   end
 
-  def self.rails2?
-    ActiveRecord::VERSION::MAJOR == 2
-  end
-
   def self.rails3?
     ActiveRecord::VERSION::MAJOR == 3
   end
@@ -111,11 +107,6 @@ require "octopus/association_collection"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association"
 
-if Octopus.rails2?
-  require "octopus/rails2/association"
-  require "octopus/rails2/persistence"
-end
-
 if Octopus.rails3?
   require "octopus/rails3/persistence"
   require "octopus/rails3/arel"
@@ -124,7 +115,7 @@ if Octopus.rails3?
 end
 
 if Octopus.rails30?
-  require "octopus/rails2/association"
+  require "octopus/rails3/association"
 end
 
 if Octopus.rails31? || Octopus.rails32?

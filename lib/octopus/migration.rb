@@ -1,7 +1,11 @@
 require "set"
-require "active_support/concern"
-require "active_support/core_ext/array/wrap"
 require "active_support/core_ext/module/aliasing"
+
+if Octopus.rails2?
+  require "active_support/core_ext/array/wrapper"
+else
+  require "active_support/core_ext/array/wrap"
+end
 
 module Octopus::Migration
   module InstanceOrClassMethods
@@ -14,19 +18,22 @@ module Octopus::Migration
     end
   end
 
-  extend ActiveSupport::Concern
   include InstanceOrClassMethods if Octopus.rails31? || Octopus.rails32?
 
-  included do
+  def self.included(base)
+    base.send(:extend, ClassMethods)
+
     if Octopus.rails31? || Octopus.rails32?
-      alias_method_chain :announce, :octopus
+      base.alias_method_chain :announce, :octopus
     else
-      class << self
-        alias_method_chain :announce, :octopus
+      base.class_eval do
+        class << self
+          alias_method_chain :announce, :octopus
+        end
       end
     end
 
-    class_attribute :current_shard, :current_group, :instance_reader => false, :instance_writer => false
+    base.class_attribute :current_shard, :current_group, :instance_reader => false, :instance_writer => false
   end
 
   module ClassMethods
@@ -64,19 +71,21 @@ module Octopus::Migration
 end
 
 module Octopus::Migrator
-  extend ActiveSupport::Concern
+  def self.included(base)
+    base.send(:extend, ClassMethods)
 
-  included do
-    class << self
-      alias_method_chain :migrate, :octopus
-      alias_method_chain :up, :octopus
-      alias_method_chain :down, :octopus
-      alias_method_chain :run, :octopus
+    base.class_eval do
+      class << self
+        alias_method_chain :migrate, :octopus
+        alias_method_chain :up, :octopus
+        alias_method_chain :down, :octopus
+        alias_method_chain :run, :octopus
+      end
     end
 
-    alias_method_chain :run, :octopus
-    alias_method_chain :migrate, :octopus
-    alias_method_chain :migrations, :octopus
+    base.alias_method_chain :run, :octopus
+    base.alias_method_chain :migrate, :octopus
+    base.alias_method_chain :migrations, :octopus
   end
 
   def run_with_octopus(&block)
@@ -152,11 +161,9 @@ module Octopus::MigrationProxy
 end
 
 module Octopus::UnknownMigrationVersionError
-  extend ActiveSupport::Concern
-
-  included do
-    alias_method_chain :initialize, :octopus
-    attr_accessor :version
+  def self.included(base)
+    base.alias_method_chain :initialize, :octopus
+    base.send(:attr_accessor, :version)
   end
 
   def initialize_with_octopus(version)

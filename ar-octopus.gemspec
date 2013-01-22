@@ -16,6 +16,11 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
+  s.post_install_message = "Important: If you are upgrading from < Octopus 0.5.0 you need to run:\n" \
+                           "$ rake octopus:copy_schema_versions\n\n" \
+                           "Octopus now stores schema version information in each shard and migrations will not " \
+                           "work properly unless this task is invoked."
+
   s.add_dependency 'activerecord', '>= 2.3.0'
   s.add_dependency 'activesupport', '>= 2.3.0'
   s.add_development_dependency 'rake', '>= 0.8.7'

@@ -47,13 +47,15 @@ describe Octopus::Association do
       k.computer.should == c
     end
 
-    it "should include models" do
-      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
-      k = c.create_keyboard(:name => "Building keyboard")
-      c.save()
-      k.save()
+    if Octopus.rails3?
+      it "should include models" do
+        c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+        k = c.create_keyboard(:name => "Building keyboard")
+        c.save()
+        k.save()
 
-      Computer.includes(:keyboard).find(c.id).should == c
+        Computer.includes(:keyboard).find(c.id).should == c
+      end
     end
   end
 

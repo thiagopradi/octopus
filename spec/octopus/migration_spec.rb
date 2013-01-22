@@ -30,11 +30,11 @@ describe Octopus::Migration do
     end
   end
 
-  it "should run on multiples groups" do
+  it "should run once per shard" do
     migrating_to_version 5 do
-      User.using(:canada).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
-      User.using(:brazil).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
-      User.using(:russia).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 2
+      User.using(:canada).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
+      User.using(:brazil).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
+      User.using(:russia).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
     end
   end
 
@@ -53,24 +53,6 @@ describe Octopus::Migration do
       User.using(:brazil).find(:all, :conditions => {:name => "Canada"}).size.should == 0
       User.using(:canada).find(:all, :conditions => {:name => "Brazil"}).size.should == 0
       User.using(:canada).find(:all, :conditions => {:name => "Canada"}).size.should == 1
-    end
-  end
-
-  describe "should raise a exception when" do
-    it "you specify a invalid shard name" do
-      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 6) }.should raise_error("Nonexistent Shard Name: amazing_shard")
-    end
-
-    it "you specify a invalid shard name, even if you have multiple shards, and one of them are right" do
-      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 7) }.should raise_error("Nonexistent Shard Name: invalid_shard")
-    end
-
-    it "you specify a invalid group name" do
-      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 8) }.should raise_error("Nonexistent Group Name: invalid_group")
-    end
-
-    it "you specify a invalid group name, even if you have multiple groups, and one of them are right" do
-      lambda { ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, 9) }.should raise_error("Nonexistent Group Name: invalid_group")
     end
   end
 
@@ -93,5 +75,27 @@ describe Octopus::Migration do
       end
     end
   end
-end
 
+  it "should store the migration versions in each shard" do
+    class SchemaMigration < ActiveRecord::Base; end
+
+    migrating_to_version 14 do
+      Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+      Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+      Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+    end
+  end
+
+  it "should run the migrations on shards that are missing them" do
+    class SchemaMigration < ActiveRecord::Base; end
+
+    Octopus.using(:master) { SchemaMigration.create(:version => 14) }
+    Octopus.using(:canada) { SchemaMigration.create(:version => 14) }
+
+    migrating_to_version 14 do
+      Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+      Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+      Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }.should include(14)
+    end
+  end
+end

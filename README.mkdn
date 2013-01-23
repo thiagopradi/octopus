@@ -59,6 +59,10 @@ master database to each of the shards:
 Once the task completes migrations will operate normally and schema information will be stored in each shard database
 going forward.
 
+In order to run this task in Rails 2.3, you'll need to tell Rails to load Octopus' rake tasks by adding this to your `Rakefile`:
+
+    Dir["#{Gem.searcher.find('ar-octopus').full_gem_path}/lib/tasks/**/*.rake"].each { |ext| load ext }
+
 ## How to use Octopus?
 
 First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a>.

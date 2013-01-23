@@ -123,8 +123,6 @@ module Octopus::Model
     include SharedMethods
 
     def self.extended(base)
-      base.class_attribute(:custom_octopus_connection, :instance_reader => false, :instance_writer => false)
-      base.class_attribute(:custom_octopus_table_name, :instance_reader => false, :instance_writer => false)
       base.class_attribute(:replicated)
       base.class_attribute(:sharded)
       base.hijack_methods
@@ -140,6 +138,9 @@ module Octopus::Model
 
     def hijack_methods
       class << self
+        attr_accessor :custom_octopus_connection
+        attr_accessor :custom_octopus_table_name
+
         alias_method_chain(:establish_connection, :octopus)
         alias_method_chain(:set_table_name, :octopus)
 

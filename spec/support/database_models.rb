@@ -28,8 +28,6 @@ class CustomConnection < ActiveRecord::Base
   establish_connection(:adapter => "mysql", :database => "octopus_shard_2", :username => "root", :password => "")
 end
 
-class SubclassConnection < CustomConnection; end
-
 #This items belongs to a client
 class Item < ActiveRecord::Base
   belongs_to :client

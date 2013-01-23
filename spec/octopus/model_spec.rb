@@ -258,8 +258,14 @@ describe Octopus::Model do
   end
 
   describe "AR basic methods" do
-    it "establish_connection" do
-      CustomConnection.connection.current_database.should == "octopus_shard_2"
+    describe "establish_connection" do
+      it "establish_connection" do
+        CustomConnection.connection.current_database.should == "octopus_shard_2"
+      end
+
+      it "establishes connection for subclasses" do
+        SubclassConnection.connection.current_database.should == "octopus_shard_2"
+      end
     end
 
     it "increment" do

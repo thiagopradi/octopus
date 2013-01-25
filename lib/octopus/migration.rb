@@ -110,28 +110,28 @@ module Octopus::Migrator
 
   module ClassMethods
     def migrate_with_octopus(migrations_paths, target_version = nil, &block)
-      return migrate_without_octopus(migrations_paths, target_version = nil, &block) unless connection.is_a?(Octopus::Proxy)
+      return migrate_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
 
       connection.send_queries_to_multiple_shards(connection.shard_names) do
-        migrate_without_octopus(migrations_paths, target_version = nil, &block)
+        migrate_without_octopus(migrations_paths, target_version, &block)
       end
     end
 
     def up_with_octopus(migrations_paths, target_version = nil, &block)
-      return up_without_octopus(migrations_paths, target_version = nil, &block) unless connection.is_a?(Octopus::Proxy)
-      return up_without_octopus(migrations_paths, target_version = nil, &block) unless connection.current_shard == :master
+      return up_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
+      return up_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard == :master
 
       connection.send_queries_to_multiple_shards(connection.shard_names) do
-        up_without_octopus(migrations_paths, target_version = nil, &block)
+        up_without_octopus(migrations_paths, target_version, &block)
       end
     end
 
     def down_with_octopus(migrations_paths, target_version = nil, &block)
-      return down_without_octopus(migrations_paths, target_version = nil, &block) unless connection.is_a?(Octopus::Proxy)
-      return down_without_octopus(migrations_paths, target_version = nil, &block) unless connection.current_shard == :master
+      return down_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
+      return down_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard == :master
 
       connection.send_queries_to_multiple_shards(connection.shard_names) do
-        down_without_octopus(migrations_paths, target_version = nil, &block)
+        down_without_octopus(migrations_paths, target_version, &block)
       end
     end
 

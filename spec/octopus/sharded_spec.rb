@@ -3,7 +3,7 @@ require "spec_helper"
 describe "when the database is not entire sharded" do
   before(:each) do
     Octopus.stub!(:env).and_return("not_entire_sharded")
-    clean_connection_proxy()
+    OctopusHelper.clean_connection_proxy()
   end
 
   it "should not send all queries to the specified slave" do
@@ -22,7 +22,7 @@ describe "when the database is not entire sharded" do
   it "should pick the shard based on current_shard when you have a sharded model" do
     Cat.create!(:name => "Thiago")
 
-    using_environment :not_entire_sharded do
+    OctopusHelper.using_environment :not_entire_sharded do
       Octopus.using(:russia) do
         Cat.create!(:name => "Thiago")
       end

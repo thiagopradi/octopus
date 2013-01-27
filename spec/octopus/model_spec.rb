@@ -423,7 +423,7 @@ describe Octopus::Model do
 
   describe "when using a environment with a single adapter" do
     it 'should not clean the table name' do
-      using_environment :production_fully_replicated do
+      OctopusHelper.using_environment :production_fully_replicated do
         Keyboard.should_not_receive(:reset_table_name)
         Keyboard.using(:master).create!(:name => "Master Cat")
       end
@@ -501,13 +501,13 @@ describe Octopus::Model do
 
   describe "#replicated_model method" do
     it "should be replicated" do
-      using_environment :production_replicated do
+      OctopusHelper.using_environment :production_replicated do
         ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated).should be_true
       end
     end
 
     it "should mark the Cat model as replicated" do
-      using_environment :production_replicated do
+      OctopusHelper.using_environment :production_replicated do
         User.replicated.should be_false
         Cat.replicated.should be_true
       end

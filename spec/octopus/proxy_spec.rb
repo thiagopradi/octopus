@@ -52,8 +52,8 @@ describe Octopus::Proxy do
     end
 
     context 'when an adapter that modifies the config' do
-      before(:all) {set_octopus_env("modify_config")}
-      after(:all) {set_octopus_env("octopus")}
+      before(:all) { OctopusHelper.set_octopus_env("modify_config") }
+      after(:all)  { OctopusHelper.set_octopus_env("octopus")       }
 
       it 'should not fail with missing adapter second time round' do
         proxy.current_shard = :modify_config_read
@@ -70,7 +70,7 @@ describe Octopus::Proxy do
 
       context "when using a environment with a single table name" do
         before(:each) do
-          set_octopus_env("production_replicated")
+          OctopusHelper.set_octopus_env("production_replicated")
         end
 
         it 'should return false' do
@@ -81,7 +81,7 @@ describe Octopus::Proxy do
 
     describe "should raise error if you have duplicated shard names" do
       before(:each) do
-        set_octopus_env("production_raise_error")
+        OctopusHelper.set_octopus_env("production_raise_error")
       end
 
       it "should raise the error" do
@@ -91,7 +91,7 @@ describe Octopus::Proxy do
 
     describe "should initialize just the master when you don't have a shards.yml file" do
       before(:each) do
-        set_octopus_env("crazy_environment")
+        OctopusHelper.set_octopus_env("crazy_environment")
       end
 
       it "should initialize just the master shard" do
@@ -106,7 +106,7 @@ describe Octopus::Proxy do
 
   describe "when you have a replicated environment" do
     before(:each) do
-      set_octopus_env("production_replicated")
+      OctopusHelper.set_octopus_env("production_replicated")
     end
 
     it "should have the replicated attribute as true" do
@@ -121,7 +121,7 @@ describe Octopus::Proxy do
   describe "when you have a rails application" do
     before(:each) do
       Rails = mock()
-      set_octopus_env("octopus_rails")
+      OctopusHelper.set_octopus_env("octopus_rails")
     end
 
     it "should initialize correctly octopus common variables for the environments" do

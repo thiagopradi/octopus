@@ -13,11 +13,13 @@ module OctopusHelper
   end
 
   def self.migrating_to_version(version, &block)
+    migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
+
     begin
-      ActiveRecord::Migrator.run(:up, MIGRATIONS_ROOT, version)
+      ActiveRecord::Migrator.run(:up, migrations_root, version)
       yield
     ensure
-      ActiveRecord::Migrator.run(:down, MIGRATIONS_ROOT, version)
+      ActiveRecord::Migrator.run(:down, migrations_root, version)
     end
   end
 

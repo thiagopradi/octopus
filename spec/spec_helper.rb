@@ -5,7 +5,6 @@ require "octopus"
 require "support/database_connection"
 require "support/octopus_helper"
 
-MIGRATIONS_ROOT = File.expand_path(File.join(File.dirname(__FILE__),  'migrations'))
 Octopus.instance_variable_set(:@directory, File.dirname(__FILE__))
 
 # Requires supporting files with custom matchers and macros, etc,

@@ -1,9 +1,6 @@
 require "rubygems"
 require "bundler/setup"
-require "active_record"
 require "octopus"
-require "support/database_connection"
-require "support/octopus_helper"
 
 Octopus.instance_variable_set(:@directory, File.dirname(__FILE__))
 

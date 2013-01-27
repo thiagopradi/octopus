@@ -1,7 +1,12 @@
 module OctopusHelper
-  def self.clean_all_shards()
-    @@shards ||= BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
-    @@shards.each do |shard_symbol|
+  def self.clean_all_shards(shards)
+    @global_shards ||= BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
+
+    if shards.nil?
+      shards = @global_shards
+    end
+
+    shards.each do |shard_symbol|
       ['schema_migrations', 'users', 'clients', 'cats', 'items', 'keyboards', 'computers', 'permissions_roles', 'roles', 'permissions', 'assignments', 'projects', 'programmers', "yummy"].each do |tables|
         BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{tables}")
       end

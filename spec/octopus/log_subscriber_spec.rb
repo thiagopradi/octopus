@@ -1,7 +1,7 @@
 require "spec_helper"
 
 if Octopus.rails3?
-  describe Octopus::LogSubscriber do
+  describe Octopus::LogSubscriber, shards: [:canada] do
 
     before :each do
       @out = StringIO.new

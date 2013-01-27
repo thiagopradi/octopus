@@ -3,7 +3,7 @@ require "spec_helper"
 describe Octopus::Proxy do
   let(:proxy) { subject }
 
-  describe "creating a new instance" do
+  describe "creating a new instance", shards: [] do
     it "should initialize all shards and groups" do
       # FIXME: Don't test implementation details
       proxy.instance_variable_get(:@shards).should include("canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
@@ -147,7 +147,7 @@ describe Octopus::Proxy do
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave3", "slave4", "master"])
     end
 
-    describe "using the master connection" do
+    describe "using the master connection", shards: [:russia, :master]  do
       before(:each) do
         Rails.stub!(:env).and_return('development')
       end

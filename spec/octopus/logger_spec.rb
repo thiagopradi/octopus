@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Octopus::Logger do
+describe Octopus::Logger, shards: [] do
 
 	before :each do
 		@out = StringIO.new

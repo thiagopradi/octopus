@@ -10,40 +10,51 @@ end
 namespace :db do
   desc 'Build the databases for tests'
   task :build_databases do
-    mysql_user = ENV['MYSQL_USER'] || "root"
-    postgres_user = ENV['POSTGRES_USER'] || "postgres"
+    pg_spec = {
+      :adapter  => 'postgresql',
+      :host     => 'localhost',
+      :username => (ENV['POSTGRES_USER'] || "postgres"),
+      :encoding => 'utf8'
+    }
 
-    sql = (1..5).map do |i|
-      "CREATE DATABASE octopus_shard_#{i} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci;"
-    end.join
+    mysql_spec = {
+      :adapter  => 'mysql',
+      :host     => 'localhost',
+      :username => (ENV['MYSQL_USER'] || "root"),
+      :encoding => 'utf8'
+    }
 
-    %x( echo "#{sql}" | mysql -u #{mysql_user} )
-
-    # Postgres
-    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard_1 )
-    %x( createdb -E UTF8 -U #{postgres_user} octopus_shard_2 )
-  end
-
-  desc 'Drop the tests databases'
-  task :drop_databases do
-    mysql_user = ENV['MYSQL_USER'] || "root"
-    postgres_user = ENV['POSTGRES_USER'] || "postgres"
-
-    sql = (1..5).map { |i| "DROP DATABASE IF EXISTS octopus_shard_#{i};" }.join
-
-    %x( echo "#{sql}" | mysql -u "#{mysql_user}" )
-
-    %x( dropdb -U #{postgres_user} octopus_shard_1 )
-    %x( dropdb -U #{postgres_user} octopus_shard_2 )
     %x( rm -f /tmp/database.sqlite3 )
+
+    require "active_record"
+
+    # Connects to PostgreSQL
+    ActiveRecord::Base.establish_connection(pg_spec.merge('database' => 'postgres', 'schema_search_path' => 'public'))
+    (1..2).map do |i|
+      # drop the old database (if it exists)
+      ActiveRecord::Base.connection.drop_database("octopus_shard_#{i}")
+      # create new database
+      ActiveRecord::Base.connection.create_database("octopus_shard_#{i}")
+    end
+
+    # Connect to MYSQL
+    ActiveRecord::Base.establish_connection(mysql_spec)
+    (1..5).map do |i|
+      # drop the old database (if it exists)
+      ActiveRecord::Base.connection.drop_database("octopus_shard_#{i}")
+      # create new database
+      ActiveRecord::Base.connection.create_database("octopus_shard_#{i}")
+    end
   end
 
   desc 'Create tables on tests databases'
   task :create_tables do
-    Dir.chdir(File.expand_path("../spec", __FILE__))
-
     require "octopus"
-    require "support/database_connection"
+    # Set the octopus variable directory to spec dir, in order to load the config/shards.yml file.
+    Octopus.instance_variable_set(:@directory, "#{File.dirname(__FILE__)}/spec/" )
+
+    # Require the database connection
+    require "#{File.dirname(__FILE__)}/spec/support/database_connection"
 
     [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard, :protocol_shard].each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
@@ -125,5 +136,5 @@ namespace :db do
   end
 
   desc 'Prepare the test databases'
-  task :prepare => [:drop_databases, :build_databases, :create_tables]
+  task :prepare => [:build_databases, :create_tables]
 end

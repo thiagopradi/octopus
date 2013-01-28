@@ -57,7 +57,6 @@ describe Octopus::Proxy do
 
       it 'should not fail with missing adapter second time round' do
         proxy.current_shard = :modify_config_read
-        proxy.connection_pool.checkout
 
         lambda { Octopus::Proxy.new(Octopus.config()) }.should_not raise_error("Please install the  adapter: `gem install activerecord--adapter` (cannot load such file -- active_record/connection_adapters/_adapter)")
       end

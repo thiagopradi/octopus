@@ -302,17 +302,7 @@ describe Octopus::Model do
     describe "any?" do
       before { User.using(:brazil).create!(:name => "User1") }
 
-      if !Octopus.rails3?
-        it "works when true" do
-          scope = User.using(:brazil).scoped(:conditions => {:name => "User1"})
-          scope.any?.should be_true
-        end
-
-        it "works when false" do
-          scope = User.using(:brazil).scoped(:conditions => {:name => "User2"})
-          scope.any?.should be_false
-        end
-      else
+      if Octopus.rails3?
         it "works when true" do
           scope = User.using(:brazil).where(:name => "User1")
           scope.any?.should be_true

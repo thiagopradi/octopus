@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Octopus, shards: [] do
+describe Octopus, :shards => [] do
   describe "#config" do
     it "should load shards.yml file to start working" do
       Octopus.config().should be_kind_of(HashWithIndifferentAccess)

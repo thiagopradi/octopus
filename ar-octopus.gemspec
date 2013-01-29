@@ -28,9 +28,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'mysql', '>= 2.8.1'
   s.add_development_dependency 'pg', '>= 0.11.0'
   s.add_development_dependency 'sqlite3', '>= 1.3.4'
-
-  unless ENV["CI"]
-    s.add_development_dependency 'pry'
-    s.add_development_dependency 'appraisal', '>= 0.3.8'
-  end
+  s.add_development_dependency 'pry'
+  s.add_development_dependency 'appraisal', '>= 0.3.8'
 end

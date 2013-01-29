@@ -1,4 +1,4 @@
-# Octopus  - Easy Database Sharding for ActiveRecord [![Build Status](https://travis-ci.org/tchandy/octopus.png?branch=master)](https://travis-ci.org/tchandy/octopus)
+# Octopus  - Easy Database Sharding for ActiveRecord [![Build Status](https://travis-ci.org/tchandy/octopus.png)](https://travis-ci.org/tchandy/octopus)
 
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 

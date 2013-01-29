@@ -1,3 +1,4 @@
+bundler_args: --without development
 before_script:
  - "bundle exec rake db:prepare"
 

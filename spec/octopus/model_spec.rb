@@ -299,6 +299,14 @@ describe Octopus::Model do
       User.using(:brazil).find(:all, :conditions => {:name => "User2"}).count.should == 1
     end
 
+    it "maximum" do
+      u1 = User.using(:brazil).create!(:name => "Teste", :number => 11)
+      u2 = User.using(:master).create!(:name => "Teste", :number => 12)
+
+      User.using(:brazil).maximum(:number).should == 11
+      User.using(:master).maximum(:number).should == 12
+    end
+
     if Octopus.rails3?
       describe "any?" do
         before { User.using(:brazil).create!(:name => "User1") }
@@ -311,6 +319,18 @@ describe Octopus::Model do
         it "works when false" do
           scope = User.using(:brazil).where(:name => "User2")
           scope.any?.should be_false
+        end
+      end
+    end
+
+    if Octopus.rails32?
+      describe "#pluck" do
+        before { User.using(:brazil).create!(:name => "User1") }
+
+        it "should works from scope proxy" do
+          names = User.using(:brazil).pluck(:name)
+          names.should eq(["User1"])
+          User.using(:master).pluck(:name).should eq([])
         end
       end
     end

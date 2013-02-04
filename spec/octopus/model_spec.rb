@@ -277,6 +277,21 @@ describe Octopus::Model do
       u = User.using(:brazil).find_by_number(11).should_not be_nil
     end
 
+    it "decrement" do
+      u = User.using(:brazil).create!(:name => "Teste", :number => 10)
+      u = User.using(:brazil).find_by_number(10)
+      u.decrement(:number)
+      u.save()
+      u = User.using(:brazil).find_by_number(9).should_not be_nil
+    end
+
+    it "decrement!" do
+      u = User.using(:brazil).create!(:name => "Teste", :number => 10)
+      u = User.using(:brazil).find_by_number(10)
+      u.decrement!(:number)
+      u = User.using(:brazil).find_by_number(9).should_not be_nil
+    end
+
     it "toggle" do
       u = User.using(:brazil).create!(:name => "Teste", :admin => false)
       u = User.using(:brazil).find_by_name('Teste')
@@ -332,6 +347,13 @@ describe Octopus::Model do
           names.should eq(["User1"])
           User.using(:master).pluck(:name).should eq([])
         end
+      end
+
+      it "update_column" do
+        @user = User.using(:brazil).create!(:name => "User1")
+        @user2 = User.using(:brazil).find(@user.id)
+        @user2.update_column(:name, "Joaquim Shard Brazil")
+        User.using(:brazil).find_by_name("Joaquim Shard Brazil").should_not be_nil
       end
     end
 

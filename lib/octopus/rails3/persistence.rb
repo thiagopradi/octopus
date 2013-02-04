@@ -30,6 +30,11 @@ module Octopus
         reload_connection()
         super
       end
+
+      def touch
+        reload_connection()
+        super
+      end
     end
   end
 end

@@ -67,6 +67,8 @@ namespace :db do
         u.string :name
         u.integer :number
         u.boolean :admin
+        u.datetime :created_at
+        u.datetime :updated_at
       end
 
       BlankModel.using(shard_symbol).connection.create_table(:clients) do |u|

@@ -336,6 +336,13 @@ describe Octopus::Model do
           scope.any?.should be_false
         end
       end
+
+      it "touch" do
+        @user = User.using(:brazil).create!(:name => "User1")
+        User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
+        @user.touch
+        @user.reload.updated_at.to_date.should eq(Date.today)
+      end
     end
 
     if Octopus.rails32?

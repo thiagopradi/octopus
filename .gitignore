@@ -8,3 +8,4 @@ pkg/*
 *.rbc
 tmp/*
 .*.sw[a-z]
+database.log

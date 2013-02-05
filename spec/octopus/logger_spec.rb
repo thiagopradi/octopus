@@ -23,6 +23,10 @@ describe Octopus::Logger, :shards => [:canada] do
     ActiveSupport::Deprecation.behavior = Proc.new { |message| @last_message = message }
     @log = Octopus::Logger.new(@out)
 
-    @last_message.should =~ /DEPRECATION WARNING: Octopus::Logger is deprecated and will be removed in Octopus 0\.6\.x\./
+    if @last_message.is_a?(Array)
+      @last_message.first.should =~ /DEPRECATION WARNING: Octopus::Logger is deprecated and will be removed in Octopus 0\.6\.x\./
+    else
+      @last_message.should =~ /DEPRECATION WARNING: Octopus::Logger is deprecated and will be removed in Octopus 0\.6\.x\./
+    end
   end
 end

@@ -411,6 +411,12 @@ describe Octopus::Model do
       User.using(:master).count.should == 1
     end
 
+    it 'count on unreplicated model should go to master' do
+      u = User.create!(:name => 'jt')
+      User.where(:name => 'jt').first.should == u
+      User.where(:name => 'jt').count.should == 1
+    end
+
     describe "deleting a record" do
       before(:each) do
         @user = User.using(:brazil).create!(:name => "User1")

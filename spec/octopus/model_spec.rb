@@ -262,6 +262,11 @@ describe Octopus::Model do
       CustomConnection.connection.current_database.should == "octopus_shard_2"
     end
 
+    it "should not mess with custom connection table names" do
+      Advert.connection.current_database.should == "octopus_shard_1"
+      Advert.create!(:name => "Teste")
+    end
+
     it "increment" do
       u = User.using(:brazil).create!(:name => "Teste", :number => 10)
       u = User.using(:brazil).find_by_number(10)

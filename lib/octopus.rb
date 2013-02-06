@@ -118,7 +118,6 @@ end
 
 if Octopus.rails3?
   require "octopus/rails3/persistence"
-  require "octopus/rails3/arel"
   require "octopus/rails3/log_subscriber"
   require "octopus/rails3/abstract_adapter"
   require "octopus/railtie"
@@ -126,6 +125,7 @@ end
 
 if Octopus.rails30?
   require "octopus/rails2/association"
+  require "octopus/rails3/arel"
 end
 
 if Octopus.rails31? || Octopus.rails32?

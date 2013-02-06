@@ -89,3 +89,8 @@ if Octopus.rails32?
     self.table_name = "yummy"
   end
 end
+
+#This class sets its own connection
+class Advert < ActiveRecord::Base
+  establish_connection(:adapter => "postgresql", :database => "octopus_shard_1", :username => "postgres", :password => "")
+end

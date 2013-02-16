@@ -35,11 +35,10 @@ describe "when the database is replicated" do
   end
 
   it "should send the count query to a slave" do
-    pending()
-    # using_environment :production_replicated do
-    #       Cat.create!(:name => "Slave Cat")
-    #       Cat.count.should == 0
-    #     end
+    OctopusHelper.using_environment :production_replicated do
+      Cat.create!(:name => "Slave Cat")
+      Cat.count.should == 0
+    end
   end
 end
 

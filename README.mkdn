@@ -205,4 +205,4 @@ and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="
 
 ## Copyright
 
-Copyright (c) 2010 Thiago Pradi, released under the MIT license.
+Copyright (c) Thiago Pradi, released under the MIT license.

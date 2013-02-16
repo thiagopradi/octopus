@@ -1,9 +1,7 @@
 module OctopusHelper
   def self.clean_all_shards(shards)
-    @global_shards ||= BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
-
     if shards.nil?
-      shards = @global_shards
+      shards = BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
     end
 
     shards.each do |shard_symbol|
@@ -14,7 +12,13 @@ module OctopusHelper
   end
 
   def self.clean_connection_proxy()
-    Thread.current[:connection_proxy] = nil
+    Thread.current["octopus.current_model"] = nil
+    Thread.current["octopus.current_shard"] = nil
+    Thread.current["octopus.current_group"] = nil
+    Thread.current["octopus.block"] = nil
+    Thread.current["octopus.last_current_shard"] = nil
+
+    ActiveRecord::Base.class_variable_set('@@connection_proxy', nil)
   end
 
   def self.migrating_to_version(version, &block)

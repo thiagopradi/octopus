@@ -18,7 +18,7 @@ module OctopusHelper
     Thread.current["octopus.block"] = nil
     Thread.current["octopus.last_current_shard"] = nil
 
-    ActiveRecord::Base.class_variable_set('@@connection_proxy', nil)
+    ActiveRecord::Base.send(:class_variable_set, '@@connection_proxy', nil)
   end
 
   def self.migrating_to_version(version, &block)

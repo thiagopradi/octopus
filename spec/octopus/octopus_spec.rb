@@ -34,7 +34,7 @@ describe Octopus, :shards => [] do
   describe "#shards=" do
     after(:each) do
       Octopus.instance_variable_set(:@config, nil)
-      Octopus::Model.class_variable_set(:@@connection_proxy, nil)
+      Octopus::Model.send(:class_variable_set, :@@connection_proxy, nil)
     end
 
     it "should permit users to configure shards on initializer files, instead of on a yml file." do

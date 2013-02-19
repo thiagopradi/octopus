@@ -349,12 +349,22 @@ describe Octopus::Model do
         User.using(:brazil).where(:name => "User2").exists?.should be_false
       end
 
-      it "touch" do
-        @user = User.using(:brazil).create!(:name => "User1")
-        User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
-        @user.touch
-        @user.reload.updated_at.to_date.should eq(Date.today)
+      describe "touch" do
+        it "updates updated_at by default" do
+          @user = User.using(:brazil).create!(:name => "User1")
+          User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
+          @user.touch
+          @user.reload.updated_at.to_date.should eq(Date.today)
+        end
+
+        it "updates passed in attribute name" do
+          @user = User.using(:brazil).create!(:name => "User1")
+          User.using(:brazil).update_all({:created_at => Time.now - 3.months}, {:id => @user.id})
+          @user.touch(:created_at)
+          @user.reload.created_at.to_date.should eq(Date.today)
+        end
       end
+
     end
 
     if Octopus.rails32?

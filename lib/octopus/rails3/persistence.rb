@@ -31,7 +31,7 @@ module Octopus
         super
       end
 
-      def touch
+      def touch(name=nil)
         reload_connection()
         super
       end

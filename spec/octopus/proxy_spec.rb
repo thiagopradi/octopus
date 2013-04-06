@@ -56,9 +56,11 @@ describe Octopus::Proxy do
       after(:all)  { OctopusHelper.set_octopus_env("octopus")       }
 
       it 'should not fail with missing adapter second time round' do
-        proxy.current_shard = :modify_config_read
+        Thread.current["octopus.current_shard"] = :modify_config_read
 
         lambda { Octopus::Proxy.new(Octopus.config()) }.should_not raise_error("Please install the  adapter: `gem install activerecord--adapter` (cannot load such file -- active_record/connection_adapters/_adapter)")
+
+        Thread.current["octopus.current_shard"] = nil
       end
     end
 
@@ -123,6 +125,13 @@ describe Octopus::Proxy do
       OctopusHelper.set_octopus_env("octopus_rails")
     end
 
+    after(:each) do
+      Object.send(:remove_const, :Rails)
+      Octopus.instance_variable_set(:@config, nil)
+      Octopus.instance_variable_set(:@rails_env, nil)
+      OctopusHelper.clean_connection_proxy()
+    end
+
     it "should initialize correctly octopus common variables for the environments" do
       Rails.stub!(:env).and_return('staging')
       Octopus.instance_variable_set(:@rails_env, nil)
@@ -136,12 +145,18 @@ describe Octopus::Proxy do
 
     it "should initialize correctly the shards for the staging environment" do
       Rails.stub!(:env).and_return('staging')
+      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@environments, nil)
+      Octopus.config()
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave1", "slave2", "master"])
     end
 
     it "should initialize correctly the shards for the production environment" do
       Rails.stub!(:env).and_return('production')
+      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@environments, nil)
+      Octopus.config()
 
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave3", "slave4", "master"])
     end
@@ -182,12 +197,6 @@ describe Octopus::Proxy do
         u.items << i
         u.save()
       end
-    end
-
-    after(:each) do
-      Object.send(:remove_const, :Rails)
-      Octopus.instance_variable_set(:@config, nil)
-      Octopus.instance_variable_set(:@rails_env, nil)
     end
   end
 

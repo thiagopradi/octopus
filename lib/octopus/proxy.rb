@@ -1,8 +1,7 @@
 require "set"
 
 class Octopus::Proxy
-  attr_accessor :current_model, :current_shard, :current_group, :block,
-      :last_current_shard, :config
+  attr_accessor :config
 
   def initialize(config = Octopus.config)
     initialize_shards(config)
@@ -15,7 +14,6 @@ class Octopus::Proxy
     @adapters = Set.new
     @shards[:master] = ActiveRecord::Base.connection_pool_without_octopus()
     @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
-    @current_shard = :master
 
     if !config.nil? && config.has_key?("verify_connection")
       @verify_connection = config["verify_connection"]
@@ -66,6 +64,18 @@ class Octopus::Proxy
     @slave_index = 0
   end
 
+  def current_model
+    Thread.current["octopus.current_model"]
+  end
+
+  def current_model=(model)
+    Thread.current["octopus.current_model"] = model.is_a?(ActiveRecord::Base) ? model.class : model
+  end
+
+  def current_shard
+    Thread.current["octopus.current_shard"] ||= :master
+  end
+
   def current_shard=(shard_symbol)
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
@@ -73,20 +83,36 @@ class Octopus::Proxy
       raise "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
     end
 
-    @current_shard = shard_symbol
+    Thread.current["octopus.current_shard"] = shard_symbol
+  end
+
+  def current_group
+    Thread.current["octopus.current_group"]
   end
 
   def current_group=(group_symbol)
     # TODO: Error message should include all groups if given more than one bad name.
-    [group_symbol].flatten.each do |group|
+    [group_symbol].flatten.compact.each do |group|
       raise "Nonexistent Group Name: #{group}" unless has_group?(group)
     end
 
-    @current_group = group_symbol
+    Thread.current["octopus.current_group"] = group_symbol
   end
 
-  def current_model=(model)
-    @current_model = model.is_a?(ActiveRecord::Base) ? model.class : model
+  def block
+    Thread.current["octopus.block"]
+  end
+
+  def block=(block)
+    Thread.current["octopus.block"] = block
+  end
+
+  def last_current_shard
+    Thread.current["octopus.last_current_shard"]
+  end
+
+  def last_current_shard=(last_current_shard)
+    Thread.current["octopus.last_current_shard"] = last_current_shard
   end
 
   # Public: Whether or not a group exists with the given name converted to a
@@ -155,9 +181,9 @@ class Octopus::Proxy
   end
 
   def clean_proxy()
-    @current_shard = :master
-    @current_group = nil
-    @block = false
+    self.current_shard = :master
+    self.current_group = nil
+    self.block = false
   end
 
   def check_schema_migrations(shard)
@@ -220,7 +246,7 @@ class Octopus::Proxy
   end
 
   def should_send_queries_to_replicated_databases?(method)
-    @replicated && method.to_s =~ /select/ && !@block
+    @replicated && method.to_s =~ /select/ && !self.block
   end
 
   def send_queries_to_selected_slave(method, *args, &block)

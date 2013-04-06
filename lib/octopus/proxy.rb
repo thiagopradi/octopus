@@ -92,7 +92,7 @@ class Octopus::Proxy
 
   def current_group=(group_symbol)
     # TODO: Error message should include all groups if given more than one bad name.
-    [group_symbol].flatten.each do |group|
+    [group_symbol].flatten.compact.each do |group|
       raise "Nonexistent Group Name: #{group}" unless has_group?(group)
     end
 
@@ -181,9 +181,9 @@ class Octopus::Proxy
   end
 
   def clean_proxy()
-    Thread.current['octopus.current_shard'] = :master
-    Thread.current['octopus.current_group'] = nil
-    Thread.current['octopus.block'] = false
+    self.current_shard = :master
+    self.current_group = nil
+    self.block = false
   end
 
   def check_schema_migrations(shard)

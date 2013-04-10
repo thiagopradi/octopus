@@ -41,7 +41,9 @@ Add this line to Gemfile:
 
     gem 'ar-octopus', :require => 'octopus'
 
-Runs a bundle install:
+**Note**: The `ar-octopus` gem build is out of date. Until a new build is created, we recommend using the gem from this repo by placing `gem "ar-octopus", github: "tchandy/octopus", require: "octopus"` in your Gemfile instead of the above line. Alternatively you can [create your own fork](https://github.com/tchandy/octopus/fork_select) (for added stability against changes to master) and reference that fork from your Gemfile: `gem "ar-octopus", github: "<fork owner>/octopus", require: "octopus"`.
+
+Run a bundle install:
 
     bundle install
 

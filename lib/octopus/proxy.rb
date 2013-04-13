@@ -30,10 +30,11 @@ class Octopus::Proxy
 
     shards_config.each do |key, value|
       if value.is_a?(String) && Octopus.rails32?
-        value = resolve_string_connection(value)
+        value = resolve_string_connection(value).merge(:octopus_shard => key)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
       elsif value.is_a?(Hash) && value.has_key?("adapter")
+        value.merge!(:octopus_shard => key)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
       elsif value.is_a?(Hash)

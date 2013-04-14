@@ -152,6 +152,15 @@ describe Octopus::Proxy do
       proxy.instance_variable_get(:@shards).keys.to_set.should == Set.new(["slave1", "slave2", "master"])
     end
 
+    it "should initialize correctly the shard octopus_shard value for logging" do
+      Rails.stub!(:env).and_return('staging')
+      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@environments, nil)
+      Octopus.config()
+
+      proxy.instance_variable_get(:@shards)['slave1'].spec.config.should have_key :octopus_shard
+    end
+
     it "should initialize correctly the shards for the production environment" do
       Rails.stub!(:env).and_return('production')
       Octopus.instance_variable_set(:@rails_env, nil)

@@ -83,29 +83,15 @@ module Octopus::Migrator
       end
     end
 
-    base.alias_method_chain :run, :octopus
     base.alias_method_chain :migrate, :octopus
-    base.alias_method_chain :migrations, :octopus
-  end
-
-  def run_with_octopus(&block)
-    run_without_octopus(&block)
-  rescue ActiveRecord::UnknownMigrationVersionError => e
-    raise unless migrations(true).find {|m| m.version == e.version}
   end
 
   def migrate_with_octopus(&block)
-    migrate_without_octopus(&block)
-  rescue ActiveRecord::UnknownMigrationVersionError => e
-    raise unless migrations(true).find {|m| m.version == e.version}
-  end
-
-  def migrations_with_octopus(shard_agnostic = false)
-    connection = ActiveRecord::Base.connection
-    migrations = migrations_without_octopus
-    return migrations if !connection.is_a?(Octopus::Proxy) || shard_agnostic
-
-    migrations.select {|m| m.shards.include?(connection.current_shard.to_sym)}
+    migrate_without_octopus do |migration|
+      connection = ActiveRecord::Base.connection
+      next false if connection.is_a?(Octopus::Proxy) && !migration.shards.include?(connection.current_shard.to_sym)
+      block ? block.call(migration) : true
+    end
   end
 
   module ClassMethods

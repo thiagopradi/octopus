@@ -56,6 +56,27 @@ describe Octopus::Migration do
     end
   end
 
+  it "should upstream migrate different shards correctly" do
+    migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
+    ActiveRecord::Migrator.migrate(migrations_root, 3)
+
+    User.using(:master).find_by_name("Master").should_not be_nil
+    User.using(:canada).find_by_name("Sharding").should_not be_nil
+    User.using(:canada).find_by_name("Both").should_not be_nil
+    User.using(:brazil).find_by_name("Both").should_not be_nil
+  end
+
+  it "should downstream migrate different shards correctly" do
+    migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
+    ActiveRecord::Migrator.migrate(migrations_root, 3)
+
+    ActiveRecord::Migrator.migrate(migrations_root, 1)
+    User.using(:master).find_by_name("Master").should_not be_nil
+    User.using(:canada).find_by_name("Sharding").should be_nil
+    User.using(:canada).find_by_name("Both").should be_nil
+    User.using(:brazil).find_by_name("Both").should be_nil
+  end
+
   describe "when using replication" do
     it "should run writes on master when you use replication" do
       OctopusHelper.using_environment :production_replicated do

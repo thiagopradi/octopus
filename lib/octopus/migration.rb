@@ -84,6 +84,7 @@ module Octopus::Migrator
     end
 
     base.alias_method_chain :migrate, :octopus
+    base.alias_method_chain :run, :octopus
   end
 
   def migrate_with_octopus(&block)
@@ -92,6 +93,13 @@ module Octopus::Migrator
       next false if connection.is_a?(Octopus::Proxy) && !migration.shards.include?(connection.current_shard.to_sym)
       block ? block.call(migration) : true
     end
+  end
+
+  def run_with_octopus
+    connection = ActiveRecord::Base.connection
+    return run_without_octopus unless connection.is_a?(Octopus::Proxy)
+    target = migrations.detect { |m| m.version == @target_version }
+    run_without_octopus if target.shards.include?(connection.current_shard.to_sym)
   end
 
   module ClassMethods

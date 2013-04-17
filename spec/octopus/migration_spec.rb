@@ -61,17 +61,27 @@ describe Octopus::Migration do
     ActiveRecord::Migrator.migrate(migrations_root, 3)
 
     User.using(:master).find_by_name("Master").should_not be_nil
+    User.using(:canada).find_by_name("Master").should be_nil
+    User.using(:brazil).find_by_name("Master").should be_nil
+
     User.using(:canada).find_by_name("Sharding").should_not be_nil
+    User.using(:master).find_by_name("Sharding").should be_nil
+    User.using(:brazil).find_by_name("Sharding").should be_nil
+
     User.using(:canada).find_by_name("Both").should_not be_nil
     User.using(:brazil).find_by_name("Both").should_not be_nil
+    User.using(:master).find_by_name("Both").should be_nil
   end
 
   it "should downstream migrate different shards correctly" do
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     ActiveRecord::Migrator.migrate(migrations_root, 3)
 
+    User.using(:master).create!(:name => "Both") # should be left
     ActiveRecord::Migrator.migrate(migrations_root, 1)
+
     User.using(:master).find_by_name("Master").should_not be_nil
+    User.using(:master).find_by_name("Both").should_not be_nil
     User.using(:canada).find_by_name("Sharding").should be_nil
     User.using(:canada).find_by_name("Both").should be_nil
     User.using(:brazil).find_by_name("Both").should be_nil

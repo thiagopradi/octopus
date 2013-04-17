@@ -57,6 +57,8 @@ describe Octopus::Migration do
   end
 
   it "should upstream migrate different shards correctly" do
+    pending() unless Octopus.rails32?
+
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     ActiveRecord::Migrator.migrate(migrations_root, 3)
 
@@ -74,6 +76,8 @@ describe Octopus::Migration do
   end
 
   it "should downstream migrate different shards correctly" do
+    pending() unless Octopus.rails32?
+
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     ActiveRecord::Migrator.migrate(migrations_root, 3)
 

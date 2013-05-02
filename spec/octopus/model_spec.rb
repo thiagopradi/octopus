@@ -258,8 +258,10 @@ describe Octopus::Model do
   end
 
   describe "AR basic methods" do
-    it "establish_connection" do
-      CustomConnection.connection.current_database.should == "octopus_shard_2"
+    if Octopus.rails32?
+      it "establish_connection" do
+        CustomConnection.connection.current_database.should == "octopus_shard_2"
+      end
     end
 
     it "should not mess with custom connection table names" do

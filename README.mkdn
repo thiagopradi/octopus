@@ -151,11 +151,11 @@ Occasionally, an application might lose a connection to a database; when this ha
 This will tell Octopus to verify the connection before sending the query.
 
 ## Mixing Octopus with the Rails multiple database model
-If you want to set a custom connection to a specific model, use the normal syntax `establish_connection` syntax:
+If you want to set a custom connection to a specific model, use the syntax `octopus_establish_connection` syntax:
 
     #This class sets its own connection
     class CustomConnection < ActiveRecord::Base
-      establish_connection(:adapter => "mysql", :database => "octopus_shard2")
+      octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
     end
 
 ## Set table names

@@ -154,7 +154,7 @@ module Octopus::Model
     end
 
     def establish_connection_with_octopus(spec = ENV['DATABASE_URL'])
-      self.custom_octopus_connection = true if spec
+      self.custom_octopus_connection = true if spec && Octopus.rails32?
       establish_connection_without_octopus(spec)
     end
 
@@ -165,6 +165,7 @@ module Octopus::Model
 
     def octopus_establish_connection(spec = ENV['DATABASE_URL'])
       ActiveSupport::Deprecation.warn "Calling `octopus_establish_connection` is deprecated and will be removed in Octopus 1.0.", caller
+      self.custom_octopus_connection = true
       establish_connection(spec)
     end
 

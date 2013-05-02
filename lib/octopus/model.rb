@@ -141,7 +141,6 @@ module Octopus::Model
         attr_accessor :custom_octopus_connection
         attr_accessor :custom_octopus_table_name
 
-        alias_method_chain(:establish_connection, :octopus)
         alias_method_chain(:set_table_name, :octopus)
 
         if Octopus.rails32?
@@ -153,18 +152,13 @@ module Octopus::Model
       end
     end
 
-    def establish_connection_with_octopus(spec = ENV['DATABASE_URL'])
-      self.custom_octopus_connection = true if spec
-      establish_connection_without_octopus(spec)
-    end
-
     def set_table_name_with_octopus(value = nil, &block)
       self.custom_octopus_table_name = true
       set_table_name_without_octopus(value, &block)
     end
 
     def octopus_establish_connection(spec = ENV['DATABASE_URL'])
-      ActiveSupport::Deprecation.warn "Calling `octopus_establish_connection` is deprecated and will be removed in Octopus 1.0.", caller
+      self.custom_octopus_connection = true if spec
       establish_connection(spec)
     end
 

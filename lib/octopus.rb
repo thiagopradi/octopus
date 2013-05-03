@@ -105,7 +105,10 @@ require "octopus/association"
 require "octopus/rails3/persistence"
 require "octopus/rails3/log_subscriber"
 require "octopus/rails3/abstract_adapter"
-require "octopus/railtie"
+
+if defined?(::Rails)
+  require "octopus/railtie"
+end
 
 if Octopus.rails30?
   require "octopus/rails3.0/arel"

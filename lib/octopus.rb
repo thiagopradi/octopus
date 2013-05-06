@@ -114,6 +114,7 @@ require "octopus/association"
 if Octopus.rails2?
   require "octopus/rails2/association"
   require "octopus/rails2/persistence"
+  require "octopus/rails2/scope"
 end
 
 if Octopus.rails3?

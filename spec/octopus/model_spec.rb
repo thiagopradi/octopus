@@ -133,6 +133,17 @@ describe Octopus::Model do
       User.count.should == 0
     end
 
+    it "should work with named scopes" do
+      u = User.using(:brazil).create!(:name => "Thiago")
+
+      User.thiago.using(:brazil).first.should eq(u)
+      User.using(:brazil).thiago.first.should eq(u)
+
+      Octopus.using(:brazil) do
+        User.thiago.first.should eq(u)
+      end
+    end
+
     describe "#current_shard attribute" do
       it "should store the attribute when you create or find an object" do
         u = User.using(:alone_shard).create!(:name => "Alone")

@@ -1,11 +1,6 @@
 require "set"
 require "active_support/core_ext/module/aliasing"
-
-if Octopus.rails2?
-  require "active_support/core_ext/array/wrapper"
-else
-  require "active_support/core_ext/array/wrap"
-end
+require "active_support/core_ext/array/wrap"
 
 module Octopus::Migration
   module InstanceOrClassMethods

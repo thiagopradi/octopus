@@ -1,8 +1,3 @@
-appraise "rails2" do
-  gem "activerecord", "~> 2.3"
-  gem "actionpack",   "~> 2.3"
-end
-
 appraise "rails30" do
   gem "activerecord", "~> 3.0.11"
 end

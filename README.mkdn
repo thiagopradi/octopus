@@ -5,7 +5,7 @@
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 
 ## Feature list:
-The api is designed to be simple as possible. Octopus focuses on the end user, giving the power of multiple databases but with reliable code and flexibility. Octopus is focused on Rails 3, but is compatible with Rails 2.x.
+The api is designed to be simple as possible. Octopus focuses on the end user, giving the power of multiple databases but with reliable code and flexibility. Octopus is compatible with Rails 3.
 
 Octopus supports:
 
@@ -24,18 +24,6 @@ When using replication, all writes queries will be sent to master, and read quer
  Replication + Sharding isn't supported yet. This is on our TODO list and will be done ASAP. If you need, feel free to fork and implement it.
 
 ## Install
-
-### Rails 2.x
-
-Install  the octopus gem:
-
-    sudo gem install ar-octopus
-
-Add this line to enviroment.rb:
-
-    config.gem 'ar-octopus', :lib => "octopus"
-
-### Rails 3.x
 
 Add this line to Gemfile:
 
@@ -185,7 +173,7 @@ Contributors are welcome! To run the test suite, you need mysql, postgresql and 
     bundle exec rake appraisal:install
     bundle exec rake spec
 
-This command will run the spec suite for all rails versions supported (Rails 2.3, Rails 3.0 and Rails 3.1).
+This command will run the spec suite for all rails versions supported (Rails 3.0, Rails 3.1 and Rails 3.2).
 To run our integrations tests inside sample_app, you need to following commands:
 
     cd sample_app

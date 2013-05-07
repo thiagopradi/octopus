@@ -1,5 +1,5 @@
 module Octopus
-  module Rails2
+  module Rails3
     module Association
       def association_accessor_methods(reflection, association_proxy_class)
         super
@@ -83,4 +83,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Base.extend(Octopus::Rails2::Association)
+ActiveRecord::Base.extend(Octopus::Rails3::Association)

@@ -108,8 +108,8 @@ require "octopus/rails3/abstract_adapter"
 require "octopus/railtie"
 
 if Octopus.rails30?
-  require "octopus/rails3/arel"
-  require "octopus/rails3/association"
+  require "octopus/rails3.0/arel"
+  require "octopus/rails3.0/association"
 end
 
 if Octopus.rails31? || Octopus.rails32?

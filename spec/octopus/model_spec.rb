@@ -338,44 +338,41 @@ describe Octopus::Model do
       User.using(:master).maximum(:number).should == 12
     end
 
-    if Octopus.rails3?
-      describe "any?" do
-        before { User.using(:brazil).create!(:name => "User1") }
+    describe "any?" do
+      before { User.using(:brazil).create!(:name => "User1") }
 
-        it "works when true" do
-          scope = User.using(:brazil).where(:name => "User1")
-          scope.any?.should be_true
-        end
-
-        it "works when false" do
-          scope = User.using(:brazil).where(:name => "User2")
-          scope.any?.should be_false
-        end
+      it "works when true" do
+        scope = User.using(:brazil).where(:name => "User1")
+        scope.any?.should be_true
       end
 
-      it "exists?" do
+      it "works when false" do
+        scope = User.using(:brazil).where(:name => "User2")
+        scope.any?.should be_false
+      end
+    end
+
+    it "exists?" do
+      @user = User.using(:brazil).create!(:name => "User1")
+
+      User.using(:brazil).where(:name => "User1").exists?.should be_true
+      User.using(:brazil).where(:name => "User2").exists?.should be_false
+    end
+
+    describe "touch" do
+      it "updates updated_at by default" do
         @user = User.using(:brazil).create!(:name => "User1")
-
-        User.using(:brazil).where(:name => "User1").exists?.should be_true
-        User.using(:brazil).where(:name => "User2").exists?.should be_false
+        User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
+        @user.touch
+        @user.reload.updated_at.to_date.should eq(Date.today)
       end
 
-      describe "touch" do
-        it "updates updated_at by default" do
-          @user = User.using(:brazil).create!(:name => "User1")
-          User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
-          @user.touch
-          @user.reload.updated_at.to_date.should eq(Date.today)
-        end
-
-        it "updates passed in attribute name" do
-          @user = User.using(:brazil).create!(:name => "User1")
-          User.using(:brazil).update_all({:created_at => Time.now - 3.months}, {:id => @user.id})
-          @user.touch(:created_at)
-          @user.reload.created_at.to_date.should eq(Date.today)
-        end
+      it "updates passed in attribute name" do
+        @user = User.using(:brazil).create!(:name => "User1")
+        User.using(:brazil).update_all({:created_at => Time.now - 3.months}, {:id => @user.id})
+        @user.touch(:created_at)
+        @user.reload.created_at.to_date.should eq(Date.today)
       end
-
     end
 
     if Octopus.rails32?
@@ -526,10 +523,8 @@ describe Octopus::Model do
     end
 
     it "should work using the rails 3.x syntax" do
-      if Octopus.rails3?
-        items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
-        items.should == [@item1, @item2]
-      end
+      items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
+      items.should == [@item1, @item2]
     end
 
     it "should work for include also, rails 2.x syntax" do
@@ -538,10 +533,8 @@ describe Octopus::Model do
     end
 
     it "should work for include also, rails 3.x syntax" do
-      if Octopus.rails3?
-        items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
-        items.should == [@item1, @item2]
-      end
+      items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
+      items.should == [@item1, @item2]
     end
 
     it "should work for multiple includes, with rails 2.x syntax" do

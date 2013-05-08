@@ -47,15 +47,13 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       k.computer.should == c
     end
 
-    if Octopus.rails3?
-      it "should include models" do
-        c = Computer.using(:brazil).create!(:name => "Computer Brazil")
-        k = c.create_keyboard(:name => "Building keyboard")
-        c.save()
-        k.save()
+    it "should include models" do
+      c = Computer.using(:brazil).create!(:name => "Computer Brazil")
+      k = c.create_keyboard(:name => "Building keyboard")
+      c.save()
+      k.save()
 
-        Computer.includes(:keyboard).find(c.id).should == c
-      end
+      Computer.includes(:keyboard).find(c.id).should == c
     end
   end
 
@@ -110,11 +108,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
         @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
 
-      if !Octopus.rails3?
-        it "update_attribute" do
-          @permission_brazil_2.update_attribute(:role_ids, [@role.id])
-          @permission_brazil_2.roles.to_set.should == [@role].to_set
-        end
+      it "update_attribute" do
+        @permission_brazil_2.update_attribute(:role_ids, [@role.id])
+        @permission_brazil_2.roles.to_set.should == [@role].to_set
       end
 
       it "<<" do
@@ -265,11 +261,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
         @new_brazil_programmer.projects.to_set.should == [@project].to_set
       end
 
-      if !Octopus.rails3?
-        it "update_attribute" do
-          @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
-          @new_brazil_programmer.projects.to_set.should == [@project].to_set
-        end
+      it "update_attribute" do
+        @new_brazil_programmer.update_attribute(:project_ids, [@project.id])
+        @new_brazil_programmer.projects.to_set.should == [@project].to_set
       end
 
       it "<<" do
@@ -430,11 +424,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
       end
 
-      if !Octopus.rails3?
-        it "update_attribute" do
-          @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
-          @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
-        end
+      it "update_attribute" do
+        @brazil_client.update_attribute(:item_ids, [@item_brazil_2.id, @item_brazil.id])
+        @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
       end
 
       it "<<" do
@@ -568,11 +560,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
         @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
       end
 
-      if !Octopus.rails3?
-        it "update_attribute" do
-          @brazil_client.update_attribute(:comment_ids, [@comment_brazil_2.id, @comment_brazil.id])
-          @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
-        end
+      it "update_attribute" do
+        @brazil_client.update_attribute(:comment_ids, [@comment_brazil_2.id, @comment_brazil.id])
+        @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
       end
 
       it "<<" do

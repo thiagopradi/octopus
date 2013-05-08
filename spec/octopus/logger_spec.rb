@@ -11,11 +11,9 @@ describe Octopus::Logger, :shards => [:canada] do
     ActiveRecord::Base.logger = nil
   end
 
-  if Octopus.rails3?
-    it "should add to the default logger what shard the query was sent" do
-      User.using(:canada).create!(:name => "test")
-      @out.string.should =~ /Shard: canada/
-    end
+  it "should add to the default logger what shard the query was sent" do
+    User.using(:canada).create!(:name => "test")
+    @out.string.should =~ /Shard: canada/
   end
 
   it "should be deprecated" do

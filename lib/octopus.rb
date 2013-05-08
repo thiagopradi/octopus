@@ -64,10 +64,6 @@ module Octopus
     @environments ||= config['environments'] || ['production']
   end
 
-  def self.rails3?
-    ActiveRecord::VERSION::MAJOR == 3
-  end
-
   def self.rails30?
     ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 0
   end
@@ -107,12 +103,10 @@ require "octopus/association_collection"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association"
 
-if Octopus.rails3?
-  require "octopus/rails3/persistence"
-  require "octopus/rails3/log_subscriber"
-  require "octopus/rails3/abstract_adapter"
-  require "octopus/railtie"
-end
+require "octopus/rails3/persistence"
+require "octopus/rails3/log_subscriber"
+require "octopus/rails3/abstract_adapter"
+require "octopus/railtie"
 
 if Octopus.rails30?
   require "octopus/rails3/arel"

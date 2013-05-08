@@ -16,10 +16,8 @@ module Octopus::Model
         self.reset_table_name()
       end
 
-      if Octopus.rails3?
-        self.reset_column_information
-        self.instance_variable_set(:@quoted_table_name, nil)
-      end
+      self.reset_column_information
+      self.instance_variable_set(:@quoted_table_name, nil)
     end
 
     def using(shard)
@@ -45,13 +43,7 @@ module Octopus::Model
         end
       end
 
-      if Octopus.rails3?
-        after_initialize :set_current_shard
-      else
-        def after_initialize
-          set_current_shard()
-        end
-      end
+      after_initialize :set_current_shard
     end
 
     def hijack_connection()

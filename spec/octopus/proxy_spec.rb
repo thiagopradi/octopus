@@ -32,7 +32,7 @@ describe Octopus::Proxy do
 
     it "should work with thiking sphinx" do
       config = proxy.instance_variable_get(:@config)
-      config[:adapter].should == "mysql"
+      config[:adapter].should == "mysql2"
       config[:database].should == "octopus_shard_1"
       config[:username].should == "root"
     end
@@ -40,7 +40,7 @@ describe Octopus::Proxy do
     it 'should create a set with all adapters, to ensure that is needed to clean the table name.' do
       adapters = proxy.instance_variable_get(:@adapters)
       adapters.should be_kind_of(Set)
-      adapters.to_a.should =~ ["sqlite3", "mysql", "postgresql"]
+      adapters.to_a.should =~ ["sqlite3", "mysql2", "postgresql"]
     end
 
     it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do

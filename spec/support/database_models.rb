@@ -31,7 +31,7 @@ end
 
 #This class sets its own connection
 class CustomConnection < ActiveRecord::Base
-  octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard_2", :username => "root", :password => "")
+  octopus_establish_connection(:adapter => "mysql2", :database => "octopus_shard_2", :username => "root", :password => "")
 end
 
 #This items belongs to a client

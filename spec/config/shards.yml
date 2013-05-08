@@ -1,5 +1,5 @@
 mysql: &mysql
-  adapter: mysql
+  adapter: mysql2
   username: <%= ENV['MYSQL_USER'] || 'root' %>
   host: localhost
 

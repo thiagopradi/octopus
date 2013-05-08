@@ -18,7 +18,7 @@ namespace :db do
     }
 
     mysql_spec = {
-      :adapter  => 'mysql',
+      :adapter  => 'mysql2',
       :host     => 'localhost',
       :username => (ENV['MYSQL_USER'] || "root"),
       :encoding => 'utf8'

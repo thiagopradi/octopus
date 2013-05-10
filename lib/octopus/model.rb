@@ -162,5 +162,3 @@ module Octopus::Model
 end
 
 ActiveRecord::Base.extend(Octopus::Model)
-
-class OctopusModel < ActiveRecord::Base; end;

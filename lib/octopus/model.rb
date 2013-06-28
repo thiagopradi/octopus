@@ -135,7 +135,7 @@ module Octopus::Model
 
         alias_method_chain(:set_table_name, :octopus)
 
-        if Octopus.rails32?
+        if Octopus.rails_above_31?
           def table_name=(value = nil)
             self.custom_octopus_table_name = true
             super

@@ -29,7 +29,7 @@ class Octopus::Proxy
     shards_config ||= []
 
     shards_config.each do |key, value|
-      if value.is_a?(String) && Octopus.rails32?
+      if value.is_a?(String) && Octopus.rails_above_31?
         value = resolve_string_connection(value).merge(:octopus_shard => key)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
@@ -145,7 +145,7 @@ class Octopus::Proxy
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just
     # reconnect, but in Rails 3.1 the flag prevents this.
-    if Octopus.rails31? || Octopus.rails32?
+    if Octopus.rails_above_30?
       if !@shards[shard_name].automatic_reconnect
         @shards[shard_name].automatic_reconnect = true
       end

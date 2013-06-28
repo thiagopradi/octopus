@@ -68,12 +68,12 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 0
   end
 
-  def self.rails31?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 1
+  def self.rails_above_30?
+    ActiveRecord::VERSION::MAJOR >= 3 && (ActiveRecord::VERSION::MINOR >= 1 || ActiveRecord::VERSION::MAJOR > 3)
   end
 
-  def self.rails32?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 2
+  def self.rails_above_31?
+    ActiveRecord::VERSION::MAJOR >= 3 && (ActiveRecord::VERSION::MINOR >= 2 || ActiveRecord::VERSION::MAJOR > 3)
   end
 
   def self.rails?
@@ -112,11 +112,11 @@ if Octopus.rails30?
   require "octopus/rails3.0/association"
 end
 
-if Octopus.rails31? || Octopus.rails32?
+if Octopus.rails_above_30?
   require "octopus/rails3.1/singular_association"
 end
 
-if Octopus.rails32?
+if Octopus.rails_above_31?
   require "octopus/rails3.2/persistence"
 end
 

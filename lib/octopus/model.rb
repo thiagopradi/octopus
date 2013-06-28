@@ -133,7 +133,9 @@ module Octopus::Model
         attr_accessor :custom_octopus_connection
         attr_accessor :custom_octopus_table_name
 
-        alias_method_chain(:set_table_name, :octopus)
+        if Octopus.rails_below_40?
+          alias_method_chain(:set_table_name, :octopus)
+        end
 
         if Octopus.rails_above_31?
           def table_name=(value = nil)

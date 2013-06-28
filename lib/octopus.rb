@@ -76,6 +76,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR >= 3 && (ActiveRecord::VERSION::MINOR >= 2 || ActiveRecord::VERSION::MAJOR > 3)
   end
 
+  def self.rails_below_40?
+    ActiveRecord::VERSION::MAJOR <= 3
+  end
+
   def self.rails?
     defined?(Rails)
   end

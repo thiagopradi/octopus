@@ -16,20 +16,36 @@ module Octopus::Association
   end
 
   if Octopus.rails_40_or_above?
-    def has_many(association_id, scope=nil, options = {}, &extension)
-      default_octopus_opts(options)
+    def has_many(association_id, scope=nil, options={}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
+        default_octopus_opts(options)
+      end
       super
     end
   else
-    def has_many(association_id, options = {}, &extension)
+    def has_many(association_id, options={}, &extension)
       default_octopus_opts(options)
       super
     end
   end
 
-  def has_and_belongs_to_many(association_id, options = {}, &extension)
-    default_octopus_opts(options)
-    super
+
+  if Octopus.rails_40_or_above?
+    def has_and_belongs_to_many(association_id, scope=nil, options={}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
+        default_octopus_opts(options)
+      end
+      super
+    end
+  else
+    def has_and_belongs_to_many(association_id, options={}, &extension)
+      default_octopus_opts(options)
+      super
+    end
   end
 
   def default_octopus_opts(options)

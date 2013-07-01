@@ -237,7 +237,7 @@ describe Octopus::Model do
         User.using(:brazil).find_by_name("Mike").should == u
       end
 
-      if Octopus.rails31? || Octopus.rails32?
+      if Octopus.rails_above_30?
         # Rails <= 3.0 doesn't support equality checks on non-persisted objects
         it "should check current_shard when determining equality" do
           canada1.should_not == brazil1
@@ -375,7 +375,7 @@ describe Octopus::Model do
       end
     end
 
-    if Octopus.rails32?
+    if Octopus.rails_above_31?
       describe "#pluck" do
         before { User.using(:brazil).create!(:name => "User1") }
 
@@ -482,7 +482,7 @@ describe Octopus::Model do
     end
   end
 
-  if Octopus.rails32?
+  if Octopus.rails_above_31?
     describe "when using table_name=" do
       it 'should work correctly' do
         Ham.using(:brazil).create!(:name => "YUMMMYYYY")

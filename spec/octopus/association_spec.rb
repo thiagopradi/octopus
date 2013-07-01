@@ -184,9 +184,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
 
       it "find" do
         role = @permission_brazil_2.roles.create(:name => "Builded Role")
-        @permission_brazil_2.roles.find(:first).should == role
+        @permission_brazil_2.roles.first.should == role
         @permission_brazil_2.roles.destroy_all
-        @permission_brazil_2.roles.find(:first).should be_nil
+        @permission_brazil_2.roles.first.should be_nil
       end
 
       it "exists?" do
@@ -337,9 +337,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
 
       it "find" do
         role = @new_brazil_programmer.projects.create(:name => "New VB App :-/")
-        @new_brazil_programmer.projects.find(:first).should == role
+        @new_brazil_programmer.projects.first.should == role
         @new_brazil_programmer.projects.destroy_all
-        @new_brazil_programmer.projects.find(:first).should be_nil
+        @new_brazil_programmer.projects.first.should be_nil
       end
 
       it "exists?" do
@@ -497,9 +497,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       end
 
       it "find" do
-        @brazil_client.items.find(:first).should == @item_brazil
+        @brazil_client.items.first.should == @item_brazil
         @brazil_client.items.destroy_all
-        @brazil_client.items.find(:first).should be_nil
+        @brazil_client.items.first.should be_nil
       end
 
       it "exists?" do
@@ -633,9 +633,9 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       end
 
       it "find" do
-        @brazil_client.comments.find(:first).should == @comment_brazil
+        @brazil_client.comments.first.should == @comment_brazil
         @brazil_client.comments.destroy_all
-        @brazil_client.comments.find(:first).should be_nil
+        @brazil_client.comments.first.should be_nil
       end
 
       it "exists?" do

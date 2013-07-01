@@ -14,7 +14,7 @@ describe "octopus.rake" do
       Rake::Task["octopus:copy_schema_versions"].reenable
 
       path = File.expand_path("../../migrations", __FILE__)
-      if Octopus.rails31? || Octopus.rails32?
+      if Octopus.rails_above_30?
         ActiveRecord::Migrator.migrations_paths = [path]
       else
         ActiveRecord::Migrator.stub(:migrations_path => path)

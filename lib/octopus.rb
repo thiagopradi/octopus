@@ -80,6 +80,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR <= 3
   end
 
+  def self.rails_40_or_above?
+    ActiveRecord::VERSION::MAJOR >= 4
+  end
+
   def self.rails?
     defined?(Rails)
   end

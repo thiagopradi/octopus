@@ -225,8 +225,18 @@ class Octopus::Proxy
   end
 
   protected
+
   def connection_pool_for(adapter, config)
-    ActiveRecord::ConnectionAdapters::ConnectionPool.new(ActiveRecord::Base::ConnectionSpecification.new(adapter.dup, config))
+    if Octopus.rails_40_or_above?
+      arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
+        adapter.dup,
+        config
+      )
+    else
+      arg = ActiveRecord::Base::ConnectionSpecification.new(adapter.dup, config)
+    end
+
+    ActiveRecord::ConnectionAdapters::ConnectionPool.new(arg)
   end
 
   def initialize_adapter(adapter)
@@ -239,7 +249,12 @@ class Octopus::Proxy
   end
 
   def resolve_string_connection(spec)
-    ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {}).spec.config.stringify_keys
+    if Octopus.rails_40_or_above?
+      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
+    else
+      resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
+    end
+    resolver.spec.config.stringify_keys
   end
 
   def should_clean_connection?(method)

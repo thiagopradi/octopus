@@ -15,6 +15,7 @@ octopus:
       password:
       database: octopus_shard_1
       encoding: unicode
+      host: localhost
 
     sqlite_shard:
       adapter: sqlite3

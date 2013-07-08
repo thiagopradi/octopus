@@ -5,7 +5,8 @@ gem 'rails', '3.2.13'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'sqlite3-ruby', :require => 'sqlite3'
+gem 'pg'
+gem 'sqlite3'
 gem 'ar-octopus', '0.6.0'
 gem 'pry'
 
@@ -13,7 +14,6 @@ group :test do
   gem 'capybara'
   gem 'cucumber-rails'
   gem 'cucumber'
-  gem 'spork'
   gem 'launchy'
   gem "rspec-rails"
   gem "aruba"

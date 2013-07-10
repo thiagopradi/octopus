@@ -144,7 +144,6 @@ DEPENDENCIES
   ar-octopus (= 0.6.0)
   aruba
   capybara
-  cucumber
   cucumber-rails
   launchy
   pg

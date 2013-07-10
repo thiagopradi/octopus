@@ -26,6 +26,3 @@ production:
   database: octopus_sample_app_production
   encoding: unicode
   host: localhost
-
-cucumber:
-  <<: *test

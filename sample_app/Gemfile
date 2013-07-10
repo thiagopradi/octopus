@@ -12,8 +12,7 @@ gem 'pry'
 
 group :test do
   gem 'capybara'
-  gem 'cucumber-rails'
-  gem 'cucumber'
+  gem 'cucumber-rails', :require => false
   gem 'launchy'
   gem "rspec-rails"
   gem "aruba"

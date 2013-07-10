@@ -16,4 +16,5 @@ group :test do
   gem 'launchy'
   gem "rspec-rails"
   gem "aruba"
+  gem "database_cleaner"
 end

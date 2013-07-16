@@ -60,6 +60,7 @@ class Octopus::Proxy
     else
       @fully_replicated = true
     end
+
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
     @slave_index = 0
@@ -222,6 +223,14 @@ class Octopus::Proxy
 
   def connection_pool
     return @shards[current_shard]
+  end
+
+  def enable_query_cache!
+    @shards.each { |k, v| v.connection.enable_query_cache! }
+  end
+
+  def disable_query_cache!
+    @shards.each { |k, v| v.connection.disable_query_cache! }
   end
 
   protected

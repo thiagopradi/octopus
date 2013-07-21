@@ -27,36 +27,23 @@ describe "when the database is replicated" do
   end
 
   describe "When enabling the query cache" do
-    before(:each) do
-      @counter = ActiveRecord::QueryCounter.new
-    end
+    include_context "with query cache enabled"
 
     it "should do the queries with cache" do
-      # TODO - Support Rails 3.0
-      if Octopus.rails31? || Octopus.rails32?
-        active_support_subscribed(@counter.to_proc, 'sql.active_record') do 
-          OctopusHelper.using_environment :replicated_with_one_slave do
-            begin
-              ActiveRecord::Base.connection.enable_query_cache!
+      OctopusHelper.using_environment :replicated_with_one_slave  do
+        cat1 = Cat.using(:master).create!(:name => "Slave Cat 1")
+        cat2 = Cat.using(:master).create!(:name => "Slave Cat 1")
+        Cat.using(:master).find(cat1.id).should eq(cat1)
+        Cat.using(:master).find(cat1.id).should eq(cat1)
+        Cat.using(:master).find(cat1.id).should eq(cat1)
 
-              cat1 = Cat.using(:master).create!(:name => "Slave Cat 1")
-              cat2 = Cat.using(:master).create!(:name => "Slave Cat 1")
-              Cat.using(:master).find(cat1.id).should eq(cat1)
-              Cat.using(:master).find(cat1.id).should eq(cat1)
-              Cat.using(:master).find(cat1.id).should eq(cat1)
+        cat3 = Cat.using(:slave1).create!(:name => "Slave Cat 1")
+        cat4 = Cat.using(:slave1).create!(:name => "Slave Cat 1")
+        Cat.find(cat3.id).id.should eq(cat3.id)
+        Cat.find(cat3.id).id.should eq(cat3.id)
+        Cat.find(cat3.id).id.should eq(cat3.id)
 
-              cat3 = Cat.using(:slave1).create!(:name => "Slave Cat 1")
-              cat4 = Cat.using(:slave1).create!(:name => "Slave Cat 1")
-              Cat.find(cat3.id).id.should eq(cat3.id)
-              Cat.find(cat3.id).id.should eq(cat3.id)
-              Cat.find(cat3.id).id.should eq(cat3.id)
-
-              @counter.query_count.should eq(14)
-            ensure
-              ActiveRecord::Base.connection.disable_query_cache!
-            end
-          end
-        end
+        counter.query_count.should eq(16)
       end
     end
   end

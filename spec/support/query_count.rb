@@ -1,7 +1,7 @@
 module ActiveRecord
   class QueryCounter
 
-    attr_reader :query_count
+    attr_accessor :query_count
 
     def initialize
       @query_count = 0

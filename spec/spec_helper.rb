@@ -14,5 +14,3 @@ RSpec.configure do |config|
     OctopusHelper.clean_all_shards(example.metadata[:shards])
   end
 end
-
-$: << File.expand_path(File.join(File.dirname(__FILE__), "support"))

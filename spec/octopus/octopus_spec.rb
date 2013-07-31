@@ -8,7 +8,7 @@ describe Octopus, :shards => [] do
 
     describe "when config file doesn't exist" do
       before(:each) do
-        Octopus.stub!(:directory).and_return('/tmp')
+        Octopus.stub(:directory).and_return('/tmp')
         Octopus.instance_variable_set(:@config, nil)
       end
 
@@ -68,7 +68,7 @@ describe Octopus, :shards => [] do
 
   describe "#enabled?" do
     before do
-      Rails = mock()
+      Rails = double()
     end
 
     after do
@@ -76,13 +76,13 @@ describe Octopus, :shards => [] do
     end
 
     it "should be if octopus is configured and should hook into current environment" do
-      Rails.stub!(:env).and_return('production')
+      Rails.stub(:env).and_return('production')
 
       Octopus.should be_enabled
     end
 
     it "should not be if octopus should not hook into current environment" do
-      Rails.stub!(:env).and_return('staging')
+      Rails.stub(:env).and_return('staging')
 
       Octopus.should_not be_enabled
     end

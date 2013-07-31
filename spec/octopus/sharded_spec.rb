@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "when the database is not entire sharded" do
   before(:each) do
-    Octopus.stub!(:env).and_return("not_entire_sharded")
+    Octopus.stub(:env).and_return("not_entire_sharded")
     OctopusHelper.clean_connection_proxy()
   end
 

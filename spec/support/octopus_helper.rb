@@ -45,6 +45,6 @@ module OctopusHelper
 
   def self.set_octopus_env(env)
     Octopus.instance_variable_set(:@config, nil)
-    Octopus.stub!(:env).and_return(env)
+    Octopus.stub(:env).and_return(env)
   end
 end

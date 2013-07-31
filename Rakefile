@@ -56,7 +56,9 @@ namespace :db do
     # Require the database connection
     require "#{File.dirname(__FILE__)}/spec/support/database_connection"
 
-    [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard, :protocol_shard].each do |shard_symbol|
+    shard_symbols = [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
+    shard_symbols << :protocol_shard if Octopus.rails32?
+    shard_symbols.each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
       # the model be a descendent of ActiveRecord::Base.
       class BlankModel < ActiveRecord::Base; end;

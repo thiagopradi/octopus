@@ -2,20 +2,15 @@ language: ruby
 env:
   - CI=true
 before_script:
- - "bundle install"
- - "bundle exec rake db:prepare"
-bundler_args: --without development
-
+  - "bundle exec rake db:prepare"
 rvm:
   - 1.8.7
   - 1.9.3
-
+  - 2.0.0
 gemfile:
-  - gemfiles/rails2.gemfile
-  - gemfiles/rails3.gemfile
+  - gemfiles/rails30.gemfile
   - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
-
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com

@@ -15,3 +15,8 @@ notifications:
   recipients:
     - gabriel.sobrinho@gmail.com
     - thiago.pradi@gmail.com
+
+matrix:
+  exclude:
+    - rvm: 1.8.7
+      gemfile: gemfiles/rails4.gemfile

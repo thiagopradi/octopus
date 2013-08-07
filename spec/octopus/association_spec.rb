@@ -57,7 +57,7 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
     end
   end
 
-  describe "when you have a N x N reliationship" do
+  describe "when you have a N x N relationship" do
     before(:each) do
       @brazil_role = Role.using(:brazil).create!(:name => "Brazil Role")
       @master_role = Role.create!(:name => "Master Role")

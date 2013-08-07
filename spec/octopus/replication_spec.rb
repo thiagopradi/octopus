@@ -45,7 +45,7 @@ end
 
 describe "when the database is replicated and the entire application is replicated" do
   before(:each) do
-    Octopus.stub!(:env).and_return("production_fully_replicated")
+    Octopus.stub(:env).and_return("production_fully_replicated")
     OctopusHelper.clean_connection_proxy()
   end
 

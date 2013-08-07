@@ -1,21 +1,20 @@
-source :rubygems
+source 'https://rubygems.org'
 
-gem 'rails', '3.0.5'
+gem 'rails', '3.2.13'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'sqlite3-ruby', :require => 'sqlite3'
-gem 'ar-octopus', :git => 'git://github.com/tchandy/octopus.git', :require => "octopus"
+gem 'pg'
+gem 'sqlite3'
+gem 'ar-octopus', '0.6.0'
+gem 'pry'
 
 group :test do
   gem 'capybara'
-  gem 'database_cleaner'
-  gem 'cucumber-rails'
-  gem 'cucumber'
-  gem 'spork'
+  gem 'cucumber-rails', :require => false
   gem 'launchy'
-  gem "rspec-rails", ">= 2.0.0.beta.16"
-  gem 'ruby-debug' if RUBY_VERSION < "1.9"
+  gem "rspec-rails"
   gem "aruba"
+  gem "database_cleaner"
 end

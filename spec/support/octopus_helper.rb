@@ -8,6 +8,16 @@ module OctopusHelper
       ['schema_migrations', 'users', 'clients', 'cats', 'items', 'keyboards', 'computers', 'permissions_roles', 'roles', 'permissions', 'assignments', 'projects', 'programmers', "yummy", 'adverts'].each do |tables|
         BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{tables}")
       end
+
+      if shard_symbol == :alone_shard
+        %w[
+          mmorpg_players
+          weapons
+          skills
+        ].each do |table|
+          BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{tables}")
+        end
+      end
     end
   end
 

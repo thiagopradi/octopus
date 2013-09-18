@@ -140,6 +140,24 @@ namespace :db do
       BlankModel.using(shard_symbol).connection.create_table(:adverts) do |u|
         u.string :name
       end
+
+      if shard_symbol == :alone_shard
+        BlankModel.using(shard_symbol).connection.create_table(:mmorpg_players) do |u|
+          u.string :player_name
+        end
+
+        BlankModel.using(shard_symbol).connection.create_table(:weapons) do |u|
+          u.integer :mmorpg_player_id
+          u.string  :name
+          u.string  :hand
+        end
+
+        BlankModel.using(shard_symbol).connection.create_table(:skills) do |u|
+          u.integer :mmorpg_player_id
+          u.integer :weapon_id
+          u.string  :name
+        end
+      end
     end
   end
 

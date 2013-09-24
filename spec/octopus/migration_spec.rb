@@ -32,27 +32,27 @@ describe Octopus::Migration do
 
   it "should run once per shard" do
     OctopusHelper.migrating_to_version 5 do
-      User.using(:canada).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
-      User.using(:brazil).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
-      User.using(:russia).find(:all, {:conditions => {:name => "MultipleGroup"}}).size.should == 1
+      User.using(:canada).where(:name => 'MultipleGroup').size.should == 1
+      User.using(:brazil).where(:name => 'MultipleGroup').size.should == 1
+      User.using(:russia).where(:name => 'MultipleGroup').size.should == 1
     end
   end
 
   it "should create users inside block" do
     OctopusHelper.migrating_to_version 12 do
-      User.using(:brazil).find(:all, :conditions => {:name => "UsingBlock1"}).size.should == 1
-      User.using(:brazil).find(:all, :conditions => {:name => "UsingBlock2"}).size.should == 1
-      User.using(:canada).find(:all, :conditions => {:name => "UsingCanada"}).size.should == 1
-      User.using(:canada).find(:all, :conditions => {:name => "UsingCanada2"}).size.should == 1
+      User.using(:brazil).where(:name => 'UsingBlock1').size.should == 1
+      User.using(:brazil).where(:name => 'UsingBlock2').size.should == 1
+      User.using(:canada).where(:name => 'UsingCanada').size.should == 1
+      User.using(:canada).where(:name => 'UsingCanada2').size.should == 1
     end
   end
 
   it "should send the query to the correct shard" do
     OctopusHelper.migrating_to_version 13 do
-      User.using(:brazil).find(:all, :conditions => {:name => "Brazil"}).size.should == 1
-      User.using(:brazil).find(:all, :conditions => {:name => "Canada"}).size.should == 0
-      User.using(:canada).find(:all, :conditions => {:name => "Brazil"}).size.should == 0
-      User.using(:canada).find(:all, :conditions => {:name => "Canada"}).size.should == 1
+      User.using(:brazil).where(:name => 'Brazil').size.should == 1
+      User.using(:brazil).where(:name => 'Canada').size.should == 0
+      User.using(:canada).where(:name => 'Brazil').size.should == 0
+      User.using(:canada).where(:name => 'Canada').size.should == 1
     end
   end
 

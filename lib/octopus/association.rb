@@ -6,23 +6,46 @@ module Octopus::Association
   module InstanceMethods
     def set_connection_on_association(record)
       return unless ::Octopus.enabled?
-      return if !self.connection.respond_to?(:current_shard) || !self.respond_to?(:current_shard)
+      return if !self.class.connection.respond_to?(:current_shard) || !self.respond_to?(:current_shard)
       if !record.current_shard.nil? && !self.current_shard.nil? && record.current_shard != self.current_shard
         raise "Association Error: Records are from different shards"
       end
 
-      record.current_shard = self.connection.current_shard = self.current_shard if should_set_current_shard?
+      record.current_shard = self.class.connection.current_shard = self.current_shard if should_set_current_shard?
     end
   end
 
-  def has_many(association_id, options = {}, &extension)
-    default_octopus_opts(options)
-    super
+  if Octopus.rails_40_or_above?
+    def has_many(association_id, scope=nil, options={}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
+        default_octopus_opts(options)
+      end
+      super
+    end
+  else
+    def has_many(association_id, options={}, &extension)
+      default_octopus_opts(options)
+      super
+    end
   end
 
-  def has_and_belongs_to_many(association_id, options = {}, &extension)
-    default_octopus_opts(options)
-    super
+
+  if Octopus.rails_40_or_above?
+    def has_and_belongs_to_many(association_id, scope=nil, options={}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
+        default_octopus_opts(options)
+      end
+      super
+    end
+  else
+    def has_and_belongs_to_many(association_id, options={}, &extension)
+      default_octopus_opts(options)
+      super
+    end
   end
 
   def default_octopus_opts(options)

@@ -11,7 +11,14 @@ gemfile:
   - gemfiles/rails30.gemfile
   - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
+  - gemfiles/rails4.gemfile
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com
     - thiago.pradi@gmail.com
+
+matrix:
+  exclude:
+    - rvm: 1.8.7
+      env: CI=true
+      gemfile: gemfiles/rails4.gemfile

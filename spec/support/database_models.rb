@@ -100,3 +100,24 @@ end
 class Advert < ActiveRecord::Base
   establish_connection(:adapter => "postgresql", :database => "octopus_shard_1", :username => ENV["POSTGRES_USER"] || "postgres", :password => "")
 end
+
+class MmorpgPlayer < ActiveRecord::Base
+  has_many :weapons
+  has_many :skills
+end
+
+class Weapon < ActiveRecord::Base
+  belongs_to :mmorpg_player, :inverse_of => :weapons
+  validates  :hand, :uniqueness => { :scope => :mmorpg_player_id }
+  validates_presence_of :mmorpg_player
+  has_many   :skills
+end
+
+class Skill < ActiveRecord::Base
+  belongs_to :weapon, :inverse_of => :skills
+  belongs_to :mmorpg_player, :inverse_of => :skills
+
+  validates_presence_of :weapon
+  validates_presence_of :mmorpg_player
+  validates :name, :uniqueness => { :scope => :mmorpg_player_id }
+end

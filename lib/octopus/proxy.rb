@@ -228,11 +228,19 @@ class Octopus::Proxy
   end
 
   def enable_query_cache!
-    @shards.each { |k, v| safe_connection(v).enable_query_cache! }
+    @shards.each do |k, v|
+      c = safe_connection(v)
+      c.clear_query_cache_without_octopus
+      c.enable_query_cache!
+    end
   end
 
   def disable_query_cache!
     @shards.each { |k, v| safe_connection(v).disable_query_cache! }
+  end
+
+  def clear_all_query_caches!
+    @shards.each { |k, v| safe_connection(v).clear_query_cache_without_octopus }
   end
 
   protected

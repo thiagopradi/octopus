@@ -4,7 +4,6 @@ env:
 before_script:
   - "bundle exec rake db:prepare"
 rvm:
-  - 1.8.7
   - 1.9.3
 
 gemfile:
@@ -21,3 +20,8 @@ matrix:
   include:
     - rvm: 2.0.0
       gemfile: gemfiles/rails32.gemfile
+
+    - rvm: 1.8.7
+      gemfile: 
+        - gemfiles/rails31.gemfile
+        - gemfiles/rails32.gemfile

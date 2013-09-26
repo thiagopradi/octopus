@@ -7,11 +7,20 @@ rvm:
   - 1.8.7
   - 1.9.3
   - 2.0.0
+
 gemfile:
   - gemfiles/rails30.gemfile
   - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
+
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com
     - thiago.pradi@gmail.com
+
+matrix:
+  exclude:
+    - rvm: 2.0.0
+      gemfile: gemfiles/rails30.gemfile
+    - rvm: 2.0.0
+      gemfile: gemfiles/rails31.gemfile

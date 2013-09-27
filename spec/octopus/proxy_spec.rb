@@ -254,7 +254,7 @@ describe Octopus::Proxy do
         end
 
         it "should save all associated objects on the correct shard" do
-          subject.should_not raise_error
+          expect { subject }.to_not raise_error
         end
       end
 
@@ -265,7 +265,7 @@ describe Octopus::Proxy do
         end
 
         it "should save all associated objects on the correct shard" do
-          subject.should_not raise_error
+          expect { subject }.to_not raise_error
         end
       end
     end

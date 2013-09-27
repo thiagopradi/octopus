@@ -9,13 +9,9 @@ module OctopusHelper
         BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{tables}")
       end
 
-      if shard_symbol == :alone_shard
-        %w[
-          mmorpg_players
-          weapons
-          skills
-        ].each do |table|
-          BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{tables}")
+      if shard_symbol == 'alone_shard'
+        ['mmorpg_players', 'weapons', 'skills'].each do |table|
+          BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{table}")
         end
       end
     end

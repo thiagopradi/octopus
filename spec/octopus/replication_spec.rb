@@ -26,6 +26,28 @@ describe "when the database is replicated" do
     end
   end
 
+  describe "When enabling the query cache" do
+    include_context "with query cache enabled"
+
+    it "should do the queries with cache" do
+      OctopusHelper.using_environment :replicated_with_one_slave  do
+        cat1 = Cat.using(:master).create!(:name => "Master Cat 1")
+        cat2 = Cat.using(:master).create!(:name => "Master Cat 2")
+        Cat.using(:master).find(cat1.id).should eq(cat1)
+        Cat.using(:master).find(cat1.id).should eq(cat1)
+        Cat.using(:master).find(cat1.id).should eq(cat1)
+
+        cat3 = Cat.using(:slave1).create!(:name => "Slave Cat 3")
+        cat4 = Cat.using(:slave1).create!(:name => "Slave Cat 4")
+        Cat.find(cat3.id).id.should eq(cat3.id)
+        Cat.find(cat3.id).id.should eq(cat3.id)
+        Cat.find(cat3.id).id.should eq(cat3.id)
+
+        counter.query_count.should eq(16)
+      end
+    end
+  end
+
   it "should allow #using syntax to send queries to master" do
     Cat.create!(:name => "Master Cat")
 
@@ -39,6 +61,13 @@ describe "when the database is replicated" do
       Cat.create!(:name => "Slave Cat")
       Cat.count.should == 0
     end
+  end
+
+  def active_support_subscribed(callback, *args, &block)
+    subscriber = ActiveSupport::Notifications.subscribe(*args, &callback)
+    yield
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
   end
 end
 

@@ -76,6 +76,14 @@ production_replicated:
       <<: *mysql
 
 
+replicated_with_one_slave:
+  replicated: true
+  shards:
+    slave1:
+      database: octopus_shard_2
+      <<: *mysql
+
+
 production_fully_replicated:
   replicated: true
   shards:

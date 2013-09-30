@@ -60,6 +60,7 @@ class Octopus::Proxy
     else
       @fully_replicated = true
     end
+
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
     @slave_index = 0
@@ -139,18 +140,20 @@ class Octopus::Proxy
     @groups.fetch(group.to_s, nil)
   end
 
+  # Rails 3.1 sets automatic_reconnect to false when it removes
+  # connection pool.  Octopus can potentially retain a reference to a closed
+  # connection pool.  Previously, that would work since the pool would just
+  # reconnect, but in Rails 3.1 the flag prevents this.  
+  def safe_connection(connection_pool)
+    if Octopus.rails31? || Octopus.rails32?
+      connection_pool.automatic_reconnect ||= true
+    end
+    connection_pool.connection()
+  end
+
   def select_connection
     @shards[shard_name].verify_active_connections! if @verify_connection
-    # Rails 3.1 sets automatic_reconnect to false when it removes
-    # connection pool.  Octopus can potentially retain a reference to a closed
-    # connection pool.  Previously, that would work since the pool would just
-    # reconnect, but in Rails 3.1 the flag prevents this.
-    if Octopus.rails31? || Octopus.rails32?
-      if !@shards[shard_name].automatic_reconnect
-        @shards[shard_name].automatic_reconnect = true
-      end
-    end
-    @shards[shard_name].connection()
+    safe_connection(@shards[shard_name])
   end
 
   def shard_name
@@ -222,6 +225,22 @@ class Octopus::Proxy
 
   def connection_pool
     return @shards[current_shard]
+  end
+
+  def enable_query_cache!
+    @shards.each do |k, v|
+      c = safe_connection(v)
+      c.clear_query_cache_without_octopus
+      c.enable_query_cache!
+    end
+  end
+
+  def disable_query_cache!
+    @shards.each { |k, v| safe_connection(v).disable_query_cache! }
+  end
+
+  def clear_all_query_caches!
+    @shards.each { |k, v| safe_connection(v).clear_query_cache_without_octopus }
   end
 
   protected

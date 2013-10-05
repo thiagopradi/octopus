@@ -30,4 +30,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'sqlite3', '>= 1.3.4'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'appraisal', '>= 0.3.8'
+
+  s.license = 'MIT'
 end

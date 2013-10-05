@@ -239,7 +239,7 @@ describe Octopus::Proxy do
     end
   end
 
-  if !Octopus.rails30? and !Octopus.rails31?
+  if !Octopus.rails31?
     describe "saving multiple sharded objects at once" do
       before :each do
         @p = MmorpgPlayer.using(:alone_shard).create!(:player_name => 'Thiago')

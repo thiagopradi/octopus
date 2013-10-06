@@ -64,12 +64,16 @@ module Octopus
     @environments ||= config['environments'] || ['production']
   end
 
-  def self.rails31?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 1
+  def self.rails_above_31?
+    ActiveRecord::VERSION::MAJOR >= 3 && (ActiveRecord::VERSION::MINOR >= 2 || ActiveRecord::VERSION::MAJOR > 3)
   end
 
-  def self.rails32?
-    ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 2
+  def self.rails_below_40?
+    ActiveRecord::VERSION::MAJOR <= 3
+  end
+
+  def self.rails_40_or_above?
+    ActiveRecord::VERSION::MAJOR >= 4
   end
 
   def self.rails?
@@ -101,13 +105,16 @@ require "octopus/association"
 require "octopus/rails3/persistence"
 require "octopus/rails3/log_subscriber"
 require "octopus/rails3/abstract_adapter"
-require "octopus/rails3/singular_association"
 
 if defined?(::Rails)
   require "octopus/railtie"
 end
 
-if Octopus.rails32?
+if Octopus.rails_above_4?
+  require "octopus/rails3/singular_association"
+end
+
+if Octopus.rails_above_31?
   require "octopus/rails3.2/persistence"
 end
 

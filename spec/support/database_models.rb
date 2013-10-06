@@ -4,8 +4,8 @@ class BlankModel < ActiveRecord::Base; end;
 
 #The user class is just sharded, not replicated
 class User < ActiveRecord::Base
-  if Octopus.rails32? || Octopus.rails31?
-    scope :thiago, {:conditions => {:name => "Thiago"}}
+  if Octopus.rails_above_30?
+    scope :thiago, lambda { where(:name => 'Thiago') }
   else
     named_scope :thiago, {:conditions => {:name => "Thiago"}}
   end
@@ -82,17 +82,29 @@ class Comment < ActiveRecord::Base
 end
 
 
-class Bacon < ActiveRecord::Base
-  set_table_name "yummy"
-end
+if Octopus.rails_above_31?
+  class Bacon < ActiveRecord::Base
+    self.table_name = 'yummy'
+  end
 
-class Cheese < ActiveRecord::Base
-  set_table_name { "yummy" }
-end
+  class Cheese < ActiveRecord::Base
+    self.table_name = 'yummy' 
+  end
 
-if Octopus.rails32?
   class Ham < ActiveRecord::Base
-    self.table_name = "yummy"
+    self.table_name = 'yummy'
+  end
+else
+  class Bacon < ActiveRecord::Base
+    set_table_name 'yummy'
+  end
+
+  class Cheese < ActiveRecord::Base
+    set_table_name 'yummy'
+  end
+
+  class Ham < ActiveRecord::Base
+    set_table_name 'yummy'
   end
 end
 

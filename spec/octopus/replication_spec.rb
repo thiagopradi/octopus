@@ -111,7 +111,7 @@ describe "when the database is replicated and the entire application is replicat
       Cat.create!(:name => "Slave Cat")
       Cat.connection.current_shard.should eql(:master)
       begin
-        Cat.find(:all, :conditions => 'rubbish = true')
+        Cat.where(:rubbish => true)
       rescue
       end
       Cat.connection.current_shard.should eql(:master)

@@ -145,9 +145,7 @@ class Octopus::Proxy
   # connection pool.  Previously, that would work since the pool would just
   # reconnect, but in Rails 3.1 the flag prevents this.  
   def safe_connection(connection_pool)
-    if Octopus.rails31? || Octopus.rails32?
-      connection_pool.automatic_reconnect ||= true
-    end
+    connection_pool.automatic_reconnect ||= true
     connection_pool.connection()
   end
 

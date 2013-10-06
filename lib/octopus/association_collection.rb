@@ -1,16 +1,14 @@
 module Octopus::AssociationCollection
 
   def self.included(base)
-    if Octopus.rails_above_30?
-      base.instance_eval do
-        alias_method_chain :reader, :octopus
-        alias_method_chain :writer, :octopus
-        alias_method_chain :ids_reader, :octopus
-        alias_method_chain :ids_writer, :octopus
-        alias_method_chain :create, :octopus
-        alias_method_chain :create!, :octopus
-        alias_method_chain :build, :octopus
-      end
+    base.instance_eval do
+      alias_method_chain :reader, :octopus
+      alias_method_chain :writer, :octopus
+      alias_method_chain :ids_reader, :octopus
+      alias_method_chain :ids_writer, :octopus
+      alias_method_chain :create, :octopus
+      alias_method_chain :create!, :octopus
+      alias_method_chain :build, :octopus
     end
   end
 
@@ -62,8 +60,4 @@ module Octopus::AssociationCollection
   end
 end
 
-if Octopus.rails_above_30?
-  ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)
-else
-  ActiveRecord::Associations::AssociationCollection.send(:include, Octopus::AssociationCollection)
-end
+ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)

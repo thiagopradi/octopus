@@ -6,11 +6,7 @@ namespace :octopus do
     connection = ActiveRecord::Base.connection
 
     current_version  = ActiveRecord::Migrator.current_version
-    migrations_paths = if Octopus.rails_above_30?
-                         ActiveRecord::Migrator.migrations_paths
-                       else
-                         ActiveRecord::Migrator.migrations_path
-                       end
+    migrations_paths = ActiveRecord::Migrator.migrations_paths
 
     connection.send_queries_to_multiple_shards(connection.shard_names) do
       ActiveRecord::Schema.initialize_schema_migrations_table

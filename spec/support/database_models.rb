@@ -4,11 +4,7 @@ class BlankModel < ActiveRecord::Base; end;
 
 #The user class is just sharded, not replicated
 class User < ActiveRecord::Base
-  if Octopus.rails_above_30?
-    scope :thiago, lambda { where(:name => 'Thiago') }
-  else
-    named_scope :thiago, {:conditions => {:name => "Thiago"}}
-  end
+  scope :thiago, lambda { where(:name => 'Thiago') }
 
   def awesome_queries
     Octopus.using(:canada) do

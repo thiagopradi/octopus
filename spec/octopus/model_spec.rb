@@ -237,17 +237,14 @@ describe Octopus::Model do
         User.using(:brazil).find_by_name("Mike").should == u
       end
 
-      if Octopus.rails_above_30?
-        # Rails <= 3.0 doesn't support equality checks on non-persisted objects
-        it "should check current_shard when determining equality" do
-          canada1.should_not == brazil1
-          canada1.should == canada1_dup
-        end
+      it "should check current_shard when determining equality" do
+        canada1.should_not == brazil1
+        canada1.should == canada1_dup
+      end
 
-        it "delegates equality check on scopes" do
-          u = User.using(:brazil).create!(:name => "Mike")
-          User.using(:brazil).where(:name => "Mike").should == [u]
-        end
+      it "delegates equality check on scopes" do
+        u = User.using(:brazil).create!(:name => "Mike")
+        User.using(:brazil).where(:name => "Mike").should == [u]
       end
     end
   end

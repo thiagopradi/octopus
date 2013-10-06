@@ -86,9 +86,7 @@ module Octopus::Model
       base.send(:alias_method, :equality_without_octopus, :==)
       base.send(:alias_method, :==, :equality_with_octopus)
       base.send(:alias_method, :eql?, :==)
-      if !Octopus.rails31?
-        base.send(:alias_method_chain, :perform_validations, :octopus)
-      end
+      base.send(:alias_method_chain, :perform_validations, :octopus)
     end
 
     def should_set_current_shard?
@@ -113,15 +111,13 @@ module Octopus::Model
       equality_without_octopus(comparison_object) && comparison_object.current_shard == current_shard
     end
 
-    if !Octopus.rails31?
-      def perform_validations_with_octopus(*args)
-        if Octopus.enabled? and should_set_current_shard?
-          Octopus.using(self.current_shard) do
-            perform_validations_without_octopus(*args)
-          end
-        else
+    def perform_validations_with_octopus(*args)
+      if Octopus.enabled? and should_set_current_shard?
+        Octopus.using(self.current_shard) do
           perform_validations_without_octopus(*args)
         end
+      else
+        perform_validations_without_octopus(*args)
       end
     end
   end

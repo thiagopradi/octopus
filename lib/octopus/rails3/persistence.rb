@@ -35,6 +35,11 @@ module Octopus
         reload_connection()
         super
       end
+
+      def update_column(*args)
+        reload_connection()
+        super
+      end
     end
   end
 end

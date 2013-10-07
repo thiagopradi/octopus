@@ -15,7 +15,7 @@ module Octopus::Association
     end
   end
 
-  if Octopus.rails_40_or_above?
+  if Octopus.rails4?
     def has_many(association_id, scope=nil, options={}, &extension)
       if options == {} && scope.is_a?(Hash)
         default_octopus_opts(scope)
@@ -32,7 +32,7 @@ module Octopus::Association
   end
 
 
-  if Octopus.rails_40_or_above?
+  if Octopus.rails4?
     def has_and_belongs_to_many(association_id, scope=nil, options={}, &extension)
       if options == {} && scope.is_a?(Hash)
         default_octopus_opts(scope)

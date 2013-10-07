@@ -29,7 +29,7 @@ class Octopus::Proxy
     shards_config ||= []
 
     shards_config.each do |key, value|
-      if value.is_a?(String) && Octopus.rails_above_31?
+      if value.is_a?(String) 
         value = resolve_string_connection(value).merge(:octopus_shard => key)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
@@ -244,11 +244,8 @@ class Octopus::Proxy
   protected
 
   def connection_pool_for(adapter, config)
-    if Octopus.rails_40_or_above?
-      arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(
-        adapter.dup,
-        config
-      )
+    if Octopus.rails4?
+      arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(adapter.dup, config)
     else
       arg = ActiveRecord::Base::ConnectionSpecification.new(adapter.dup, config)
     end
@@ -266,7 +263,7 @@ class Octopus::Proxy
   end
 
   def resolve_string_connection(spec)
-    if Octopus.rails_40_or_above?
+    if Octopus.rails4?
       resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
     else
       resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})

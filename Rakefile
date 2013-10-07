@@ -57,7 +57,7 @@ namespace :db do
     require "#{File.dirname(__FILE__)}/spec/support/database_connection"
 
     shard_symbols = [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
-    shard_symbols << :protocol_shard if Octopus.rails_above_31?
+    shard_symbols << :protocol_shard
     shard_symbols.each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
       # the model be a descendent of ActiveRecord::Base.

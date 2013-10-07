@@ -4,7 +4,7 @@ module Octopus
     module OctopusShard
 
       parent = ActiveSupport::BasicObject
-      if Octopus.rails_40_or_above?
+      if Octopus.rails4?
         parent = ActiveSupport::ProxyObject
       end
 

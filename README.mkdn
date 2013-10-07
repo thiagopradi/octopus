@@ -148,7 +148,7 @@ Contributors are welcome! To run the test suite, you need mysql, postgresql and 
     bundle exec rake appraisal:install
     bundle exec rake spec
 
-This command will run the spec suite for all rails versions supported (Rails 3.0, Rails 3.1 and Rails 3.2).
+This command will run the spec suite for all rails versions supported.
 To run our integrations tests inside sample_app, you need to following commands:
 
     cd sample_app

@@ -9,7 +9,7 @@ describe Octopus::Proxy do
       proxy.instance_variable_get(:@shards).should include("canada", "brazil", "master", "sqlite_shard", "russia", "alone_shard",
                                                            "aug2009", "postgresql_shard", "aug2010", "aug2011")
 
-      proxy.instance_variable_get(:@shards).should include("protocol_shard") if Octopus.rails_above_31?
+      proxy.instance_variable_get(:@shards).should include("protocol_shard")
 
       proxy.has_group?("country_shards").should be_true
       proxy.shards_for_group("country_shards").should include(:canada, :brazil, :russia)
@@ -239,34 +239,32 @@ describe Octopus::Proxy do
     end
   end
 
-  if !Octopus.rails_above_30?
-    describe "saving multiple sharded objects at once" do
+  describe "saving multiple sharded objects at once" do
+    before :each do
+      @p = MmorpgPlayer.using(:alone_shard).create!(:player_name => 'Thiago')
+    end
+
+    subject { @p.save! }
+
+    context "when the objects are created with #new and saved one at a time" do
       before :each do
-        @p = MmorpgPlayer.using(:alone_shard).create!(:player_name => 'Thiago')
+        @p.weapons.create!(:name => 'battleaxe', :hand => 'right')
+        @p.skills.create!(:name => 'smiting', :weapon => @p.weapons[0])
       end
 
-      subject { @p.save! }
+      it "should save all associated objects on the correct shard" do
+        expect { subject }.to_not raise_error
+      end
+    end
 
-      context "when the objects are created with #new and saved one at a time" do
-        before :each do
-          @p.weapons.create!(:name => 'battleaxe', :hand => 'right')
-          @p.skills.create!(:name => 'smiting', :weapon => @p.weapons[0])
-        end
-
-        it "should save all associated objects on the correct shard" do
-          expect { subject }.to_not raise_error
-        end
+    context "when the objects are created with #new and saved at the same time" do
+      before :each do
+        @p.weapons.new(:name => 'battleaxe', :hand => 'right')
+        @p.skills.new(:name => 'smiting', :weapon => @p.weapons[0])
       end
 
-      context "when the objects are created with #new and saved at the same time" do
-        before :each do
-          @p.weapons.new(:name => 'battleaxe', :hand => 'right')
-          @p.skills.new(:name => 'smiting', :weapon => @p.weapons[0])
-        end
-
-        it "should save all associated objects on the correct shard" do
-          expect { subject }.to_not raise_error
-        end
+      it "should save all associated objects on the correct shard" do
+        expect { subject }.to_not raise_error
       end
     end
   end

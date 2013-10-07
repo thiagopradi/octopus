@@ -78,30 +78,16 @@ class Comment < ActiveRecord::Base
 end
 
 
-if Octopus.rails_above_31?
-  class Bacon < ActiveRecord::Base
-    self.table_name = 'yummy'
-  end
+class Bacon < ActiveRecord::Base
+  self.table_name = 'yummy'
+end
 
-  class Cheese < ActiveRecord::Base
-    self.table_name = 'yummy' 
-  end
+class Cheese < ActiveRecord::Base
+  self.table_name = 'yummy' 
+end
 
-  class Ham < ActiveRecord::Base
-    self.table_name = 'yummy'
-  end
-else
-  class Bacon < ActiveRecord::Base
-    set_table_name 'yummy'
-  end
-
-  class Cheese < ActiveRecord::Base
-    set_table_name 'yummy'
-  end
-
-  class Ham < ActiveRecord::Base
-    set_table_name 'yummy'
-  end
+class Ham < ActiveRecord::Base
+  self.table_name = 'yummy'
 end
 
 #This class sets its own connection

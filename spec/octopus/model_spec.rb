@@ -372,23 +372,21 @@ describe Octopus::Model do
       end
     end
 
-    if Octopus.rails_above_31?
-      describe "#pluck" do
-        before { User.using(:brazil).create!(:name => "User1") }
+    describe "#pluck" do
+      before { User.using(:brazil).create!(:name => "User1") }
 
-        it "should works from scope proxy" do
-          names = User.using(:brazil).pluck(:name)
-          names.should eq(["User1"])
-          User.using(:master).pluck(:name).should eq([])
-        end
+      it "should works from scope proxy" do
+        names = User.using(:brazil).pluck(:name)
+        names.should eq(["User1"])
+        User.using(:master).pluck(:name).should eq([])
       end
+    end
 
-      it "update_column" do
-        @user = User.using(:brazil).create!(:name => "User1")
-        @user2 = User.using(:brazil).find(@user.id)
-        @user2.update_column(:name, "Joaquim Shard Brazil")
-        User.using(:brazil).find_by_name("Joaquim Shard Brazil").should_not be_nil
-      end
+    it "update_column" do
+      @user = User.using(:brazil).create!(:name => "User1")
+      @user2 = User.using(:brazil).find(@user.id)
+      @user2.update_column(:name, "Joaquim Shard Brazil")
+      User.using(:brazil).find_by_name("Joaquim Shard Brazil").should_not be_nil
     end
 
     it "update_attributes" do
@@ -479,11 +477,9 @@ describe Octopus::Model do
     end
   end
 
-  if Octopus.rails_above_31?
-    describe "when using table_name=" do
-      it 'should work correctly' do
-        Ham.using(:brazil).create!(:name => "YUMMMYYYY")
-      end
+  describe "when using table_name=" do
+    it 'should work correctly' do
+      Ham.using(:brazil).create!(:name => "YUMMMYYYY")
     end
   end
 

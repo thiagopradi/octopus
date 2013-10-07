@@ -7,7 +7,6 @@ rvm:
   - 1.9.3
 
 gemfile:
-  - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
   - gemfiles/rails4.gemfile
 

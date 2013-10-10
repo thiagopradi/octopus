@@ -18,7 +18,7 @@ module Octopus
     @config ||= begin
       file_name = Octopus.directory() + "/config/shards.yml"
 
-      if File.exists?(file_name)
+      if File.exists?(file_name) || File.symlink?(file_name)
         config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env()]
       else
         config ||= HashWithIndifferentAccess.new

@@ -64,6 +64,10 @@ class Octopus::Proxy
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
     @slave_index = 0
+
+    all_shards = config[Octopus.rails_env]
+    non_replicas = all_shards.select {|key, db| db["is_replica"] == false}.keys
+    non_replicas.each {|r| @slaves_list.delete(r)}
   end
 
   def current_model

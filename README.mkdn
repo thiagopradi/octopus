@@ -17,6 +17,8 @@ Octopus supports:
 ### Replication
 When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a>
 
+add `is_replica: false` to shards db config making Octopus skip the db from slaves
+
 ### Sharding
  When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a>
 

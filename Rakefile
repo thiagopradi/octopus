@@ -13,6 +13,7 @@ namespace :db do
     pg_spec = {
       :adapter  => 'postgresql',
       :host     => 'localhost',
+      :password => '',
       :username => (ENV['POSTGRES_USER'] || "postgres"),
       :encoding => 'utf8'
     }
@@ -21,6 +22,7 @@ namespace :db do
       :adapter  => 'mysql2',
       :host     => 'localhost',
       :username => (ENV['MYSQL_USER'] || "root"),
+      :password => '',
       :encoding => 'utf8'
     }
 

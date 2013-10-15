@@ -414,6 +414,17 @@ describe Octopus::Model do
       User.using(:brazil).find_by_name("Joaquim").should_not be_nil
     end
 
+    it "as_json" do
+      ActiveRecord::Base.include_root_in_json = false 
+
+      Octopus.using(:brazil) do
+        User.create!(:name => "User1")
+      end
+
+      user = User.using(:brazil).where(:name => "User1").first
+      user.as_json(:except => [:created_at, :updated_at, :id]).should eq({"admin"=>nil, "name"=>"User1", "number"=>nil})
+    end
+
     it "transaction" do
       u = User.create!(:name => "Thiago")
 

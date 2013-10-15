@@ -37,6 +37,10 @@ class Octopus::ScopeProxy
     result
   end
 
+  def as_json(options = nil)
+    method_missing(:as_json, options)
+  end
+
   # Delegates to method_missing (instead of @klass) so that User.using(:blah).where(:name => "Mike")
   # gets run in the correct shard context when #== is evaluated.
   def ==(*args)

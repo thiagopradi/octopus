@@ -2,7 +2,7 @@ mysql: &mysql
   adapter: mysql2
   username: <%= ENV['MYSQL_USER'] || 'root' %>
   host: localhost
-  password:
+  password: 
 
 octopus:
   shards:
@@ -45,6 +45,7 @@ octopus:
         <<: *mysql
 
     protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>@localhost:5432/octopus_shard_2
+    # NOTE: add password as the following format if any
     # protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>:PASSWORD@localhost:5432/octopus_shard_2
 
 production_raise_error:
@@ -74,13 +75,9 @@ production_replicated:
       database: octopus_shard_4
       <<: *mysql
     slave4:
-      database: octopus_shard_5
-      <<: *mysql
-    not_a_slave:
-      database: octopus_shard_5
       is_replica: false
+      database: octopus_shard_5
       <<: *mysql
-
 
 replicated_with_one_slave:
   replicated: true

@@ -9,3 +9,4 @@ pkg/*
 tmp/*
 .*.sw[a-z]
 database.log
+add_password_settings.patch

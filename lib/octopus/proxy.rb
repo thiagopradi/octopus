@@ -287,7 +287,7 @@ class Octopus::Proxy
     old_shard = self.current_shard
 
     begin
-      if current_model.replicated || @fully_replicated
+      if ! @slaves_list.empty? && (current_model.replicated || @fully_replicated)
         self.current_shard = @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
       else
         self.current_shard = :master

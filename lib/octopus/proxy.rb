@@ -15,12 +15,6 @@ class Octopus::Proxy
     @shards[:master] = ActiveRecord::Base.connection_pool_without_octopus()
     @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
 
-    if !config.nil? && config.has_key?("verify_connection")
-      @verify_connection = config["verify_connection"]
-    else
-      @verify_connection = false
-    end
-
     if !config.nil?
       @entire_sharded = config['entire_sharded']
       shards_config = config[Octopus.rails_env()]
@@ -150,7 +144,6 @@ class Octopus::Proxy
   end
 
   def select_connection
-    @shards[shard_name].verify_active_connections! if @verify_connection
     safe_connection(@shards[shard_name])
   end
 

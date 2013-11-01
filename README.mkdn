@@ -122,14 +122,6 @@ If you want to send a specified action, or all actions from a controller, to a s
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
 Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
 
-
-## Important!
-Occasionally, an application might lose a connection to a database; when this happens, ActiveRecord will raise an exception. Add the following line to your application configuration if you are experiencing this issue:
-
-    verify_connection: true
-
-This will tell Octopus to verify the connection before sending the query.
-
 ## Mixing Octopus with the Rails multiple database model
 If you want to set a custom connection to a specific model, use the syntax `octopus_establish_connection` syntax:
 

@@ -26,10 +26,6 @@ describe Octopus::Proxy do
       proxy.instance_variable_get(:@replicated).should be_false
     end
 
-    it "should not verify connections for default" do
-      proxy.instance_variable_get(:@verify_connection).should be_false
-    end
-
     it "should work with thiking sphinx" do
       config = proxy.instance_variable_get(:@config)
       config[:adapter].should == "mysql2"
@@ -140,7 +136,6 @@ describe Octopus::Proxy do
       Octopus.config()
 
       proxy.instance_variable_get(:@replicated).should be_true
-      proxy.instance_variable_get(:@verify_connection).should be_true
       Octopus.environments.should == ["staging", "production"]
     end
 

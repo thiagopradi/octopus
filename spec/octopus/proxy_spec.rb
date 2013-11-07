@@ -263,4 +263,15 @@ describe Octopus::Proxy do
       end
     end
   end
+
+  describe "forked instance" do
+    context "disconnect before fork" do
+      it "can use connection" do
+        proxy.disconnect!
+        fork do
+          expect( proxy.select_connection.quote_string("'quote") ).to eq("\\'quote")
+        end
+      end
+    end
+  end
 end

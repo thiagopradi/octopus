@@ -71,11 +71,17 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
     it "should find all models in the specified shard" do
       @brazil_role.permission_ids().should == [@permission_brazil.id]
       @brazil_role.permissions().should == [@permission_brazil]
+
+      @brazil_role.permissions.first.should eq(@permission_brazil)
+      @brazil_role.permissions.last.should eq(@permission_brazil)
     end
 
     it "should finds the client that the item belongs" do
       @permission_brazil.role_ids.should == [@brazil_role.id]
       @permission_brazil.roles.should == [@brazil_role]
+
+      @permission_brazil.roles.first.should eq(@brazil_role)
+      @permission_brazil.roles.last.should eq(@brazil_role)
     end
 
     it "should update the attribute for the item" do
@@ -226,8 +232,11 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
     end
 
     it "should find all models in the specified shard" do
-      @programmer.project_ids().should == [ @project.id]
-      @programmer.projects().should == [@project]
+      @programmer.project_ids().should eq([@project.id])
+      @programmer.projects().should eq([@project])
+
+      @programmer.projects.first.should eq(@project)
+      @programmer.projects.last.should eq(@project)
     end
 
 
@@ -379,8 +388,11 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
     end
 
     it "should find all models in the specified shard" do
-      @brazil_client.item_ids.should == [@item_brazil.id]
-      @brazil_client.items().should == [@item_brazil]
+      @brazil_client.item_ids.should eq([@item_brazil.id]) 
+      @brazil_client.items().should eq([@item_brazil])
+
+      @brazil_client.items.last.should eq(@item_brazil)
+      @brazil_client.items.first.should eq(@item_brazil)
     end
 
     it "should finds the client that the item belongs" do

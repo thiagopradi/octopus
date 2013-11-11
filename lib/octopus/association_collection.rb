@@ -9,6 +9,7 @@ module Octopus::AssociationCollection
       alias_method_chain :create, :octopus
       alias_method_chain :create!, :octopus
       alias_method_chain :build, :octopus
+      alias_method_chain :size, :octopus
     end
   end
 
@@ -49,6 +50,14 @@ module Octopus::AssociationCollection
 
   def should_wrap_the_connection?
     @owner.respond_to?(:current_shard) && @owner.current_shard != nil
+  end
+
+  def size_with_octopus
+    if should_wrap_the_connection?
+      Octopus.using(@owner.current_shard) { size_without_octopus }
+    else
+      size_without_octopus
+    end
   end
 
   def count(*args)

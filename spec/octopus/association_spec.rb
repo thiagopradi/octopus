@@ -53,7 +53,7 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       c.save()
       k.save()
 
-      Computer.includes(:keyboard).find(c.id).should == c
+      Computer.using(:brazil).includes(:keyboard).find(c.id).should == c
     end
   end
 

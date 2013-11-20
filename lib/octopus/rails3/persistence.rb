@@ -2,43 +2,35 @@ module Octopus
   module Rails3
     module Persistence
       def update_attribute(*args)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def update_attributes(*args)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def update_attributes!(*args)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def reload(*args)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def delete
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def destroy
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def touch(name=nil)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
 
       def update_column(*args)
-        reload_connection()
-        super
+        run_on_shard { super }
       end
     end
   end

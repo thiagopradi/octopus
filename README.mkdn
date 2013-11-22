@@ -27,7 +27,7 @@ When using replication, all writes queries will be sent to master, and read quer
 
 Add this line to Gemfile:
 
-    gem 'ar-octopus', :require => 'octopus'
+    gem 'ar-octopus'
 
 Currently, Octopus doesn't support Rails 2. If you need support for rails 2, please use the version 0.5.0.
 

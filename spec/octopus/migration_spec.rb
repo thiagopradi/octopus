@@ -98,4 +98,18 @@ describe Octopus::Migration do
       Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }.should include(14)
     end
   end
+
+  describe "when using a default_migration_group" do
+    it "should run migrations on all shards in the default_migration_group" do
+      OctopusHelper.using_environment :octopus_with_default_migration_group do
+        OctopusHelper.migrating_to_version 15 do
+          Octopus.using(:master) { ActiveRecord::Migrator.get_all_versions }.should_not include(15)
+          Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }.should include(15)
+          Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }.should include(15)
+          Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }.should include(15)
+        end
+      end
+    end
+  end
+
 end

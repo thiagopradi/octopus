@@ -231,6 +231,14 @@ class Octopus::Proxy
     @shards.each { |k, v| safe_connection(v).clear_query_cache }
   end
 
+  def clear_active_connections!
+    @shards.each { |k, v| v.release_connection }
+  end
+
+  def clear_all_connections!
+    @shards.each { |k, v| v.disconnect! }
+  end
+
   protected
 
   def connection_pool_for(adapter, config)

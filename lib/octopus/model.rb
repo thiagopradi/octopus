@@ -72,9 +72,27 @@ module Octopus::Model
         end
       end
 
+      def self.clear_active_connections_with_octopus!
+        if should_use_normal_connection?
+          clear_active_connections_without_octopus!
+        else
+          connection_proxy.clear_active_connections!
+        end
+      end
+
+      def self.clear_all_connections_with_octopus!
+        if should_use_normal_connection?
+          clear_all_connections_without_octopus!
+        else
+          connection_proxy.clear_all_connections!
+        end
+      end
+
       class << self
         alias_method_chain :connection, :octopus
         alias_method_chain :connection_pool, :octopus
+        alias_method_chain :clear_all_connections!, :octopus
+        alias_method_chain :clear_active_connections!, :octopus
       end
     end
   end

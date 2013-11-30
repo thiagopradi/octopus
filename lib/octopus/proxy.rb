@@ -12,7 +12,6 @@ class Octopus::Proxy
     @shards = HashWithIndifferentAccess.new
     @groups = {}
     @adapters = Set.new
-    @shards[:master] = ActiveRecord::Base.connection_pool_without_octopus()
     @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
 
     if !config.nil?
@@ -45,6 +44,8 @@ class Octopus::Proxy
         end
       end
     end
+
+    @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus()
   end
 
   def initialize_replication(config)

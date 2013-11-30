@@ -107,6 +107,13 @@ You also could send a migration to a group of shards.  This migration will be se
       end
     end
 
+You can specify a `default_migration_group` for migrations, so that modifications to each individual migration file are not needed:
+
+    octopus:
+      default_migration_group: europe_databases
+
+There is no need for a corresponding `default_migration_shard` - simply define that database to be your master. You might want this setting if all of your databases have identical schemas, but are not replicated.
+
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:

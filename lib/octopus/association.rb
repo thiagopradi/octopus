@@ -3,6 +3,39 @@ module Octopus::Association
     base.send(:include, InstanceMethods)
   end
 
+  module QueryOnCurrentShard
+
+    METHODS= %w[
+      all
+      average
+      count
+      empty?
+      exists?
+      find
+      find_by_sql
+      first
+      last
+      maximum
+      minimum
+      pluck
+      scoping
+      size
+      sum
+      to_a
+    ]
+
+    METHODS.each do |m|
+      define_method m.to_sym do |*args,&block|
+        if self.respond_to?(:proxy_association) and self.proxy_association
+          self.proxy_association.owner.run_on_shard { super(*args, &block) }
+        else
+          super(*args, &block)
+        end
+      end
+    end
+
+  end
+
   module InstanceMethods
     def set_connection_on_association(record)
       return unless ::Octopus.enabled?
@@ -64,6 +97,8 @@ module Octopus::Association
     else
       options[:before_remove] = :set_connection_on_association
     end
+
+    options[:extend] = [ Octopus::Association::QueryOnCurrentShard, options[:extend] ].flatten.compact
   end
 end
 

@@ -31,7 +31,7 @@ module Octopus::Model
 
     def hijack_initializer()
       attr_accessor :current_shard
-      before_save :reload_connection
+      around_save :run_on_shard
 
       def set_current_shard
         return unless Octopus.enabled?
@@ -111,18 +111,12 @@ module Octopus::Model
       self.respond_to?(:current_shard) && !self.current_shard.nil?
     end
 
-    def reload_connection_safe(&block)
-      return yield unless should_set_current_shard?
-      original = self.class.connection_proxy.current_shard
-      self.class.connection_proxy.current_shard = self.current_shard
-      result = yield
-      self.class.connection_proxy.current_shard = original
-      result
-    end
-
-    def reload_connection()
-      return unless should_set_current_shard?
-      self.class.connection_proxy.current_shard = self.current_shard
+    def run_on_shard(&block)
+      if self.current_shard
+        self.class.connection_proxy.run_queries_on_shard(self.current_shard, &block)
+      else
+        yield
+      end
     end
 
     def equality_with_octopus(comparison_object)

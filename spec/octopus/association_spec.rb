@@ -53,7 +53,7 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       c.save()
       k.save()
 
-      Computer.includes(:keyboard).find(c.id).should == c
+      Computer.using(:brazil).includes(:keyboard).find(c.id).should == c
     end
   end
 
@@ -465,6 +465,14 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
         @brazil_client.items.to_set.should == [@item_brazil, @item_brazil_2].to_set
       end
 
+      it "all" do
+        item = @brazil_client.items.build(:name => "Builded Item")
+        item.save()
+        i = @brazil_client.items
+        i.to_set.should == [@item_brazil, item].to_set
+        i.reload.all.to_set.should == [@item_brazil, item].to_set
+      end
+
       it "build" do
         item = @brazil_client.items.build(:name => "Builded Item")
         item.save()
@@ -599,6 +607,14 @@ describe Octopus::Association, :shards => [:brazil, :master, :canada] do
       it "<<" do
         @brazil_client.comments << @comment_brazil_2
         @brazil_client.comments.to_set.should == [@comment_brazil, @comment_brazil_2].to_set
+      end
+
+      it "all" do
+        comment = @brazil_client.comments.build(:name => "Builded Comment")
+        comment.save()
+        c = @brazil_client.comments
+        c.to_set.should == [@comment_brazil, comment].to_set
+        c.reload.all.to_set.should == [@comment_brazil, comment].to_set
       end
 
       it "build" do

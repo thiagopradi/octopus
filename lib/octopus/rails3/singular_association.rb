@@ -10,23 +10,23 @@ module Octopus::SingularAssociation
   end
 
   def reader_with_octopus(*args)
-    owner.reload_connection_safe { reader_without_octopus(*args) }
+    owner.run_on_shard { reader_without_octopus(*args) }
   end
 
   def writer_with_octopus(*args)
-    owner.reload_connection_safe { writer_without_octopus(*args) }
+    owner.run_on_shard { writer_without_octopus(*args) }
   end
 
   def create_with_octopus(*args)
-    owner.reload_connection_safe { create_without_octopus(*args) }
+    owner.run_on_shard { create_without_octopus(*args) }
   end
 
   def create_with_octopus!(*args)
-    owner.reload_connection_safe { create_without_octopus!(*args) }
+    owner.run_on_shard { create_without_octopus!(*args) }
   end
 
   def build_with_octopus(*args)
-    owner.reload_connection_safe { build_without_octopus(*args) }
+    owner.run_on_shard { build_without_octopus(*args) }
   end
 
 end

@@ -16,7 +16,7 @@ module Octopus::Migration
   include InstanceOrClassMethods
 
   def self.included(base)
-    base.send(:extend, ClassMethods)
+    base.extend(ClassMethods)
 
     base.alias_method_chain :announce, :octopus
     base.class_attribute :current_shard, :current_group, :current_group_specified, :instance_reader => false, :instance_writer => false
@@ -57,7 +57,7 @@ end
 
 module Octopus::Migrator
   def self.included(base)
-    base.send(:extend, ClassMethods)
+    base.extend(ClassMethods)
 
     base.class_eval do
       class << self

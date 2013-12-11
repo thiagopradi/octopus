@@ -164,7 +164,7 @@ If you are having issues running the octopus spec suite, verify your database us
 
 ## Thanks
 
-This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>,
+This project is sponsored by the <a href="http://www.rubysoc.org">Ruby Summer of Code</a>, Rapid River Software,
 and my mentors <a href="http://github.com/mperham">Mike Perham</a> and <a href="http://github.com/amitagarwal">Amit Agarwal</a>.
 
 ## Copyright

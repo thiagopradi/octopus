@@ -22,7 +22,7 @@ class Octopus::Proxy
     shards_config ||= []
 
     shards_config.each do |key, value|
-      if value.is_a?(String) 
+      if value.is_a?(String)
         value = resolve_string_connection(value).merge(:octopus_shard => key)
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
@@ -138,7 +138,7 @@ class Octopus::Proxy
   # Rails 3.1 sets automatic_reconnect to false when it removes
   # connection pool.  Octopus can potentially retain a reference to a closed
   # connection pool.  Previously, that would work since the pool would just
-  # reconnect, but in Rails 3.1 the flag prevents this.  
+  # reconnect, but in Rails 3.1 the flag prevents this.
   def safe_connection(connection_pool)
     connection_pool.automatic_reconnect ||= true
     connection_pool.connection()
@@ -238,6 +238,10 @@ class Octopus::Proxy
 
   def clear_all_connections!
     @shards.each { |k, v| v.disconnect! }
+  end
+
+  def connected?
+    @shards.any? { |k, v| v.connected? }
   end
 
   protected

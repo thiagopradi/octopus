@@ -285,5 +285,15 @@ describe Octopus::Proxy do
       Item.using(:brazil).new(:name => 'Another Brazil Item').connection.select_connection.should_not eq(@item_brazil_conn)
       Item.using(:canada).new(:name => 'Another Canada Item').connection.select_connection.should_not eq(@item_canada_conn)
     end
+
+    it "is consistent with connected?" do
+      Item.connected?.should be_true
+      ActiveRecord::Base.connected?.should be_true
+
+      Item.clear_all_connections!
+
+      Item.connected?.should be_false
+      ActiveRecord::Base.connected?.should be_false
+    end
   end
 end

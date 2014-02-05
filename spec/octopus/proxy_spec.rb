@@ -112,7 +112,11 @@ describe Octopus::Proxy do
     end
 
     it "should initialize the list of shards" do
-      proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3", "slave4"]
+      proxy.instance_variable_get(:@slaves_list).should == ["slave1", "slave2", "slave3"]
+    end
+
+    it "should remove shards with `is_replica: false`" do
+      proxy.instance_variable_get(:@slaves_list).should_not include("slave4")
     end
   end
 

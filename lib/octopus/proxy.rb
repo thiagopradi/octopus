@@ -59,6 +59,10 @@ class Octopus::Proxy
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
     @slave_index = 0
+
+    all_shards = config[Octopus.rails_env]
+    non_replicas = all_shards.select {|key, db| db["is_replica"] == false}.keys
+    non_replicas.each {|r| @slaves_list.delete(r)}
   end
 
   def current_model
@@ -286,7 +290,7 @@ class Octopus::Proxy
     old_shard = self.current_shard
 
     begin
-      if current_model.replicated || @fully_replicated
+      if ! @slaves_list.empty? && (current_model.replicated || @fully_replicated)
         self.current_shard = @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
       else
         self.current_shard = :master

@@ -27,7 +27,9 @@ When using replication, all writes queries will be sent to master, and read quer
 
 Add this line to Gemfile:
 
-    gem 'ar-octopus'
+```
+gem 'ar-octopus'
+```
 
 Currently, Octopus doesn't support Rails 2. If you need support for rails 2, please use the version 0.5.0.
 
@@ -42,7 +44,9 @@ information for each shard is stored within that shard's database.
 If you are upgrading from < 0.5.0 run the `copy_schema_versions` rake task to copy the schema version information in the
 master database to each of the shards:
 
-    rake octopus:copy_schema_versions
+```bash
+rake octopus:copy_schema_versions
+```
 
 Once the task completes migrations will operate normally and schema information will be stored in each shard database
 going forward.
@@ -55,62 +59,73 @@ First, you need to create a config file, shards.yml, inside your config/ directo
 
 Octopus adds a method to each AR Class and object: the using method is used to select the shard like this:
 
-    User.where(:name => "Thiago").limit(3).using(:slave_one)
+```ruby
+User.where(:name => "Thiago").limit(3).using(:slave_one)
+```
 
 Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard.
 
-    Octopus.using(:slave_two) do
-      User.create(:name => "Mike")
-    end
+```ruby
+Octopus.using(:slave_two) do
+  User.create(:name => "Mike")
+end
+```
 
 Each model instance knows which shard it came from so this will work automatically:
 
-    # This will find the user in the shard1
-    @user = User.using(:shard1).find_by_name("Joao")
+```ruby
+# This will find the user in the shard1
+@user = User.using(:shard1).find_by_name("Joao")
 
-    # This will find the user in the master database
-    @user2 = User.find_by_name("Jose")
+# This will find the user in the master database
+@user2 = User.find_by_name("Jose")
 
-    #Sets the name
-    @user.name = "Mike"
+#Sets the name
+@user.name = "Mike"
 
-    # Save the user in the correct shard, shard1.
-    @user.save
+# Save the user in the correct shard, shard1.
+@user.save
+```
 
 ### Migrations
 
 In migrations, you also have access to the using method. The syntax is basically the same. This migration will run in the brazil and canada shards.
 
-    class CreateUsersOnBothShards < ActiveRecord::Migration
-      using(:brazil, :canada)
+```ruby
+class CreateUsersOnBothShards < ActiveRecord::Migration
+  using(:brazil, :canada)
 
-      def self.up
-        User.create!(:name => "Both")
-      end
+  def self.up
+    User.create!(:name => "Both")
+  end
 
-      def self.down
-        User.delete_all
-      end
-    end
+  def self.down
+    User.delete_all
+  end
+end
+```
 
 You also could send a migration to a group of shards.  This migration will be sent to all shards that belongs to history_shards group, specified in shards.yml:
 
-    class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
-      using_group(:history_shards)
+```ruby
+class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
+  using_group(:history_shards)
 
-      def self.up
-        User.create!(:name => "MultipleGroup")
-      end
+  def self.up
+    User.create!(:name => "MultipleGroup")
+  end
 
-      def self.down
-        User.delete_all
-      end
-    end
+  def self.down
+    User.delete_all
+  end
+end
+```
 
 You can specify a `default_migration_group` for migrations, so that modifications to each individual migration file are not needed:
-
-    octopus:
-      default_migration_group: europe_databases
+```yaml
+octopus:
+  default_migration_group: europe_databases
+```
 
 There is no need for a corresponding `default_migration_shard` - simply define that database to be your master. You might want this setting if all of your databases have identical schemas, but are not replicated.
 
@@ -118,13 +133,15 @@ There is no need for a corresponding `default_migration_shard` - simply define t
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
 
-    class ApplicationController < ActionController::Base
-      around_filter :select_shard
+```ruby
+class ApplicationController < ActionController::Base
+  around_filter :select_shard
 
-      def select_shard(&block)
-        Octopus.using(:brazil, &block)
-      end
-    end
+  def select_shard(&block)
+    Octopus.using(:brazil, &block)
+  end
+end
+```
 
  To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
 Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
@@ -132,27 +149,33 @@ Want to see sample rails applications using octopus features? please check it ou
 ## Mixing Octopus with the Rails multiple database model
 If you want to set a custom connection to a specific model, use the syntax `octopus_establish_connection` syntax:
 
-    #This class sets its own connection
-    class CustomConnection < ActiveRecord::Base
-      octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
-    end
+```ruby
+#This class sets its own connection
+class CustomConnection < ActiveRecord::Base
+  octopus_establish_connection(:adapter => "mysql", :database => "octopus_shard2")
+end
+```
 
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 
-    git clone http://github.com/tchandy/octopus.git
-    cd octopus
-    bundle install
-    bundle exec rake db:prepare
-    bundle exec rake appraisal:install
-    bundle exec rake spec
+```bash
+git clone http://github.com/tchandy/octopus.git
+cd octopus
+bundle install
+bundle exec rake db:prepare
+bundle exec rake appraisal:install
+bundle exec rake spec
+```
 
 This command will run the spec suite for all rails versions supported.
 To run our integrations tests inside sample_app, you need to following commands:
 
-    cd sample_app
-    bundle install
-    cucumber
+```bash
+cd sample_app
+bundle install
+cucumber
+```
 
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
 

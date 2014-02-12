@@ -19,6 +19,7 @@ module Octopus::Association
       minimum
       pluck
       scoping
+      select
       size
       sum
       to_a
@@ -27,7 +28,9 @@ module Octopus::Association
     METHODS.each do |m|
       define_method m.to_sym do |*args,&block|
         if self.respond_to?(:proxy_association) and self.proxy_association
-          self.proxy_association.owner.run_on_shard { super(*args, &block) }
+          Octopus.using(self.proxy_association.owner.current_shard) { super(*args, &block) }
+        elsif self.respond_to?(:current_shard) and self.current_shard
+          self.run_on_shard { super(*args, &block) }
         else
           super(*args, &block)
         end

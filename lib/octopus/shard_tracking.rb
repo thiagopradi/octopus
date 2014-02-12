@@ -28,7 +28,14 @@ module Octopus::ShardTracking
 
   module ClassMethods
     def track_current_shard
-      attr_accessor    :current_shard
+      attr_accessor :current_shard
+
+      original_initializer = instance_method(:initialize)
+      define_method(:initialize) do |*args, &block|
+        result = original_initializer.bind(self).call(*args, &block)
+        set_current_shard
+        result
+      end
     end
   end
 end

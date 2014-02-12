@@ -361,14 +361,14 @@ describe Octopus::Model do
         @user = User.using(:brazil).create!(:name => "User1")
         User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
         @user.touch
-        @user.reload.updated_at.to_date.should eq(Date.today)
+        @user.reload.created_at.should > (Time.now - 1.days)
       end
 
       it "updates passed in attribute name" do
         @user = User.using(:brazil).create!(:name => "User1")
         User.using(:brazil).update_all({:created_at => Time.now - 3.months}, {:id => @user.id})
         @user.touch(:created_at)
-        @user.reload.created_at.to_date.should eq(Date.today)
+        @user.reload.created_at.should > (Time.now - 1.days)
       end
     end
 

@@ -1,7 +1,9 @@
 require 'active_support/deprecation'
+require 'octopus/shard_tracking'
 
 module Octopus::Model
   def self.extended(base)
+    base.extend(Octopus::ShardTracking)
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
   end
@@ -48,17 +50,8 @@ module Octopus::Model
       end
     end
 
-
     def should_set_current_shard?
       self.respond_to?(:current_shard) && !self.current_shard.nil?
-    end
-
-    def run_on_shard(&block)
-      if self.current_shard
-        self.class.connection_proxy.run_queries_on_shard(self.current_shard, &block)
-      else
-        yield
-      end
     end
 
     def equality_with_octopus(comparison_object)
@@ -94,7 +87,6 @@ module Octopus::Model
     end
 
     def hijack_methods
-      attr_accessor :current_shard
       around_save :run_on_shard
       after_initialize :set_current_shard
 

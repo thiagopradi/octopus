@@ -98,6 +98,7 @@ require "octopus/migration"
 require "octopus/association_collection"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association"
+require "octopus/collection_proxy"
 require "octopus/rails3/persistence"
 require "octopus/rails3/log_subscriber"
 require "octopus/rails3/abstract_adapter"
@@ -110,3 +111,4 @@ end
 
 require "octopus/proxy"
 require "octopus/scope_proxy"
+require "octopus/relation"

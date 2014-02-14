@@ -1,11 +1,11 @@
 require 'active_support/deprecation'
+require 'octopus/shard_tracking'
 
 module Octopus::Model
   def self.extended(base)
+    base.extend(Octopus::ShardTracking)
     base.send(:include, InstanceMethods)
     base.extend(ClassMethods)
-    base.hijack_connection()
-    base.hijack_initializer()
   end
 
   module SharedMethods
@@ -28,82 +28,6 @@ module Octopus::Model
         self
       end
     end
-
-    def hijack_initializer()
-      attr_accessor :current_shard
-      around_save :run_on_shard
-
-      def set_current_shard
-        return unless Octopus.enabled?
-
-        if new_record? || self.class.connection_proxy.block
-          self.current_shard = self.class.connection_proxy.current_shard
-        else
-          self.current_shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
-        end
-      end
-
-      after_initialize :set_current_shard
-    end
-
-    def hijack_connection()
-      def self.should_use_normal_connection?
-        !Octopus.enabled? || self.custom_octopus_connection
-      end
-
-      def self.connection_proxy
-        @@connection_proxy ||= Octopus::Proxy.new
-      end
-
-      def self.connection_with_octopus
-        if should_use_normal_connection?
-          connection_without_octopus
-        else
-          self.connection_proxy.current_model = self
-          self.connection_proxy
-        end
-      end
-
-      def self.connection_pool_with_octopus
-        if should_use_normal_connection?
-          connection_pool_without_octopus
-        else
-          connection_proxy.connection_pool
-        end
-      end
-
-      def self.clear_active_connections_with_octopus!
-        if should_use_normal_connection?
-          clear_active_connections_without_octopus!
-        else
-          connection_proxy.clear_active_connections!
-        end
-      end
-
-      def self.clear_all_connections_with_octopus!
-        if should_use_normal_connection?
-          clear_all_connections_without_octopus!
-        else
-          connection_proxy.clear_all_connections!
-        end
-      end
-
-      def self.connected_with_octopus?
-        if should_use_normal_connection?
-          connected_without_octopus?
-        else
-          connection_proxy.connected?
-        end
-      end
-
-      class << self
-        alias_method_chain :connection, :octopus
-        alias_method_chain :connection_pool, :octopus
-        alias_method_chain :clear_all_connections!, :octopus
-        alias_method_chain :clear_active_connections!, :octopus
-        alias_method_chain :connected?, :octopus
-      end
-    end
   end
 
   module InstanceMethods
@@ -116,16 +40,18 @@ module Octopus::Model
       base.send(:alias_method_chain, :perform_validations, :octopus)
     end
 
-    def should_set_current_shard?
-      self.respond_to?(:current_shard) && !self.current_shard.nil?
+    def set_current_shard
+      return unless Octopus.enabled?
+
+      if new_record? || self.class.connection_proxy.block
+        self.current_shard = self.class.connection_proxy.current_shard
+      else
+        self.current_shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
+      end
     end
 
-    def run_on_shard(&block)
-      if self.current_shard
-        self.class.connection_proxy.run_queries_on_shard(self.current_shard, &block)
-      else
-        yield
-      end
+    def should_set_current_shard?
+      self.respond_to?(:current_shard) && !self.current_shard.nil?
     end
 
     def equality_with_octopus(comparison_object)
@@ -161,9 +87,18 @@ module Octopus::Model
     end
 
     def hijack_methods
+      around_save :run_on_shard
+      after_initialize :set_current_shard
+
       class << self
         attr_accessor :custom_octopus_connection
         attr_accessor :custom_octopus_table_name
+
+        alias_method_chain :connection, :octopus
+        alias_method_chain :connection_pool, :octopus
+        alias_method_chain :clear_all_connections!, :octopus
+        alias_method_chain :clear_active_connections!, :octopus
+        alias_method_chain :connected?, :octopus
 
         if Octopus.rails3?
           alias_method_chain(:set_table_name, :octopus)
@@ -173,6 +108,61 @@ module Octopus::Model
           self.custom_octopus_table_name = true
           super
         end
+      end
+    end
+
+    def connection_proxy
+      cached = ActiveRecord::Base.class_variable_get :@@connection_proxy rescue nil
+      cached ||
+        begin
+          p = Octopus::Proxy.new
+          ActiveRecord::Base.class_variable_set :@@connection_proxy, p
+          p
+        end
+    end
+
+    def should_use_normal_connection?
+      !Octopus.enabled? || custom_octopus_connection
+    end
+
+    def connection_with_octopus
+      if should_use_normal_connection?
+        connection_without_octopus
+      else
+        connection_proxy.current_model = self
+        connection_proxy
+      end
+    end
+
+    def connection_pool_with_octopus
+      if should_use_normal_connection?
+        connection_pool_without_octopus
+      else
+        connection_proxy.connection_pool
+      end
+    end
+
+    def clear_active_connections_with_octopus!
+      if should_use_normal_connection?
+        clear_active_connections_without_octopus!
+      else
+        connection_proxy.clear_active_connections!
+      end
+    end
+
+    def clear_all_connections_with_octopus!
+      if should_use_normal_connection?
+        clear_all_connections_without_octopus!
+      else
+        connection_proxy.clear_all_connections!
+      end
+    end
+
+    def connected_with_octopus?
+      if should_use_normal_connection?
+        connected_without_octopus?
+      else
+        connection_proxy.connected?
       end
     end
 

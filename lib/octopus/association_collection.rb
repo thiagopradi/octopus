@@ -36,14 +36,17 @@ module Octopus::AssociationCollection
     with = :"#{method}_with_octopus#{punctuation}"
     without = :"#{method}_without_octopus#{punctuation}"
     define_method with do |*args, &block|
-      @owner.run_on_shard { send(without, *args, &block) }
+      owner.run_on_shard { send(without, *args, &block) }
     end
   end
 
-  def should_wrap_the_connection?
-    @owner.respond_to?(:current_shard) && @owner.current_shard != nil
+  def current_shard
+    (owner.respond_to?(:current_shard) && owner.current_shard) || nil
   end
 
+  def should_wrap_the_connection?
+    !!current_shard
+  end
 end
 
 ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)

@@ -3,10 +3,7 @@ module Octopus
   module AbstractAdapter
     module OctopusShard
 
-      parent = ActiveSupport::BasicObject
-      if Octopus.rails4?
-        parent = ActiveSupport::ProxyObject
-      end
+      parent = Octopus.rails3? ? ActiveSupport::BasicObject : ActiveSupport::ProxyObject
 
       class InstrumenterDecorator < parent
         def initialize(adapter, instrumenter)

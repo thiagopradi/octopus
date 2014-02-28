@@ -95,7 +95,7 @@ end
 
 require "octopus/model"
 require "octopus/migration"
-require "octopus/association_collection"
+require "octopus/collection_association"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association_shard_tracking"
 require "octopus/persistence"

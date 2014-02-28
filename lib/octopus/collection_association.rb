@@ -1,4 +1,4 @@
-module Octopus::AssociationCollection
+module Octopus::CollectionAssociation
 
   METHODS = %w[
     reader
@@ -46,4 +46,4 @@ module Octopus::AssociationCollection
 
 end
 
-ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::AssociationCollection)
+ActiveRecord::Associations::CollectionAssociation.send(:include, Octopus::CollectionAssociation)

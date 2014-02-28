@@ -92,9 +92,13 @@ module Octopus
   end
 end
 
+require "octopus/shard_tracking"
+require "octopus/shard_tracking/attribute"
+require "octopus/shard_tracking/dynamic"
 
 require "octopus/model"
 require "octopus/migration"
+require "octopus/association"
 require "octopus/collection_association"
 require "octopus/has_and_belongs_to_many_association"
 require "octopus/association_shard_tracking"

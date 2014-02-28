@@ -113,4 +113,5 @@ end
 
 
 require "octopus/proxy"
+require "octopus/collection_proxy"
 require "octopus/scope_proxy"

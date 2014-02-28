@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Octopus::Association, :shards => [:brazil, :master, :canada] do
+describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canada] do
   describe "when you have a 1 x 1 relationship" do
     before(:each) do
       @computer_brazil = Computer.using(:brazil).create!(:name => "Computer Brazil")

@@ -1,4 +1,4 @@
-module Octopus::Association
+module Octopus::AssociationShardTracking
   def self.extended(base)
     base.send(:include, InstanceMethods)
   end
@@ -98,8 +98,8 @@ module Octopus::Association
       options[:before_remove] = :set_connection_on_association
     end
 
-    options[:extend] = [ Octopus::Association::QueryOnCurrentShard, options[:extend] ].flatten.compact
+    options[:extend] = [ Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend] ].flatten.compact
   end
 end
 
-ActiveRecord::Base.extend(Octopus::Association)
+ActiveRecord::Base.extend(Octopus::AssociationShardTracking)

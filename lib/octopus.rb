@@ -92,16 +92,20 @@ module Octopus
   end
 end
 
+require "octopus/shard_tracking"
+require "octopus/shard_tracking/attribute"
+require "octopus/shard_tracking/dynamic"
 
 require "octopus/model"
 require "octopus/migration"
-require "octopus/association_collection"
-require "octopus/has_and_belongs_to_many_association"
 require "octopus/association"
-require "octopus/rails3/persistence"
-require "octopus/rails3/log_subscriber"
-require "octopus/rails3/abstract_adapter"
-require "octopus/rails3/singular_association"
+require "octopus/collection_association"
+require "octopus/has_and_belongs_to_many_association"
+require "octopus/association_shard_tracking"
+require "octopus/persistence"
+require "octopus/log_subscriber"
+require "octopus/abstract_adapter"
+require "octopus/singular_association"
 
 if defined?(::Rails)
   require "octopus/railtie"
@@ -109,4 +113,6 @@ end
 
 
 require "octopus/proxy"
+require "octopus/collection_proxy"
+require "octopus/relation_proxy"
 require "octopus/scope_proxy"

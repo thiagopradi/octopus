@@ -166,8 +166,8 @@ describe Octopus::Model do
         master_user = User.using(:master).create!(:name => "Master")
         alone_user.name = "teste"
         alone_user.save
-        User.using(:master).find(:first).name.should == "Master"
-        User.using(:alone_shard).find(:first).name.should == "teste"
+        User.using(:master).first.name.should == "Master"
+        User.using(:alone_shard).first.name.should == "teste"
       end
 
       it "should work for the reload method" do
@@ -251,16 +251,14 @@ describe Octopus::Model do
 
   describe "using a postgresql shard" do
     it "should update the Arel Engine" do
-      if ActiveRecord::VERSION::STRING > '2.4.0'
-        User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
-        User.using(:alone_shard).arel_engine.connection.adapter_name.should == "Mysql2"
-      end
+      User.using(:postgresql_shard).arel_engine.connection.adapter_name.should == "PostgreSQL"
+      User.using(:alone_shard).arel_engine.connection.adapter_name.should == "Mysql2"
     end
 
     it "should works with writes and reads" do
       u = User.using(:postgresql_shard).create!(:name => "PostgreSQL User")
-      User.using(:postgresql_shard).find(:all).should == [u]
-      User.using(:alone_shard).find(:all).should == []
+      User.using(:postgresql_shard).all.should == [u]
+      User.using(:alone_shard).all.should == []
       User.connection_handler.connection_pools["ActiveRecord::Base"] = User.connection.instance_variable_get(:@shards)[:master]
     end
   end
@@ -324,7 +322,7 @@ describe Octopus::Model do
       u = User.using(:brazil).create!(:name => "User1")
       u2 = User.using(:brazil).create!(:name => "User2")
       u3 = User.using(:brazil).create!(:name => "User3")
-      User.using(:brazil).find(:all, :conditions => {:name => "User2"}).count.should == 1
+      User.using(:brazil).where({:name => "User2"}).all.count.should == 1
     end
 
     it "maximum" do
@@ -359,14 +357,14 @@ describe Octopus::Model do
     describe "touch" do
       it "updates updated_at by default" do
         @user = User.using(:brazil).create!(:name => "User1")
-        User.using(:brazil).update_all({:updated_at => Time.now - 3.months}, {:id => @user.id})
+        User.using(:brazil).where(:id => @user.id).update_all({:updated_at => Time.now - 3.months})
         @user.touch
         @user.reload.updated_at.in_time_zone('GMT').to_date.should eq(Time.now.in_time_zone('GMT').to_date)
       end
 
       it "updates passed in attribute name" do
         @user = User.using(:brazil).create!(:name => "User1")
-        User.using(:brazil).update_all({:created_at => Time.now - 3.months}, {:id => @user.id})
+        User.using(:brazil).where(:id => @user.id).update_all({:created_at => Time.now - 3.months})
         @user.touch(:created_at)
         @user.reload.created_at.in_time_zone('GMT').to_date.should eq(Time.now.in_time_zone('GMT').to_date)
       end
@@ -415,7 +413,7 @@ describe Octopus::Model do
     end
 
     it "as_json" do
-      ActiveRecord::Base.include_root_in_json = false 
+      ActiveRecord::Base.include_root_in_json = false
 
       Octopus.using(:brazil) do
         User.create!(:name => "User1")
@@ -521,36 +519,14 @@ describe Octopus::Model do
       @item4 = Item.using(:brazil).create(:client => @client1, :name => "Item 4")
     end
 
-    it "should work with the rails 2.x syntax" do
-      items = Item.using(:canada).find(:all, :joins => :client, :conditions => { :clients => { :id => @client2.id } })
-      items.should == [@item1, @item2]
-    end
-
     it "should work using the rails 3.x syntax" do
       items = Item.using(:canada).joins(:client).where("clients.id = #{@client2.id}").all
       items.should == [@item1, @item2]
     end
 
-    it "should work for include also, rails 2.x syntax" do
-      items = Item.using(:canada).find(:all, :include => :client, :conditions => { :clients => { :id => @client2.id } })
-      items.should == [@item1, @item2]
-    end
-
     it "should work for include also, rails 3.x syntax" do
-      items = Item.using(:canada).includes(:client).where("clients.id = #{@client2.id}").all
+      items = Item.using(:canada).includes(:client).where(:clients => {:id => @client2.id}).all
       items.should == [@item1, @item2]
-    end
-
-    it "should work for multiple includes, with rails 2.x syntax" do
-      parts = Part.using(:canada).find(:all, :include => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
-      parts.should == [@part1, @part2, @part3]
-      parts.first.item.client.should == @client2
-    end
-
-    it "should work for multiple join, with rails 2.x syntax" do
-      parts = Part.using(:canada).find(:all, :joins => {:item => :client}, :conditions => {:clients => { :id => @client2.id}})
-      parts.should == [@part1, @part2, @part3]
-      parts.first.item.client.should == @client2
     end
   end
 

@@ -337,12 +337,17 @@ class Octopus::Proxy
   end
 
   def resolve_string_connection(spec)
-    if Octopus.rails4?
-      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
+    if Octopus.rails41?
+      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
+      resolver.spec(spec).config.stringify_keys
     else
-      resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
+      if Octopus.rails4?
+        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
+      else
+        resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
+      end
+      resolver.spec.config.stringify_keys
     end
-    resolver.spec.config.stringify_keys
   end
 
   def should_clean_connection_proxy?(method)

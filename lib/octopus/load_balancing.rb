@@ -1,0 +1,3 @@
+module Octopus::LoadBalancing
+
+end

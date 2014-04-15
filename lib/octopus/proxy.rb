@@ -1,4 +1,5 @@
 require "set"
+require 'octopus/load_balancing/round_robin'
 
 class Octopus::Proxy
   attr_accessor :config
@@ -58,7 +59,7 @@ class Octopus::Proxy
 
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort
     @slaves_list.delete('master')
-    @slave_index = 0
+    @slaves_load_balancer = Octopus::LoadBalancing::RoundRobin.new(@slaves_list)
   end
 
   def current_model
@@ -287,7 +288,7 @@ class Octopus::Proxy
 
     begin
       if current_model.replicated || @fully_replicated
-        self.current_shard = @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
+        self.current_shard = @slaves_load_balancer.next
       else
         self.current_shard = :master
       end

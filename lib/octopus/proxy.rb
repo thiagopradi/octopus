@@ -20,12 +20,12 @@ class Octopus::Proxy
 
     if !config.nil?
       @entire_sharded = config['entire_sharded']
-      shards_config = config[Octopus.rails_env()]
+      @shards_config = config[Octopus.rails_env()]
     end
 
-    @shards_config = shards_config ||= []
+    @shards_config ||= []
 
-    shards_config.each do |key, value|
+    @shards_config.each do |key, value|
       if value.is_a?(String)
         value = resolve_string_connection(value).merge(:octopus_shard => key)
         initialize_adapter(value['adapter'])

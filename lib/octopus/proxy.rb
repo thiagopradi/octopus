@@ -213,16 +213,10 @@ class Octopus::Proxy
   end
 
   def run_queries_on_shard(shard, &block)
-    older_shard = self.current_shard
-    last_block = self.block
-
-    begin
-      self.block = true
-      self.current_shard = shard
-      yield
-    ensure
-      self.block = last_block || false
-      self.current_shard = older_shard
+    keeping_connection_proxy do
+      using_shard(shard) do
+        yield
+      end
     end
   end
 
@@ -232,7 +226,7 @@ class Octopus::Proxy
     end
   end
 
-  def clean_proxy()
+  def clean_connection_proxy()
     self.current_shard = :master
     self.current_group = nil
     self.block = false
@@ -256,10 +250,10 @@ class Octopus::Proxy
   end
 
   def method_missing(method, *args, &block)
-    if should_clean_connection?(method)
+    if should_clean_connection_proxy?(method)
       conn = select_connection()
       self.last_current_shard = self.current_shard
-      clean_proxy()
+      clean_connection_proxy()
       conn.send(method, *args, &block)
     elsif should_send_queries_to_shard_slave_group?(method)
       send_queries_to_shard_slave_group(method, *args, &block)
@@ -354,7 +348,7 @@ class Octopus::Proxy
     resolver.spec.config.stringify_keys
   end
 
-  def should_clean_connection?(method)
+  def should_clean_connection_proxy?(method)
     method.to_s =~ /insert|select|execute/ && !@replicated && !self.block
   end
 
@@ -381,14 +375,35 @@ class Octopus::Proxy
   # Temporarily switch `current_shard` to the specified slave and send queries to it
   # while preserving `current_shard`
   def send_queries_to_slave(slave, method, *args, &block)
-    old_shard = self.current_shard
+    using_shard(slave) do
+      select_connection.send(method, *args, &block)
+    end
+  end
+
+  # Temporarily block cleaning connection proxy and run the block
+  #
+  # @see Octopus::Proxy#should_clean_connection?
+  # @see Octopus::Proxy#clean_connection_proxy
+  def keeping_connection_proxy(&block)
+    last_block = self.block
 
     begin
-      self.current_shard = slave
-
-      select_connection.send(method, *args, &block)
+      self.block = true
+      yield
     ensure
-      self.current_shard = old_shard
+      self.block = last_block || false
+    end
+  end
+
+  # Temporarily switch `current_shard` and run the block
+  def using_shard(shard, &block)
+    older_shard = self.current_shard
+
+    begin
+      self.current_shard = shard
+      yield
+    ensure
+      self.current_shard = older_shard
     end
   end
 

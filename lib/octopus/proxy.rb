@@ -35,7 +35,10 @@ class Octopus::Proxy
         initialize_adapter(value['adapter'])
         @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
 
-        slave_group_configs = value.select {|k| k.match(/slave/) }
+        slave_group_configs = value.select do |k,v|
+          structurally_slave_group? v
+        end
+
         if slave_group_configs.present?
           slave_groups = HashWithIndifferentAccess.new
           slave_group_configs.each do |slave_group_name, slave_configs|
@@ -62,7 +65,7 @@ class Octopus::Proxy
           @groups[key.to_s] << k.to_sym
         end
 
-        if key.match(/slave/)
+        if structurally_slave_group? value
           slaves = Hash[@groups[key.to_s].map { |v| [v, v ] }]
           @slave_groups[key.to_sym] = Octopus::SlaveGroup.new(slaves)
         end
@@ -390,4 +393,13 @@ class Octopus::Proxy
       self.current_shard = old_shard
     end
   end
+
+  def structurally_slave?(config)
+    config.is_a?(Hash) && config.key?("adapter")
+  end
+
+  def structurally_slave_group?(config)
+    config.is_a?(Hash) && config.values.any? {|v| structurally_slave? v }
+  end
+
 end

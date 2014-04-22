@@ -300,10 +300,7 @@ class Octopus::Proxy
   end
 
   def should_send_queries_to_shard_slave_group?(method)
-    @replicated && method.to_s =~ /select/ && current_shard.present? && current_slave_group.present? && @shards_slave_groups.present? &&
-        @shards_slave_groups[current_shard].present? &&
-        @shards_slave_groups[current_shard][current_slave_group].present? &&
-        (current_model.replicated || @fully_replicated)
+    should_use_slaves_for_method?(method) && @shards_slave_groups.try(:[], current_shard).try(:[], current_slave_group).present?
   end
 
   def send_queries_to_shard_slave_group(method, *args, &block)
@@ -311,7 +308,7 @@ class Octopus::Proxy
   end
 
   def should_send_queries_to_slave_group?(method)
-    @replicated && (current_model.replicated || @fully_replicated) && method.to_s =~ /select/ && current_slave_group.present? && @slave_groups.present?
+    should_use_slaves_for_method?(method) && @slave_groups.try(:[], current_slave_group).present?
   end
 
   def send_queries_to_slave_group(method, *args, &block)
@@ -352,8 +349,9 @@ class Octopus::Proxy
     method.to_s =~ /insert|select|execute/ && !@replicated && !self.block
   end
 
+  # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
   def should_send_queries_to_replicated_databases?(method)
-    @replicated && method.to_s =~ /select/ && !self.block && !@slave_groups.present?
+    @replicated && method.to_s =~ /select/ && !self.block && !slaves_grouped?
   end
 
   def send_queries_to_selected_slave(method, *args, &block)
@@ -364,6 +362,23 @@ class Octopus::Proxy
     end
 
     send_queries_to_slave(selected_slave, method, *args, &block)
+  end
+
+  # We should use slaves if and only if its safe to do so.
+  #
+  # We can safely use slaves when:
+  # (1) `replicated: true` is specified in `shards.yml`
+  # (2) The current model is `replicated()`, or `fully_replicated: true` is specified in `shards.yml` which means that
+  #     all the model is `replicated()`
+  # (3) It's a SELECT query
+  # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
+  # not to make queries other than SELECT leak to the slave.
+  def should_use_slaves_for_method?(method)
+    @replicated && (current_model.replicated || @fully_replicated) && method.to_s =~ /select/
+  end
+
+  def slaves_grouped?
+    @slave_groups.present?
   end
 
   # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it

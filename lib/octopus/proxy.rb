@@ -313,15 +313,7 @@ class Octopus::Proxy
   end
 
   def send_queries_to_shard_slave_group(method, *args, &block)
-    old_shard = self.current_shard
-
-    begin
-      selected_slave_group = @shards_slave_groups[old_shard][current_slave_group]
-      self.current_shard = selected_slave_group.next
-      select_connection.send(method, *args, &block)
-    ensure
-      self.current_shard = old_shard
-    end
+    send_queries_to_balancer(@shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
   end
 
   def should_send_queries_to_slave_group?(method)
@@ -329,15 +321,7 @@ class Octopus::Proxy
   end
 
   def send_queries_to_slave_group(method, *args, &block)
-    old_shard = self.current_shard
-
-    begin
-      selected_slave_group = @slave_groups[current_slave_group]
-      self.current_shard = selected_slave_group.next
-      select_connection.send(method, *args, &block)
-    ensure
-      self.current_shard = old_shard
-    end
+    send_queries_to_balancer(@slave_groups[current_slave_group], method, *args, &block)
   end
 
   protected
@@ -379,14 +363,28 @@ class Octopus::Proxy
   end
 
   def send_queries_to_selected_slave(method, *args, &block)
+    if current_model.replicated || @fully_replicated
+      selected_slave = @slaves_load_balancer.next
+    else
+      selected_slave = :master
+    end
+
+    send_queries_to_slave(selected_slave, method, *args, &block)
+  end
+
+  # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
+  # while preserving `current_shard`
+  def send_queries_to_balancer(balancer, method, *args, &block)
+    send_queries_to_slave(balancer.next, method, *args, &block)
+  end
+
+  # Temporarily switch `current_shard` to the specified slave and send queries to it
+  # while preserving `current_shard`
+  def send_queries_to_slave(slave, method, *args, &block)
     old_shard = self.current_shard
 
     begin
-      if current_model.replicated || @fully_replicated
-        self.current_shard = @slaves_load_balancer.next
-      else
-        self.current_shard = :master
-      end
+      self.current_shard = slave
 
       select_connection.send(method, *args, &block)
     ensure

@@ -21,6 +21,7 @@ module OctopusHelper
     Thread.current["octopus.current_model"] = nil
     Thread.current["octopus.current_shard"] = nil
     Thread.current["octopus.current_group"] = nil
+    Thread.current["octopus.current_slave_group"] = nil
     Thread.current["octopus.block"] = nil
     Thread.current["octopus.last_current_shard"] = nil
 

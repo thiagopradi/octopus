@@ -142,6 +142,59 @@ not_entire_sharded:
       database: octopus_shard_5
       <<: *mysql
 
+sharded_replicated_slave_grouped:
+  replicated: true
+  fully_replicated: true
+  shards:
+    russia:
+      database: octopus_shard_1
+      <<: *mysql
+      slaves1:
+        russia_slave11:
+          database: octopus_shard_1
+          <<: *mysql
+        russia_slave21:
+          database: octopus_shard_2
+          <<: *mysql
+      slaves2:
+        russia_slave21:
+          database: octopus_shard_3
+          <<: *mysql
+        russia_slave22:
+            database: octopus_shard_1
+            <<: *mysql
+    europe:
+      database: octopus_shard_2
+      <<: *mysql
+      slaves1:
+        europe_slave11:
+          database: octopus_shard_3
+          <<: *mysql
+      slaves2:
+        europe_slave21:
+          database: octopus_shard_1
+          <<: *mysql
+
+replicated_slave_grouped:
+  replicated: true
+  fully_replicated: true
+  shards:
+    slaves1:
+      slave11:
+        database: octopus_shard_2
+        <<: *mysql
+    slaves2:
+      slave21:
+        database: octopus_shard_1
+        <<: *mysql
+    slaves3:
+      slave31:
+        database: octopus_shard_1
+        <<: *mysql
+      slave32:
+        database: octopus_shard_2
+        <<: *mysql
+
 modify_config:
   replicated: true
   shards:

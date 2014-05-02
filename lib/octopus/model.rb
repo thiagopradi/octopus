@@ -43,10 +43,15 @@ module Octopus
       def set_current_shard
         return unless Octopus.enabled?
 
-        if new_record? || self.class.connection_proxy.block
-          self.current_shard = self.class.connection_proxy.current_shard
-        else
-          self.current_shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
+        shard =
+          if new_record? || self.class.connection_proxy.block
+            self.class.connection_proxy.current_shard
+          else
+            self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
+          end
+
+        if self.class.allowed_shard?(shard)
+          self.current_shard = shard
         end
       end
 
@@ -75,6 +80,7 @@ module Octopus
       def self.extended(base)
         base.class_attribute(:replicated)
         base.class_attribute(:sharded)
+        base.class_attribute(:allowed_shards)
         base.hijack_methods
       end
 
@@ -86,8 +92,13 @@ module Octopus
         self.sharded = true
       end
 
+      def allow_shard(*shards)
+        self.allowed_shards ||= []
+        self.allowed_shards += shards
+      end
+
       def hijack_methods
-        around_save :run_on_shard
+        around_save :run_on_shard, unless: ->{ self.class.custom_octopus_connection }
         after_initialize :set_current_shard
 
         class << self
@@ -110,20 +121,34 @@ module Octopus
       end
 
       def connection_proxy
-        ActiveRecord::Base.class_variable_defined?(:@@connection_proxy) &&
+        proxy = ActiveRecord::Base.class_variable_defined?(:@@connection_proxy) &&
           ActiveRecord::Base.class_variable_get(:@@connection_proxy) ||
           ActiveRecord::Base.class_variable_set(:@@connection_proxy, Octopus::Proxy.new)
+
+        proxy.current_model = self
+        proxy
       end
 
       def should_use_normal_connection?
-        !Octopus.enabled? || custom_octopus_connection
+        if !Octopus.enabled?
+          true
+        elsif custom_octopus_connection
+          !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
+        end
+      end
+
+      def allowed_shard?(shard)
+        if custom_octopus_connection
+          allowed_shards && shard && allowed_shards.include?(shard)
+        else
+          true
+        end
       end
 
       def connection_with_octopus
         if should_use_normal_connection?
           connection_without_octopus
         else
-          connection_proxy.current_model = self
           connection_proxy
         end
       end

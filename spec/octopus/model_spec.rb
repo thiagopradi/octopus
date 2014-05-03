@@ -415,7 +415,7 @@ describe Octopus::Model do
     end
 
     it "as_json" do
-      ActiveRecord::Base.include_root_in_json = false 
+      ActiveRecord::Base.include_root_in_json = false
 
       Octopus.using(:brazil) do
         User.create!(:name => "User1")
@@ -473,6 +473,44 @@ describe Octopus::Model do
 
           User.connection.current_shard.should == :brazil
           User.find(@user3.id).should == @user3
+        end
+      end
+    end
+  end
+
+  describe "custom connection" do
+    context "by default" do
+      it "with plain call should use custom connection" do
+        CustomConnection.connection.current_database.should == 'octopus_shard_2'
+      end
+
+      it "should ignore using called on relation" do
+        CustomConnection.using(:postgresql_shard).connection.current_database.should == 'octopus_shard_2'
+      end
+
+      it "should ignore Octopus.using block" do
+        Octopus.using(:postgresql_shard) do
+          CustomConnection.connection.current_database.should == 'octopus_shard_2'
+        end
+      end
+    end
+
+    context "with allow_octopus configured" do
+      before do
+        CustomConnection.allow_octopus = true
+      end
+
+      it "with plain call should use custom connection" do
+        CustomConnection.connection.current_database.should == 'octopus_shard_2'
+      end
+
+      it "with using called on relation should use shard" do
+        CustomConnection.using(:postgresql_shard).connection.current_database.should == 'octopus_shard_1'
+      end
+
+      it "within Octopus.using block should use shard" do
+        Octopus.using(:postgresql_shard) do
+          CustomConnection.connection.current_database.should == 'octopus_shard_1'
         end
       end
     end

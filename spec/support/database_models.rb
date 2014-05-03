@@ -27,6 +27,7 @@ end
 
 #This class sets its own connection
 class CustomConnection < ActiveRecord::Base
+  self.table_name = 'custom'
   octopus_establish_connection(:adapter => "mysql2", :database => "octopus_shard_2", :username => "root", :password => "")
 end
 
@@ -83,7 +84,7 @@ class Bacon < ActiveRecord::Base
 end
 
 class Cheese < ActiveRecord::Base
-  self.table_name = 'yummy' 
+  self.table_name = 'yummy'
 end
 
 class Ham < ActiveRecord::Base

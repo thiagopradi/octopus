@@ -19,8 +19,14 @@ class Octopus::ScopeProxy
   end
 
   def connection
-    @klass.connection().current_shard = @current_shard
-    @klass.connection()
+    @klass.connection_proxy.current_shard = @current_shard
+
+    if @klass.custom_octopus_connection && @klass.allow_octopus
+      # Force use of proxy, given we called 'using' explicitly to get here
+      @klass.connection_proxy
+    else
+      @klass.connection
+    end
   end
 
   def method_missing(method, *args, &block)

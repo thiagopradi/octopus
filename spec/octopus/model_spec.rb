@@ -493,6 +493,17 @@ describe Octopus::Model do
           CustomConnection.connection.current_database.should == 'octopus_shard_2'
         end
       end
+
+      it "should save to correct shard" do
+        expect {
+          CustomConnection.create(value: 'custom value')
+        }.to change {
+          CustomConnection.
+            connection.
+            execute("select count(*) as ct from custom where value = 'custom value'").
+            to_a.first.first
+        }.by 1
+      end
     end
 
     context "with allow_octopus configured" do
@@ -512,6 +523,17 @@ describe Octopus::Model do
         Octopus.using(:postgresql_shard) do
           CustomConnection.connection.current_database.should == 'octopus_shard_1'
         end
+      end
+
+      it "should save to correct shard" do
+        expect {
+          CustomConnection.create(value: 'custom value')
+        }.to change {
+          CustomConnection.
+            connection.
+            execute("select count(*) as ct from custom where value = 'custom value'").
+            to_a.first.first
+        }.by 1
       end
     end
   end

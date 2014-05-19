@@ -90,6 +90,13 @@ module Octopus
       yield
     end
   end
+
+  def self.fully_replicated(&block)
+    Thread.current["octopus.fully_replicated"] = true
+    yield
+  ensure
+    Thread.current["octopus.fully_replicated"] = nil
+  end
 end
 
 require "octopus/shard_tracking"

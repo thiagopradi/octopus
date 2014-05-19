@@ -168,6 +168,10 @@ class Octopus::Proxy
     Thread.current["octopus.last_current_shard"] = last_current_shard
   end
 
+  def fully_replicated?
+    @fully_replicated || Thread.current["octopus.fully_replicated"]
+  end
+
   # Public: Whether or not a group exists with the given name converted to a
   # string.
   #
@@ -239,7 +243,7 @@ class Octopus::Proxy
   end
 
   def transaction(options = {}, &block)
-    replicated = @replicated && (current_model.replicated || @fully_replicated)
+    replicated = @replicated && (current_model.replicated || fully_replicated?)
     if !sharded && replicated
       self.run_queries_on_shard(:master) do
         select_connection.transaction(options, &block)
@@ -355,7 +359,7 @@ class Octopus::Proxy
   end
 
   def send_queries_to_selected_slave(method, *args, &block)
-    if current_model.replicated || @fully_replicated
+    if current_model.replicated || fully_replicated?
       selected_slave = @slaves_load_balancer.next
     else
       selected_slave = :master
@@ -374,7 +378,7 @@ class Octopus::Proxy
   # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
   # not to make queries other than SELECT leak to the slave.
   def should_use_slaves_for_method?(method)
-    @replicated && (current_model.replicated || @fully_replicated) && method.to_s =~ /select/
+    @replicated && (current_model.replicated || fully_replicated?) && method.to_s =~ /select/
   end
 
   def slaves_grouped?

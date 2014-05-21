@@ -390,6 +390,7 @@ class Octopus::Proxy
   # Temporarily switch `current_shard` to the specified slave and send queries to it
   # while preserving `current_shard`
   def send_queries_to_slave(slave, method, *args, &block)
+    self.last_current_shard = slave.to_sym
     using_shard(slave) do
       select_connection.send(method, *args, &block)
     end

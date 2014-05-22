@@ -92,10 +92,11 @@ module Octopus
   end
 
   def self.fully_replicated(&block)
+    old_fully_replicated = Thread.current["octopus.fully_replicated"]
     Thread.current["octopus.fully_replicated"] = true
     yield
   ensure
-    Thread.current["octopus.fully_replicated"] = nil
+    Thread.current["octopus.fully_replicated"] = old_fully_replicated
   end
 end
 

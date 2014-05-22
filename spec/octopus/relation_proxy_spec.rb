@@ -73,5 +73,11 @@ describe Octopus::RelationProxy do
         end
       end
     end
+
+    context "when relation is passed as argument" do
+      it "does not fail" do
+        @client.items.where(id: @relation).count.should eq(1)
+      end
+    end
   end
 end

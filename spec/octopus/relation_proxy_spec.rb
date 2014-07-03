@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Octopus::RelationProxy do
+describe Octopus::Relation do
   describe "shard tracking" do
     before :each do
       @client = Client.using(:canada).create!
@@ -12,6 +12,12 @@ describe Octopus::RelationProxy do
       @relation.current_shard.should eq(:canada)
     end
 
+    it "is equal to an identically-defined, but different, RelationProxy" do
+      i = @client.items
+      @relation.should eq(i)
+      @relation.object_id.should eq(i.object_id)
+    end
+
     context "when comparing to other Relation objects" do
       before :each do
         @relation.reset
@@ -19,29 +25,6 @@ describe Octopus::RelationProxy do
 
       it "is equal to its clone" do
         @relation.should eq(@relation.clone)
-      end
-    end
-
-    if Octopus.rails4?
-      context "under Rails 4" do
-        it "is an Octopus::RelationProxy" do
-          @relation.class.should eq(Octopus::RelationProxy)
-        end
-
-        it "should be able to return its ActiveRecord::Relation" do
-          @relation.ar_relation.is_a?(ActiveRecord::Relation).should be_true
-        end
-
-        it "is equal to an identically-defined, but different, RelationProxy" do
-          i = @client.items
-          @relation.should eq(i)
-          @relation.object_id.should_not eq(i.object_id)
-        end
-
-        it "is equal to its own underlying ActiveRecord::Relation" do
-          @relation.should eq(@relation.ar_relation)
-          @relation.ar_relation.should eq(@relation)
-        end
       end
     end
 
@@ -71,6 +54,12 @@ describe Octopus::RelationProxy do
         Client.using(:brazil) do
           @relation.select(:client_id).count.should == 1
         end
+      end
+    end
+
+    context "when relation is passed as argument" do
+      it "does not fail" do
+        @client.items.where(id: @relation).count.should eq(1)
       end
     end
   end

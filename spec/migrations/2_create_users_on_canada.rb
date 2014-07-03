@@ -6,6 +6,6 @@ class CreateUsersOnCanada < ActiveRecord::Migration
   end
 
   def self.down
-    User.delete_all()
+    User.delete_all(["name = ?", "Sharding"])
   end
 end

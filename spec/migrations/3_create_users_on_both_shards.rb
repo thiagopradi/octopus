@@ -6,6 +6,6 @@ class CreateUsersOnBothShards < ActiveRecord::Migration
   end
 
   def self.down
-    User.delete_all()
+    User.delete_all(["name = ?", "Both"])
   end
 end

@@ -74,4 +74,24 @@ describe Octopus::RelationProxy do
       end
     end
   end
+
+  describe "replication" do
+    context "belongs_to" do
+      before do
+        OctopusHelper.using_environment :replicated_with_one_slave do
+          computer = Computer.create!
+          Keyboard.create(:computer => computer)
+          @id = Keyboard.using(:slave1).create!(:computer => computer).id
+        end
+      end
+
+      it "sends relation query to a slave" do
+        OctopusHelper.using_environment :replicated_with_one_slave do
+          slave_keyboard = Keyboard.find(@id)
+          slave_keyboard.current_shard.should eq(:slave1)
+          slave_keyboard.computer.should be_nil
+        end
+      end
+    end
+  end
 end

@@ -101,7 +101,6 @@ class Octopus::Proxy
   end
 
   def current_shard=(shard_symbol)
-    self.current_slave_group = nil
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
     elsif shard_symbol.is_a?(Hash)

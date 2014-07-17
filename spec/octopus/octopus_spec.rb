@@ -87,4 +87,38 @@ describe Octopus, :shards => [] do
       Octopus.should_not be_enabled
     end
   end
+
+  describe "#fully_replicated" do
+    before do
+      OctopusHelper.using_environment :production_replicated do
+        OctopusHelper.clean_all_shards([:slave1, :slave2, :slave3, :slave4])
+        4.times { |i| User.using(:"slave#{i+1}").create!(:name => "Slave User") }
+      end
+    end
+
+    it "sends queries to slaves" do
+      OctopusHelper.using_environment :production_replicated do
+        User.count.should eq(0)
+        4.times do |i|
+          Octopus.fully_replicated do
+            User.count.should eq(1)
+          end
+        end
+      end
+    end
+
+    it "allows nesting" do
+      OctopusHelper.using_environment :production_replicated do
+        Octopus.fully_replicated do
+          User.count.should eq(1)
+
+          Octopus.fully_replicated do
+            User.count.should eq(1)
+          end
+
+          User.count.should eq(1)
+        end
+      end
+    end
+  end
 end

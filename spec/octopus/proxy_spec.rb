@@ -266,24 +266,24 @@ describe Octopus::Proxy do
 
   describe "connection reuse" do
     before :each do
-      @item_brazil_conn = Item.using(:brazil).new(:name => 'Brazil Item').connection.select_connection
-      @item_canada_conn = Item.using(:canada).new(:name => 'Canada Item').connection.select_connection
+      @item_brazil_conn = Item.using(:brazil).new(:name => 'Brazil Item').class.connection.select_connection
+      @item_canada_conn = Item.using(:canada).new(:name => 'Canada Item').class.connection.select_connection
     end
 
     it "reuses connections" do
-      Item.using(:brazil).new(:name => 'Another Brazil Item').connection.select_connection.should eq(@item_brazil_conn)
-      Item.using(:canada).new(:name => 'Another Canada Item').connection.select_connection.should eq(@item_canada_conn)
+      Item.using(:brazil).new(:name => 'Another Brazil Item').class.connection.select_connection.should eq(@item_brazil_conn)
+      Item.using(:canada).new(:name => 'Another Canada Item').class.connection.select_connection.should eq(@item_canada_conn)
     end
 
     it "reuses connections after clear_active_connections! is called" do
-      Item.using(:brazil).new(:name => 'Another Brazil Item').connection.select_connection.should eq(@item_brazil_conn)
-      Item.using(:canada).new(:name => 'Another Canada Item').connection.select_connection.should eq(@item_canada_conn)
+      Item.using(:brazil).new(:name => 'Another Brazil Item').class.connection.select_connection.should eq(@item_brazil_conn)
+      Item.using(:canada).new(:name => 'Another Canada Item').class.connection.select_connection.should eq(@item_canada_conn)
     end
 
     it "creates new connections after clear_all_connections! is called" do
       Item.clear_all_connections!
-      Item.using(:brazil).new(:name => 'Another Brazil Item').connection.select_connection.should_not eq(@item_brazil_conn)
-      Item.using(:canada).new(:name => 'Another Canada Item').connection.select_connection.should_not eq(@item_canada_conn)
+      Item.using(:brazil).new(:name => 'Another Brazil Item').class.connection.select_connection.should_not eq(@item_brazil_conn)
+      Item.using(:canada).new(:name => 'Another Canada Item').class.connection.select_connection.should_not eq(@item_canada_conn)
     end
 
     it "is consistent with connected?" do

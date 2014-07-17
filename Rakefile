@@ -141,6 +141,10 @@ namespace :db do
         u.string :name
       end
 
+      BlankModel.using(shard_symbol).connection.create_table(:custom) do |u|
+        u.string :value
+      end
+
       if shard_symbol == :alone_shard
         BlankModel.using(shard_symbol).connection.create_table(:mmorpg_players) do |u|
           u.string :player_name

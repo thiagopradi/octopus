@@ -74,6 +74,7 @@ module Octopus::Model
     def self.extended(base)
       base.class_attribute(:replicated)
       base.class_attribute(:sharded)
+      base.class_attribute(:allow_octopus)
       base.hijack_methods
     end
 
@@ -86,7 +87,7 @@ module Octopus::Model
     end
 
     def hijack_methods
-      around_save :run_on_shard
+      around_save :run_on_shard, unless: ->{ self.class.custom_octopus_connection }
       after_initialize :set_current_shard
 
       class << self
@@ -121,7 +122,11 @@ module Octopus::Model
     end
 
     def should_use_normal_connection?
-      !Octopus.enabled? || custom_octopus_connection
+      if !Octopus.enabled?
+        true
+      elsif custom_octopus_connection
+        !allow_octopus || !connection_proxy.block
+      end
     end
 
     def connection_with_octopus

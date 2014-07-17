@@ -101,7 +101,6 @@ class Octopus::Proxy
   end
 
   def current_shard=(shard_symbol)
-    self.current_slave_group = nil
     if shard_symbol.is_a?(Array)
       shard_symbol.each {|symbol| raise "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
     elsif shard_symbol.is_a?(Hash)
@@ -422,12 +421,14 @@ class Octopus::Proxy
   # Temporarily switch `current_shard` and run the block
   def using_shard(shard, &block)
     older_shard = self.current_shard
+    older_group = self.current_slave_group
 
     begin
       self.current_shard = shard
       yield
     ensure
       self.current_shard = older_shard
+      self.current_slave_group = older_group
     end
   end
 

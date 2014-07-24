@@ -8,9 +8,9 @@ describe Octopus::CollectionProxy do
     end
 
     it "computes the size of the collection without loading it" do
-      @client.items.size.should eq(1)
+      expect(@client.items.size).to eq(1)
 
-      expect(@client.items.loaded?).to be_false
+      expect(@client.items.loaded?).to be false
     end
   end
 end

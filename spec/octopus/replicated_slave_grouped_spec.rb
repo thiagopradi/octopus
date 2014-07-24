@@ -18,13 +18,13 @@ describe "when the database is replicated and has slave groups" do
       # When a select-count query is sent to `octopus_shard_2`, it should return 0.
 
       # The query goes to `octopus_shard_1`
-      Cat.using(:master).count.should == 2
+      expect(Cat.using(:master).count).to eq(2)
       # The query goes to `octopus_shard_1`
-      Cat.count.should == 2
+      expect(Cat.count).to eq(2)
       # The query goes to `octopus_shard_2`
-      Cat.using(slave_group: :slaves1).count.should == 0
+      expect(Cat.using(slave_group: :slaves1).count).to eq(0)
       # The query goes to `octopus_shard_1`
-      Cat.using(slave_group: :slaves2).count.should == 2
+      expect(Cat.using(slave_group: :slaves2).count).to eq(2)
     end
   end
 
@@ -36,11 +36,11 @@ describe "when the database is replicated and has slave groups" do
       Cat.create!(:name => "Thiago2")
 
       # The query goes to :slave32(`octopus_shard_2`)
-      Cat.using(slave_group: :slaves3).count.should == 0
+      expect(Cat.using(slave_group: :slaves3).count).to eq(0)
       # The query goes to :slave31(`octopus_shard_1`)
-      Cat.using(slave_group: :slaves3).count.should == 2
+      expect(Cat.using(slave_group: :slaves3).count).to eq(2)
       # The query goes to :slave32(`octopus_shard_2`)
-      Cat.using(slave_group: :slaves3).count.should == 0
+      expect(Cat.using(slave_group: :slaves3).count).to eq(0)
     end
   end
 
@@ -54,11 +54,11 @@ describe "when the database is replicated and has slave groups" do
       # In `database.yml` and `shards.yml`, we have configured 1 master and 4 slaves.
       # So we can ensure Octopus is not distributing queries between them
       # by asserting 1 + 4 = 5 queries go to :master(`octopus_shard_1`)
-      Cat.count.should == 2
-      Cat.count.should == 2
-      Cat.count.should == 2
-      Cat.count.should == 2
-      Cat.count.should == 2
+      expect(Cat.count).to eq(2)
+      expect(Cat.count).to eq(2)
+      expect(Cat.count).to eq(2)
+      expect(Cat.count).to eq(2)
+      expect(Cat.count).to eq(2)
     end
   end
 end

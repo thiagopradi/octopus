@@ -14,6 +14,6 @@ describe Octopus::LogSubscriber, :shards => [:canada] do
 
   it "should add to the default logger the shard name the query was sent to" do
     User.using(:canada).create!(:name => "test")
-    @out.string.should =~ /Shard: canada/
+    expect(@out.string).to match(/Shard: canada/)
   end
 end

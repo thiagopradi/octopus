@@ -11,23 +11,23 @@ describe "when the database is both sharded and replicated" do
       end
 
       # We must stub here to make it effective (not in the `before(:each)` block)
-      Octopus.stub(:env).and_return("sharded_replicated_slave_grouped")
+      allow(Octopus).to receive(:env).and_return("sharded_replicated_slave_grouped")
 
-      Cat.using(:russia).count.should == 2
+      expect(Cat.using(:russia).count).to eq(2)
       # It distributes queries between two slaves in the slave group
-      Cat.using(shard: :russia, slave_group: :slaves1).count.should == 0
-      Cat.using(shard: :russia, slave_group: :slaves1).count.should == 2
-      Cat.using(shard: :russia, slave_group: :slaves1).count.should == 0
+      expect(Cat.using(shard: :russia, slave_group: :slaves1).count).to eq(0)
+      expect(Cat.using(shard: :russia, slave_group: :slaves1).count).to eq(2)
+      expect(Cat.using(shard: :russia, slave_group: :slaves1).count).to eq(0)
       # It distributes queries between two slaves in the slave group
-      Cat.using(shard: :russia, slave_group: :slaves2).count.should == 2
-      Cat.using(shard: :russia, slave_group: :slaves2).count.should == 0
-      Cat.using(shard: :russia, slave_group: :slaves2).count.should == 2
+      expect(Cat.using(shard: :russia, slave_group: :slaves2).count).to eq(2)
+      expect(Cat.using(shard: :russia, slave_group: :slaves2).count).to eq(0)
+      expect(Cat.using(shard: :russia, slave_group: :slaves2).count).to eq(2)
 
-      Cat.using(:europe).count.should == 0
-      Cat.using(shard: :europe, slave_group: :slaves1)
-        .count.should == 0
-      Cat.using(shard: :europe, slave_group: :slaves2)
-        .count.should == 2
+      expect(Cat.using(:europe).count).to eq(0)
+      expect(Cat.using(shard: :europe, slave_group: :slaves1)
+        .count).to eq(0)
+      expect(Cat.using(shard: :europe, slave_group: :slaves2)
+        .count).to eq(2)
     end
   end
 
@@ -42,13 +42,13 @@ describe "when the database is both sharded and replicated" do
         # In `database.yml` and `shards.yml`, we have configured 1 master and 6 slaves for `sharded_replicated_slave_grouped`
         # So we can ensure Octopus is not distributing queries between them
         # by asserting 1 + 6 = 7 queries go to :master(`octopus_shard_1`)
-        Cat.count.should == 2
-        Cat.count.should == 2
-        Cat.count.should == 2
-        Cat.count.should == 2
-        Cat.count.should == 2
-        Cat.count.should == 2
-        Cat.count.should == 2
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
       end
     end
   end

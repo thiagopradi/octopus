@@ -34,6 +34,6 @@ module Octopus
         method_missing(:==, other)
       end
     end
-    alias :eql? :==
+    alias_method :eql?, :==
   end
 end

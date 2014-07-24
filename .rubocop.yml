@@ -1,0 +1,46 @@
+inherit_from: .rubocop_todo.yml
+
+ActionFilter:
+  EnforcedStyle: filter
+
+CaseIndentation:
+  IndentWhenRelativeTo: end
+
+CollectionMethods:
+  PreferredMethods:
+    find: detect
+
+EmptyLineBetweenDefs:
+  AllowAdjacentOneLineDefs: true
+
+Encoding:
+  Enabled: false
+
+EndAlignment:
+  AlignWith: variable
+
+HashSyntax:
+  EnforcedStyle: hash_rockets
+
+Style/IndentHash:
+  EnforcedStyle: consistent
+
+Loop:
+  Enabled: false
+
+PredicateName:
+  Enabled: false
+
+RegexpLiteral:
+  Enabled: false
+
+Semicolon:
+  AllowAsExpressionSeparator: true
+
+Style/TrailingComma:
+  EnforcedStyleForMultiline: comma
+
+Style/TrivialAccessors:
+  AllowDSLWriters: true
+  AllowPredicates: true
+  ExactNameMatch: true

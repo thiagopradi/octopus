@@ -2,24 +2,24 @@ require 'active_record'
 require 'active_support/version'
 require 'active_support/core_ext/class'
 
-require "yaml"
-require "erb"
+require 'yaml'
+require 'erb'
 
 module Octopus
-  def self.env()
+  def self.env
     @env ||= 'octopus'
   end
 
-  def self.rails_env()
+  def self.rails_env
     @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
   end
 
   def self.config
     @config ||= begin
-      file_name = Octopus.directory() + "/config/shards.yml"
+      file_name = Octopus.directory + '/config/shards.yml'
 
-      if File.exists?(file_name) || File.symlink?(file_name)
-        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env()]
+      if File.exist?(file_name) || File.symlink?(file_name)
+        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env]
       else
         config ||= HashWithIndifferentAccess.new
       end
@@ -45,7 +45,7 @@ module Octopus
 
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
-  def self.directory()
+  def self.directory
     @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
   end
 
@@ -81,7 +81,7 @@ module Octopus
   end
 
   def self.shards=(shards)
-    config[rails_env()] = HashWithIndifferentAccess.new(shards)
+    config[rails_env] = HashWithIndifferentAccess.new(shards)
     ActiveRecord::Base.connection.initialize_shards(@config)
   end
 
@@ -95,36 +95,33 @@ module Octopus
     end
   end
 
-  def self.fully_replicated(&block)
-    old_fully_replicated = Thread.current["octopus.fully_replicated"]
-    Thread.current["octopus.fully_replicated"] = true
+  def self.fully_replicated(&_block)
+    old_fully_replicated = Thread.current['octopus.fully_replicated']
+    Thread.current['octopus.fully_replicated'] = true
     yield
   ensure
-    Thread.current["octopus.fully_replicated"] = old_fully_replicated
+    Thread.current['octopus.fully_replicated'] = old_fully_replicated
   end
 end
 
-require "octopus/shard_tracking"
-require "octopus/shard_tracking/attribute"
-require "octopus/shard_tracking/dynamic"
+require 'octopus/shard_tracking'
+require 'octopus/shard_tracking/attribute'
+require 'octopus/shard_tracking/dynamic'
 
-require "octopus/model"
-require "octopus/migration"
-require "octopus/association"
-require "octopus/collection_association"
-require "octopus/has_and_belongs_to_many_association" unless Octopus.rails41?
-require "octopus/association_shard_tracking"
-require "octopus/persistence"
-require "octopus/log_subscriber"
-require "octopus/abstract_adapter"
-require "octopus/singular_association"
+require 'octopus/model'
+require 'octopus/migration'
+require 'octopus/association'
+require 'octopus/collection_association'
+require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41?
+require 'octopus/association_shard_tracking'
+require 'octopus/persistence'
+require 'octopus/log_subscriber'
+require 'octopus/abstract_adapter'
+require 'octopus/singular_association'
 
-if defined?(::Rails)
-  require "octopus/railtie"
-end
+require 'octopus/railtie' if defined?(::Rails)
 
-
-require "octopus/proxy"
-require "octopus/collection_proxy"
-require "octopus/relation_proxy"
-require "octopus/scope_proxy"
+require 'octopus/proxy'
+require 'octopus/collection_proxy'
+require 'octopus/relation_proxy'
+require 'octopus/scope_proxy'

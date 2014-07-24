@@ -1,6 +1,8 @@
-module Octopus::HasAndBelongsToManyAssociation
-  def self.included(base)
-    base.sharded_methods :insert_record
+module Octopus
+  module HasAndBelongsToManyAssociation
+    def self.included(base)
+      base.sharded_methods :insert_record
+    end
   end
 end
 

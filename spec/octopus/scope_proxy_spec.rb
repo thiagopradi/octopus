@@ -33,12 +33,14 @@ describe Octopus::ScopeProxy do
       @evan.select(["id", "name"]).first.id.should be_a Fixnum
     end
 
-    it "allows multiple selection by symbol" do
-      @evan.select(:id, :name).first.id.should be_a Fixnum
-    end
+    if Octopus.rails4?
+      it "allows multiple selection by symbol" do
+        @evan.select(:id, :name).first.id.should be_a Fixnum
+      end
 
-    it "allows multiple selection by string and symbol" do
-      @evan.select(:id, "name").first.id.should be_a Fixnum
+      it "allows multiple selection by string and symbol" do
+        @evan.select(:id, "name").first.id.should be_a Fixnum
+      end
     end
   end
 

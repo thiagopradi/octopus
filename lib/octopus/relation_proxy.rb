@@ -18,6 +18,11 @@ module Octopus
     end
 
     # these methods are not normally sent to method_missing
+
+    def select(*args)
+      method_missing(:select, *args)
+    end
+
     def inspect
       method_missing(:inspect)
     end

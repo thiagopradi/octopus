@@ -11,6 +11,19 @@ describe Octopus::ScopeProxy do
     User.using(:brazil).where(:name => "Thiago").using(:canada).where(:number => 4).using(:brazil).order(:number).all.should == []
   end
 
+  context "When array-like-selecting an item in a group" do
+    before(:each) do
+      User.using(:brazil).create!(:name => "Evan", :number => 1)
+      User.using(:brazil).create!(:name => "Evan", :number => 2)
+      User.using(:brazil).create!(:name => "Evan", :number => 3)
+      @evans = User.using(:brazil).where(:name => "Evan")
+    end
+
+    it "allows a block to select an item" do
+      @evans.select{|u| u.number == 2}.first.number.should eq(2)
+    end
+  end
+
   context "When selecting a field within a scope" do
     before(:each) do
       User.using(:brazil).create!(:name => "Evan", :number => 4)

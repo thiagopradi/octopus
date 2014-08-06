@@ -6,7 +6,7 @@ require 'appraisal'
 RSpec::Core::RakeTask.new
 RuboCop::RakeTask.new
 
-task :default => [:spec, :rubocop]
+task :default => [:spec]
 
 namespace :db do
   desc 'Build the databases for tests'

@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'spec_helper'
 
 describe Octopus::LogSubscriber, :shards => [:canada] do
   before :each do
@@ -12,8 +12,8 @@ describe Octopus::LogSubscriber, :shards => [:canada] do
     ActiveRecord::Base.logger = nil
   end
 
-  it "should add to the default logger the shard name the query was sent to" do
-    User.using(:canada).create!(:name => "test")
-    @out.string.should =~ /Shard: canada/
+  it 'should add to the default logger the shard name the query was sent to' do
+    User.using(:canada).create!(:name => 'test')
+    expect(@out.string).to match(/Shard: canada/)
   end
 end

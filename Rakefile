@@ -1,11 +1,12 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
+require 'rubocop/rake_task'
 require 'appraisal'
 
-task :default => :spec
+RSpec::Core::RakeTask.new
+RuboCop::RakeTask.new
 
-RSpec::Core::RakeTask.new(:spec) do |spec|
-end
+task :default => [:spec, :rubocop]
 
 namespace :db do
   desc 'Build the databases for tests'
@@ -13,20 +14,20 @@ namespace :db do
     pg_spec = {
       :adapter  => 'postgresql',
       :host     => 'localhost',
-      :username => (ENV['POSTGRES_USER'] || "postgres"),
-      :encoding => 'utf8'
+      :username => (ENV['POSTGRES_USER'] || 'postgres'),
+      :encoding => 'utf8',
     }
 
     mysql_spec = {
       :adapter  => 'mysql2',
       :host     => 'localhost',
-      :username => (ENV['MYSQL_USER'] || "root"),
-      :encoding => 'utf8'
+      :username => (ENV['MYSQL_USER'] || 'root'),
+      :encoding => 'utf8',
     }
 
-    %x( rm -f /tmp/database.sqlite3 )
+    ` rm -f /tmp/database.sqlite3 `
 
-    require "active_record"
+    require 'active_record'
 
     # Connects to PostgreSQL
     ActiveRecord::Base.establish_connection(pg_spec.merge('database' => 'postgres', 'schema_search_path' => 'public'))
@@ -49,9 +50,9 @@ namespace :db do
 
   desc 'Create tables on tests databases'
   task :create_tables do
-    require "octopus"
+    require 'octopus'
     # Set the octopus variable directory to spec dir, in order to load the config/shards.yml file.
-    Octopus.instance_variable_set(:@directory, "#{File.dirname(__FILE__)}/spec/" )
+    Octopus.instance_variable_set(:@directory, "#{File.dirname(__FILE__)}/spec/")
 
     # Require the database connection
     require "#{File.dirname(__FILE__)}/spec/support/database_connection"
@@ -61,9 +62,9 @@ namespace :db do
     shard_symbols.each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
       # the model be a descendent of ActiveRecord::Base.
-      class BlankModel < ActiveRecord::Base; end;
+      class BlankModel < ActiveRecord::Base; end
 
-      BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table()
+      BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table
 
       BlankModel.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name
@@ -148,14 +149,14 @@ namespace :db do
 
         BlankModel.using(shard_symbol).connection.create_table(:weapons) do |u|
           u.integer :mmorpg_player_id
-          u.string  :name
-          u.string  :hand
+          u.string :name
+          u.string :hand
         end
 
         BlankModel.using(shard_symbol).connection.create_table(:skills) do |u|
           u.integer :mmorpg_player_id
           u.integer :weapon_id
-          u.string  :name
+          u.string :name
         end
       end
     end

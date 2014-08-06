@@ -1,75 +1,75 @@
-require "spec_helper"
+require 'spec_helper'
 
 describe Octopus::RelationProxy do
-  describe "shard tracking" do
+  describe 'shard tracking' do
     before :each do
       @client = Client.using(:canada).create!
       @client.items << Item.using(:canada).create!
       @relation = @client.items
     end
 
-    it "remembers the shard on which a relation was created" do
-      @relation.current_shard.should eq(:canada)
+    it 'remembers the shard on which a relation was created' do
+      expect(@relation.current_shard).to eq(:canada)
     end
 
-    context "when comparing to other Relation objects" do
+    context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset
       end
 
-      it "is equal to its clone" do
-        @relation.should eq(@relation.clone)
+      it 'is equal to its clone' do
+        expect(@relation).to eq(@relation.clone)
       end
     end
 
     if Octopus.rails4?
-      context "under Rails 4" do
-        it "is an Octopus::RelationProxy" do
-          @relation.class.should eq(Octopus::RelationProxy)
+      context 'under Rails 4' do
+        it 'is an Octopus::RelationProxy' do
+          expect(@relation.class).to eq(Octopus::RelationProxy)
         end
 
-        it "should be able to return its ActiveRecord::Relation" do
-          @relation.ar_relation.is_a?(ActiveRecord::Relation).should be_true
+        it 'should be able to return its ActiveRecord::Relation' do
+          expect(@relation.ar_relation.is_a?(ActiveRecord::Relation)).to be true
         end
 
-        it "is equal to an identically-defined, but different, RelationProxy" do
+        it 'is equal to an identically-defined, but different, RelationProxy' do
           i = @client.items
-          @relation.should eq(i)
-          @relation.object_id.should_not eq(i.object_id)
+          expect(@relation).to eq(i)
+          expect(@relation.object_id).not_to eq(i.object_id)
         end
 
-        it "is equal to its own underlying ActiveRecord::Relation" do
-          @relation.should eq(@relation.ar_relation)
-          @relation.ar_relation.should eq(@relation)
+        it 'is equal to its own underlying ActiveRecord::Relation' do
+          expect(@relation).to eq(@relation.ar_relation)
+          expect(@relation.ar_relation).to eq(@relation)
         end
       end
     end
 
-    context "when no explicit shard context is provided" do
-      it "uses the correct shard" do
-        @relation.count.should eq(1)
+    context 'when no explicit shard context is provided' do
+      it 'uses the correct shard' do
+        expect(@relation.count).to eq(1)
       end
 
-      it "lazily evaluates on the correct shard" do
+      it 'lazily evaluates on the correct shard' do
         # Do something to force Client.connection_proxy.current_shard to change
-        other_count = Client.using(:brazil).count
-        @relation.select(:client_id).count.should == 1
+        _some_count = Client.using(:brazil).count
+        expect(@relation.select(:client_id).count).to eq(1)
       end
     end
 
-    context "when an explicit, but different, shard context is provided" do
-      it "uses the correct shard" do
-        Item.using(:brazil).count.should eq(0)
-        clients_on_brazil = Client.using(:brazil).all
+    context 'when an explicit, but different, shard context is provided' do
+      it 'uses the correct shard' do
+        expect(Item.using(:brazil).count).to eq(0)
+        _clients_on_brazil = Client.using(:brazil).all
         Client.using(:brazil) do
-          @relation.count.should eq(1)
+          expect(@relation.count).to eq(1)
         end
       end
 
-      it "lazily evaluates on the correct shard" do
-        Item.using(:brazil).count.should eq(0)
+      it 'lazily evaluates on the correct shard' do
+        expect(Item.using(:brazil).count).to eq(0)
         Client.using(:brazil) do
-          @relation.select(:client_id).count.should == 1
+          expect(@relation.select(:client_id).count).to eq(1)
         end
       end
     end

@@ -2,7 +2,6 @@
 module Octopus
   module AbstractAdapter
     module OctopusShard
-
       parent = Octopus.rails3? ? ActiveSupport::BasicObject : ActiveSupport::ProxyObject
 
       class InstrumenterDecorator < parent
@@ -33,7 +32,6 @@ module Octopus
         initialize_without_octopus_shard(*args)
         @instrumenter = InstrumenterDecorator.new(self, @instrumenter)
       end
-
     end
   end
 end

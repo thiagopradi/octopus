@@ -6,11 +6,11 @@
 #   cities = City.create([{ :name => 'Chicago' }, { :name => 'Copenhagen' }])
 #   Mayor.create(:name => 'Daley', :city => cities.first)
 Octopus.using(:asia) do
-  User.create!(:name => "Asia User")
+  User.create!(:name => 'Asia User')
 end
 
 Octopus.using(:america) do
-  users_america = User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
+  User.create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
 end
 
-User.create!(:name => "Teste")
+User.create!(:name => 'Teste')

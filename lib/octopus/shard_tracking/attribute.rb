@@ -4,15 +4,9 @@
 module Octopus::ShardTracking::Attribute
   def self.included(base)
     base.send(:include, Octopus::ShardTracking)
-    base.extend(ClassMethods)
-    base.track_current_shard_as_attribute
   end
 
-  module ClassMethods
-    def track_current_shard_as_attribute
-      attr_accessor :current_shard
-    end
-  end
+  attr_accessor :current_shard
 
   def set_current_shard
     return unless Octopus.enabled?

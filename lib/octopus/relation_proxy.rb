@@ -40,5 +40,27 @@ module Octopus
       end
     end
     alias_method :eql?, :==
+
+    def ===(other)
+      case other
+      when Octopus::RelationProxy
+        method_missing(:==, other.ar_relation)
+      else
+        method_missing(:==, other)
+      end
+    end
+
+    def is_a?(klass)
+      super || @ar_relation.is_a?(klass)
+    end
+  end
+end
+
+class ActiveRecord::Relation
+  class << self
+    alias_method :threequals_without_octopus, :===
+    def ===(other)
+      threequals_without_octopus(other) || (Octopus::RelationProxy === other && self === other.ar_relation)
+    end
   end
 end

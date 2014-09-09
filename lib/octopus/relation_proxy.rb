@@ -1,6 +1,16 @@
 module Octopus
-  class RelationProxy
-    include Octopus::ShardTracking::Attribute
+  class RelationProxy < BasicObject
+    include ::Octopus::ShardTracking::Attribute
+
+    module CaseFixer
+      def ===(other)
+        case other
+        when ::Octopus::RelationProxy
+          other = other.ar_relation
+        end
+        super
+      end
+    end
 
     attr_accessor :ar_relation
 
@@ -13,27 +23,9 @@ module Octopus
       run_on_shard { @ar_relation.send(method, *args, &block) }
     end
 
-    def respond_to?(*args)
-      super || @ar_relation.respond_to?(*args)
-    end
-
-    # these methods are not normally sent to method_missing
-
-    def select(*args, &block)
-      method_missing(:select, *args, &block)
-    end
-
-    def inspect
-      method_missing(:inspect)
-    end
-
-    def as_json(options = nil)
-      method_missing(:as_json, options)
-    end
-
     def ==(other)
       case other
-      when Octopus::RelationProxy
+      when ::Octopus::RelationProxy
         method_missing(:==, other.ar_relation)
       else
         method_missing(:==, other)
@@ -42,3 +34,5 @@ module Octopus
     alias_method :eql?, :==
   end
 end
+
+ActiveRecord::Relation.extend(Octopus::RelationProxy::CaseFixer)

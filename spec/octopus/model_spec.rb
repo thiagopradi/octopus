@@ -2,10 +2,6 @@ require 'spec_helper'
 
 describe Octopus::Model do
   describe '#using method' do
-    it 'should return self after calling the #using method' do
-      expect(User.using(:canada)).to be_a(Octopus::ScopeProxy)
-    end
-
     it 'should allow to send a block to the master shard' do
       Octopus.using(:master) do
         User.create!(:name => 'Block test')

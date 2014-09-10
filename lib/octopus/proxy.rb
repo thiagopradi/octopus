@@ -73,7 +73,7 @@ module Octopus
         end
       end
 
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
+      @shards[:master] ||= @shards[ENV['SHARD'] || (config && config[:master_shard])] || ActiveRecord::Base.connection_pool_without_octopus
     end
 
     def initialize_replication(config)

@@ -226,9 +226,19 @@ module Octopus
     end
 
     def send_queries_to_multiple_shards(shards, &block)
-      shards.each do |shard|
+      shards.map do |shard|
         run_queries_on_shard(shard, &block)
       end
+    end
+
+    def send_queries_to_group(group, &block)
+      using_group(group) do
+        send_queries_to_multiple_shards(shards_for_group(group), &block)
+      end
+    end
+
+    def send_queries_to_all_shards(&block)
+      send_queries_to_multiple_shards(shard_names.uniq { |shard_name| @shards[shard_name] }, &block)
     end
 
     def clean_connection_proxy
@@ -429,6 +439,18 @@ module Octopus
         yield
       ensure
         self.current_shard = older_shard
+      end
+    end
+
+    # Temporarily switch `current_group` and run the block
+    def using_group(group, &_block)
+      older_group = current_group
+
+      begin
+        self.current_group = group
+        yield
+      ensure
+        self.current_group = older_group
       end
     end
 

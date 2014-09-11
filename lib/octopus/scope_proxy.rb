@@ -4,10 +4,7 @@ module Octopus
 
     module CaseFixer
       def ===(other)
-        case other
-        when ::Octopus::ScopeProxy
-          other = other.klass
-        end
+        other = other.klass while ::Octopus::ScopeProxy === other
         super
       end
     end

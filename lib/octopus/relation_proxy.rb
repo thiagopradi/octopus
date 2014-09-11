@@ -4,10 +4,7 @@ module Octopus
 
     module CaseFixer
       def ===(other)
-        case other
-        when ::Octopus::RelationProxy
-          other = other.ar_relation
-        end
+        other = other.ar_relation while ::Octopus::RelationProxy === other
         super
       end
     end

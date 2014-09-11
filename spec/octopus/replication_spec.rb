@@ -113,4 +113,15 @@ describe 'when the database is replicated and the entire application is replicat
       expect(Cat.connection.current_shard).to eql(:master)
     end
   end
+
+  it 'should reset current shard if slave throws an exception with custom master' do
+    OctopusHelper.using_environment :production_fully_replicated do
+      Octopus.config[:master_shard] = :slave2
+      Cat.create!(:name => 'Slave Cat')
+      expect(Cat.connection.current_shard).to eql(:slave2)
+      Cat.where(:rubbish => true)
+      expect(Cat.connection.current_shard).to eql(:slave2)
+      Octopus.config[:master_shard] = nil
+    end
+  end
 end

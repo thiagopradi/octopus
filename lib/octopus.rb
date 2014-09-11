@@ -28,6 +28,10 @@ module Octopus
     end
   end
 
+  def self.master_shard
+    (ENV['SHARD'] || (config && config[:master_shard]) || :master).to_sym
+  end
+
   # Public: Whether or not Octopus is configured and should hook into the
   # current environment. Checks the environments config option for the Rails
   # environment by default.

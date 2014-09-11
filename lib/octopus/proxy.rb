@@ -73,7 +73,7 @@ module Octopus
         end
       end
 
-      @shards[:master] ||= @shards[ENV['SHARD'] || (config && config[:master_shard])] || ActiveRecord::Base.connection_pool_without_octopus
+      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus if Octopus.master_shard == :master
     end
 
     def initialize_replication(config)
@@ -98,7 +98,7 @@ module Octopus
     end
 
     def current_shard
-      Thread.current['octopus.current_shard'] ||= :master
+      Thread.current['octopus.current_shard'] ||= Octopus.master_shard
     end
 
     def current_shard=(shard_symbol)
@@ -242,7 +242,7 @@ module Octopus
     end
 
     def clean_connection_proxy
-      self.current_shard = :master
+      self.current_shard = Octopus.master_shard
       self.current_group = nil
       self.block = false
     end
@@ -256,7 +256,7 @@ module Octopus
     def transaction(options = {}, &block)
       replicated = @replicated && (current_model.replicated || fully_replicated?)
       if !sharded && replicated
-        run_queries_on_shard(:master) do
+        run_queries_on_shard(Octopus.master_shard) do
           select_connection.transaction(options, &block)
         end
       else
@@ -378,7 +378,7 @@ module Octopus
       if current_model.replicated || fully_replicated?
         selected_slave = @slaves_load_balancer.next
       else
-        selected_slave = :master
+        selected_slave = Octopus.master_shard
       end
 
       send_queries_to_slave(selected_slave, method, *args, &block)

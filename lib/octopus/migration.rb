@@ -51,7 +51,7 @@ module Octopus
           shards.merge(Array.wrap(shard))
         end
 
-        shards.to_a.presence || [:master]
+        shards.to_a.presence || [Octopus.master_shard]
       end
     end
   end
@@ -107,7 +107,7 @@ module Octopus
 
       def up_with_octopus(migrations_paths, target_version = nil, &block)
         return up_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
-        return up_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard == :master
+        return up_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard.to_s == Octopus.master_shard.to_s
 
         connection.send_queries_to_multiple_shards(connection.shard_names) do
           up_without_octopus(migrations_paths, target_version, &block)
@@ -116,7 +116,7 @@ module Octopus
 
       def down_with_octopus(migrations_paths, target_version = nil, &block)
         return down_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
-        return down_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard == :master
+        return down_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard.to_s == Octopus.master_shard.to_s
 
         connection.send_queries_to_multiple_shards(connection.shard_names) do
           down_without_octopus(migrations_paths, target_version, &block)

@@ -344,14 +344,14 @@ module Octopus
     def resolve_string_connection(spec)
       if Octopus.rails41?
         resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
-        resolver.spec(spec).config.stringify_keys
+        HashWithIndifferentAccess.new(resolver.spec(spec).config)
       else
         if Octopus.rails4?
           resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
         else
           resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
         end
-        resolver.spec.config.stringify_keys
+        HashWithIndifferentAccess.new(resolver.spec.config)
       end
     end
 

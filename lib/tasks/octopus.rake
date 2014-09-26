@@ -1,7 +1,7 @@
 namespace :octopus do
-  desc "Copy schema version information from master to all shards"
+  desc 'Copy schema version information from master to all shards'
   task :copy_schema_versions => :environment do
-    abort("Octopus is not enabled for this environment") unless Octopus.enabled?
+    abort('Octopus is not enabled for this environment') unless Octopus.enabled?
 
     connection = ActiveRecord::Base.connection
 

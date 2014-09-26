@@ -84,7 +84,7 @@ module Octopus
         @fully_replicated = true
       end
 
-      @slaves_list = @shards.keys.map { |sym| sym.to_s }.sort
+      @slaves_list = @shards.keys.map(&:to_s).sort
       @slaves_list.delete('master')
       @slaves_load_balancer = Octopus::LoadBalancing::RoundRobin.new(@slaves_list)
     end

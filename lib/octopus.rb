@@ -57,7 +57,7 @@ module Octopus
   end
 
   def self.environments=(environments)
-    @environments = environments.map { |element| element.to_s }
+    @environments = environments.map(&:to_s)
   end
 
   def self.environments

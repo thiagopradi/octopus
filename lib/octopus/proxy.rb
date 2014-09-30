@@ -202,6 +202,9 @@ module Octopus
     # reconnect, but in Rails 3.1 the flag prevents this.
     def safe_connection(connection_pool)
       connection_pool.automatic_reconnect ||= true
+      if !connection_pool.connected? && @shards[:master].connection.query_cache_enabled
+        connection_pool.connection.enable_query_cache!
+      end
       connection_pool.connection
     end
 
@@ -281,15 +284,15 @@ module Octopus
 
     def enable_query_cache!
       clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).enable_query_cache! }
+      @shards.each { |_k, v| v.connected? && safe_connection(v).enable_query_cache! }
     end
 
     def disable_query_cache!
-      @shards.each { |_k, v| safe_connection(v).disable_query_cache! }
+      @shards.each { |_k, v| v.connected? && safe_connection(v).disable_query_cache! }
     end
 
     def clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).clear_query_cache }
+      @shards.each { |_k, v| v.connected? && safe_connection(v).clear_query_cache }
     end
 
     def clear_active_connections!

@@ -27,23 +27,23 @@ describe 'when the database is replicated' do
   end
 
   describe 'When enabling the query cache' do
-    include_context 'with query cache enabled'
+    include_context 'with query cache enabled' do
+      it 'should do the queries with cache' do
+        OctopusHelper.using_environment :replicated_with_one_slave  do
+          cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
+          _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
+          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
+          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
+          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
 
-    it 'should do the queries with cache' do
-      OctopusHelper.using_environment :replicated_with_one_slave  do
-        cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
-        _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
-        expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
-        expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
-        expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
+          cat3 = Cat.using(:slave1).create!(:name => 'Slave Cat 3')
+          _ct4 = Cat.using(:slave1).create!(:name => 'Slave Cat 4')
+          expect(Cat.find(cat3.id).id).to eq(cat3.id)
+          expect(Cat.find(cat3.id).id).to eq(cat3.id)
+          expect(Cat.find(cat3.id).id).to eq(cat3.id)
 
-        cat3 = Cat.using(:slave1).create!(:name => 'Slave Cat 3')
-        _ct4 = Cat.using(:slave1).create!(:name => 'Slave Cat 4')
-        expect(Cat.find(cat3.id).id).to eq(cat3.id)
-        expect(Cat.find(cat3.id).id).to eq(cat3.id)
-        expect(Cat.find(cat3.id).id).to eq(cat3.id)
-
-        expect(counter.query_count).to eq(16)
+          expect(counter.query_count).to eq(14)
+        end
       end
     end
   end

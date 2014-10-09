@@ -121,12 +121,9 @@ module Octopus
       end
 
       def connection_proxy
-        proxy = ActiveRecord::Base.class_variable_defined?(:@@connection_proxy) &&
+        ActiveRecord::Base.class_variable_defined?(:@@connection_proxy) &&
           ActiveRecord::Base.class_variable_get(:@@connection_proxy) ||
           ActiveRecord::Base.class_variable_set(:@@connection_proxy, Octopus::Proxy.new)
-
-        proxy.current_model = self
-        proxy
       end
 
       def should_use_normal_connection?
@@ -149,6 +146,7 @@ module Octopus
         if should_use_normal_connection?
           connection_without_octopus
         else
+          connection_proxy.current_model = self
           connection_proxy
         end
       end

@@ -233,6 +233,7 @@ module Octopus
 
     def clean_connection_proxy
       self.current_shard = :master
+      self.current_model = nil
       self.current_group = nil
       self.block = false
     end

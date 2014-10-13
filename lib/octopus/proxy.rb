@@ -218,7 +218,7 @@ module Octopus
     end
 
     def run_queries_on_shard(shard, &_block)
-      keeping_connection_proxy do
+      keeping_connection_proxy(shard) do
         using_shard(shard) do
           yield
         end
@@ -235,7 +235,7 @@ module Octopus
       self.current_shard = :master
       self.current_model = nil
       self.current_group = nil
-      self.block = false
+      self.block = nil
     end
 
     def check_schema_migrations(shard)
@@ -357,7 +357,7 @@ module Octopus
     end
 
     def should_clean_connection_proxy?(method)
-      method.to_s =~ /insert|select|execute/ && !@replicated && !block
+      method.to_s =~ /insert|select|execute/ && !@replicated && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
@@ -410,14 +410,14 @@ module Octopus
     #
     # @see Octopus::Proxy#should_clean_connection?
     # @see Octopus::Proxy#clean_connection_proxy
-    def keeping_connection_proxy(&_block)
+    def keeping_connection_proxy(shard, &_block)
       last_block = block
 
       begin
-        self.block = true
+        self.block = shard
         yield
       ensure
-        self.block = last_block || false
+        self.block = last_block || nil
       end
     end
 

@@ -245,8 +245,7 @@ module Octopus
     end
 
     def transaction(options = {}, &block)
-      replicated = @replicated && (current_model.replicated || fully_replicated?)
-      if !sharded && replicated
+      if !sharded && current_model_replicated?
         run_queries_on_shard(:master) do
           select_connection.transaction(options, &block)
         end
@@ -357,12 +356,16 @@ module Octopus
     end
 
     def should_clean_connection_proxy?(method)
-      method.to_s =~ /insert|select|execute/ && !@replicated && (!block || block != current_shard)
+      method.to_s =~ /insert|select|execute/ && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
       @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
+    end
+
+    def current_model_replicated?
+      @replicated && (current_model.replicated || fully_replicated?)
     end
 
     def send_queries_to_selected_slave(method, *args, &block)
@@ -385,7 +388,7 @@ module Octopus
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
     def should_use_slaves_for_method?(method)
-      @replicated && (current_model.replicated || fully_replicated?) && method.to_s =~ /select/
+      current_model_replicated? && method.to_s =~ /select/
     end
 
     def slaves_grouped?

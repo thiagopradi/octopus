@@ -365,7 +365,7 @@ module Octopus
     end
 
     def current_model_replicated?
-      @replicated && (current_model.replicated || fully_replicated?)
+      @replicated && (current_model.try(:replicated) || fully_replicated?)
     end
 
     def send_queries_to_selected_slave(method, *args, &block)

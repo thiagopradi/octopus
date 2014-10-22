@@ -335,6 +335,21 @@ module Octopus
           end
         end
       end
+
+      # TODO I'm not sure this will work in Rails 3.x
+      ActiveRecord::Base.connection_handler.connection_pool_list.each do |pool|
+        next if pool == @shards[:master] # Already handled this
+
+        begin
+          yield(pool)
+        rescue => e
+          if Octopus.robust_environment?
+            Octopus.logger.error "Error on pool (spec: #{pool.spec}): #{e.message}"
+          else
+            raise
+          end
+        end
+      end
     end
 
     def connection_pool_for(adapter, config)

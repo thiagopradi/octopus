@@ -558,6 +558,21 @@ describe Octopus::Model do
         end
       end
     end
+
+    describe "clear_active_connections!" do
+      it "should not leak connection" do
+        CustomConnection.create(value: 'custom value')
+
+        expect {
+          # This is what Rails, Sidekiq etc call--this normally handles all connection pools in the app
+          ActiveRecord::Base.clear_active_connections!
+        }.to change {
+          CustomConnection.connection_pool.active_connection?
+        }
+
+        expect(CustomConnection.connection_pool.active_connection?).to be_falsey
+      end
+    end
   end
 
   describe 'when using set_table_name' do

@@ -329,7 +329,7 @@ module Octopus
           yield(v)
         rescue => e
           if Octopus.robust_environment?
-            Rails.logger.error "Error on shard #{_k}: #{e.message}"
+            Octopus.logger.error "Error on shard #{_k}: #{e.message}"
           else
             raise
           end

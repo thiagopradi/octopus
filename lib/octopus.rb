@@ -94,6 +94,19 @@ module Octopus
     defined?(Rails)
   end
 
+  def self.logger=(logger)
+    @logger = logger
+  end
+
+  def self.logger
+    @logger ||=
+      if defined?(Rails)
+        Rails.logger
+      else
+        Logger.new($stderr)
+      end
+  end
+
   def self.shards=(shards)
     config[rails_env] = HashWithIndifferentAccess.new(shards)
     ActiveRecord::Base.connection.initialize_shards(@config)

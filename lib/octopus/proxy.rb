@@ -281,23 +281,23 @@ module Octopus
 
     def enable_query_cache!
       clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).enable_query_cache! }
+      with_each_healthy_shard { |v| safe_connection(v).enable_query_cache! }
     end
 
     def disable_query_cache!
-      @shards.each { |_k, v| safe_connection(v).disable_query_cache! }
+      with_each_healthy_shard { |v| safe_connection(v).disable_query_cache! }
     end
 
     def clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).clear_query_cache }
+      with_each_healthy_shard { |v| safe_connection(v).clear_query_cache }
     end
 
     def clear_active_connections!
-      @shards.each { |_k, v| v.release_connection }
+      with_each_healthy_shard { |v| v.release_connection }
     end
 
     def clear_all_connections!
-      @shards.each { |_k, v| v.disconnect! }
+      with_each_healthy_shard { |v| v.disconnect! }
     end
 
     def connected?
@@ -321,6 +321,21 @@ module Octopus
     end
 
     protected
+
+    # Ensure that a single failing slave doesn't take down the entire application
+    def with_each_healthy_shard
+      @shards.each do |_k, v|
+        begin
+          yield(v)
+        rescue => e
+          if Octopus.robust_environment?
+            Rails.logger.error "Error on shard #{_k}: #{e.message}"
+          else
+            raise
+          end
+        end
+      end
+    end
 
     def connection_pool_for(adapter, config)
       if Octopus.rails4?

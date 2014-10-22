@@ -64,6 +64,20 @@ module Octopus
     @environments ||= config['environments'] || ['production']
   end
 
+  def self.robust_environments=(environments)
+    @robust_environments = environments.map(&:to_s)
+  end
+
+  # Environments in which to swallow failures from a single shard
+  # when iterating through all.
+  def self.robust_environments
+    @robust_environments ||= config['robust_environments'] || ['production']
+  end
+
+  def self.robust_environment?
+    robust_environments.include? rails_env
+  end
+
   def self.rails3?
     ActiveRecord::VERSION::MAJOR <= 3
   end

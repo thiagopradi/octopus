@@ -293,11 +293,11 @@ module Octopus
     end
 
     def clear_active_connections!
-      with_each_healthy_shard { |v| v.release_connection }
+      with_each_healthy_shard(&:release_connection)
     end
 
     def clear_all_connections!
-      with_each_healthy_shard { |v| v.disconnect! }
+      with_each_healthy_shard(&:disconnect!)
     end
 
     def connected?
@@ -464,7 +464,7 @@ module Octopus
 
     # Temporarily switch `current_shard` and run the block
     def using_shard(shard, &_block)
-      older_shard = self.current_shard
+      older_shard = current_shard
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)

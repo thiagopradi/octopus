@@ -49,9 +49,7 @@ module Octopus
           shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
         end
 
-        if self.class.allowed_shard?(shard)
-          self.current_shard = shard
-        end
+        self.current_shard = shard if self.class.allowed_shard?(shard)
       end
 
       def should_set_current_shard?
@@ -97,7 +95,7 @@ module Octopus
       end
 
       def hijack_methods
-        around_save :run_on_shard, unless: ->{ self.class.custom_octopus_connection }
+        around_save :run_on_shard, :unless => -> { self.class.custom_octopus_connection }
         after_initialize :set_current_shard
 
         class << self

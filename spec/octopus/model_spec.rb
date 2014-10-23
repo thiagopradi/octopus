@@ -492,13 +492,11 @@ describe Octopus::Model do
       end
 
       it 'should save to correct shard' do
-        expect {
-          CustomConnection.create(value: 'custom value')
-        }.to change {
-          CustomConnection.
-            connection.
-            execute("select count(*) as ct from custom where value = 'custom value'").
-            to_a.first.first
+        expect { CustomConnection.create(:value => 'custom value') }.to change {
+          CustomConnection
+            .connection
+            .execute("select count(*) as ct from custom where value = 'custom value'")
+            .to_a.first.first
         }.by 1
       end
     end
@@ -533,27 +531,25 @@ describe Octopus::Model do
       end
 
       it 'should save to correct shard' do
-        expect {
-          CustomConnection.create(value: 'custom value')
-        }.to change {
-          CustomConnection.
-            connection.
-            execute("select count(*) as ct from custom where value = 'custom value'").
-            to_a.first.first
+        expect { CustomConnection.create(:value => 'custom value') }.to change {
+          CustomConnection
+            .connection
+            .execute("select count(*) as ct from custom where value = 'custom value'")
+            .to_a.first.first
         }.by 1
       end
 
       it 'should clean up correctly' do
-        User.create!(name: 'CleanUser')
+        User.create!(:name => 'CleanUser')
         CustomConnection.using(:postgresql_shard).first
         expect(User.first).not_to be_nil
       end
 
       it 'should clean up correctly even inside block' do
-        User.create!(name: 'CleanUser')
+        User.create!(:name => 'CleanUser')
 
         Octopus.using(:master) do
-          CustomConnection.using(:postgresql_shard).connection.execute("select count(*) from users")
+          CustomConnection.using(:postgresql_shard).connection.execute('select count(*) from users')
           expect(User.first).not_to be_nil
         end
       end
@@ -561,14 +557,11 @@ describe Octopus::Model do
 
     describe 'clear_active_connections!' do
       it 'should not leak connection' do
-        CustomConnection.create(value: 'custom value')
+        CustomConnection.create(:value => 'custom value')
 
-        expect {
-          # This is what Rails, Sidekiq etc call--this normally handles all connection pools in the app
-          ActiveRecord::Base.clear_active_connections!
-        }.to change {
-          CustomConnection.connection_pool.active_connection?
-        }
+        # This is what Rails, Sidekiq etc call--this normally handles all connection pools in the app
+        expect { ActiveRecord::Base.clear_active_connections! }
+          .to change { CustomConnection.connection_pool.active_connection? }
 
         expect(CustomConnection.connection_pool.active_connection?).to be_falsey
       end

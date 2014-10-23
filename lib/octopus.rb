@@ -94,9 +94,7 @@ module Octopus
     defined?(Rails)
   end
 
-  def self.logger=(logger)
-    @logger = logger
-  end
+  attr_writer :logger
 
   def self.logger
     if defined?(Rails)

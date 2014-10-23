@@ -476,22 +476,22 @@ describe Octopus::Model do
   end
 
   describe 'custom connection' do
-    context "by default" do
-      it "with plain call should use custom connection" do
+    context 'by default' do
+      it 'with plain call should use custom connection' do
         expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
       end
 
-      it "should ignore using called on relation" do
+      it 'should ignore using called on relation' do
         expect(CustomConnection.using(:postgresql_shard).connection.current_database).to eq('octopus_shard_2')
       end
 
-      it "should ignore Octopus.using block" do
+      it 'should ignore Octopus.using block' do
         Octopus.using(:postgresql_shard) do
           expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
         end
       end
 
-      it "should save to correct shard" do
+      it 'should save to correct shard' do
         expect {
           CustomConnection.create(value: 'custom value')
         }.to change {
@@ -503,36 +503,36 @@ describe Octopus::Model do
       end
     end
 
-    context "with allowed_shards configured" do
+    context 'with allowed_shards configured' do
       before do
         CustomConnection.allow_shard :postgresql_shard
       end
 
-      it "with plain call should use custom connection" do
+      it 'with plain call should use custom connection' do
         expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
       end
 
-      it "with using called on relation with allowed shard should use" do
+      it 'with using called on relation with allowed shard should use' do
         expect(CustomConnection.using(:postgresql_shard).connection.current_database).to eq('octopus_shard_1')
       end
 
-      it "within Octopus.using block with allowed shard should use" do
+      it 'within Octopus.using block with allowed shard should use' do
         Octopus.using(:postgresql_shard) do
           expect(CustomConnection.connection.current_database).to eq('octopus_shard_1')
         end
       end
 
-      it "with using called on relation with disallowed shard should not use" do
+      it 'with using called on relation with disallowed shard should not use' do
         expect(CustomConnection.using(:brazil).connection.current_database).to eq('octopus_shard_2')
       end
 
-      it "within Octopus.using block with disallowed shard should not use" do
+      it 'within Octopus.using block with disallowed shard should not use' do
         Octopus.using(:brazil) do
           expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
         end
       end
 
-      it "should save to correct shard" do
+      it 'should save to correct shard' do
         expect {
           CustomConnection.create(value: 'custom value')
         }.to change {
@@ -543,13 +543,13 @@ describe Octopus::Model do
         }.by 1
       end
 
-      it "should clean up correctly" do
+      it 'should clean up correctly' do
         User.create!(name: 'CleanUser')
         CustomConnection.using(:postgresql_shard).first
         expect(User.first).not_to be_nil
       end
 
-      it "should clean up correctly even inside block" do
+      it 'should clean up correctly even inside block' do
         User.create!(name: 'CleanUser')
 
         Octopus.using(:master) do
@@ -559,8 +559,8 @@ describe Octopus::Model do
       end
     end
 
-    describe "clear_active_connections!" do
-      it "should not leak connection" do
+    describe 'clear_active_connections!' do
+      it 'should not leak connection' do
         CustomConnection.create(value: 'custom value')
 
         expect {

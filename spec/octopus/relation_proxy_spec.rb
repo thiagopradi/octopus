@@ -25,7 +25,7 @@ describe Octopus::RelationProxy do
     if Octopus.rails4?
       context 'under Rails 4' do
         it 'is an Octopus::RelationProxy' do
-          expect(@relation.class).to eq(Octopus::RelationProxy)
+          expect{@relation.ar_relation}.not_to raise_error
         end
 
         it 'should be able to return its ActiveRecord::Relation' do
@@ -35,7 +35,7 @@ describe Octopus::RelationProxy do
         it 'is equal to an identically-defined, but different, RelationProxy' do
           i = @client.items
           expect(@relation).to eq(i)
-          expect(@relation.object_id).not_to eq(i.object_id)
+          expect(@relation.__id__).not_to eq(i.__id__)
         end
 
         it 'is equal to its own underlying ActiveRecord::Relation' do

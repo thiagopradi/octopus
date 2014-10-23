@@ -1,6 +1,14 @@
 module Octopus
-  class ScopeProxy
-    include Octopus::ShardTracking::Attribute
+  class ScopeProxy < BasicObject
+    include ::Octopus::ShardTracking::Attribute
+
+    module CaseFixer
+      def ===(other)
+        other = other.klass while ::Octopus::ScopeProxy === other
+        super
+      end
+    end
+
     attr_accessor :klass
 
     def initialize(shard, klass)
@@ -35,10 +43,6 @@ module Octopus
       result
     end
 
-    def as_json(options = nil)
-      method_missing(:as_json, options)
-    end
-
     # Delegates to method_missing (instead of @klass) so that User.using(:blah).where(:name => "Mike")
     # gets run in the correct shard context when #== is evaluated.
     def ==(other)
@@ -47,3 +51,5 @@ module Octopus
     alias_method :eql?, :==
   end
 end
+
+ActiveRecord::Relation.extend(Octopus::ScopeProxy::CaseFixer)

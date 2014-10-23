@@ -48,6 +48,16 @@ describe 'when the database is replicated' do
     end
   end
 
+  describe 'When enabling the query cache with slave unavailable' do
+    it "should not raise can't connect error" do
+      OctopusHelper.using_environment :replicated_with_one_slave_unavailable do
+        expect {
+          ActiveRecord::Base.connection.enable_query_cache!
+        }.to_not raise_error
+      end
+    end
+  end
+
   it 'should allow #using syntax to send queries to master' do
     Cat.create!(:name => 'Master Cat')
 

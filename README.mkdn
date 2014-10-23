@@ -73,6 +73,20 @@ Octopus.using(:slave_two) do
 end
 ```
 
+If you want to use the same code for all shards or all shards in a specific group (for example in `db/seeds.rb`), you can use this syntax.
+
+```ruby
+# This will return a list of the given block's results, per shard.
+Octopus.using_all do
+  User.create_from_csv!
+end
+
+# This will return a list of the given block's results, per shard in history_shards group.
+Octopus.using_group(:history_shards) do
+  HistoryCategory.create_from_csv!
+end
+```
+
 Each model instance knows which shard it came from so this will work automatically:
 
 ```ruby

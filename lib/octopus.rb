@@ -99,12 +99,11 @@ module Octopus
   end
 
   def self.logger
-    @logger ||=
-      if defined?(Rails)
-        Rails.logger
-      else
-        Logger.new($stderr)
-      end
+    if defined?(Rails)
+      @logger ||= Rails.logger
+    else
+      @logger ||= Logger.new($stderr)
+    end
   end
 
   def self.shards=(shards)

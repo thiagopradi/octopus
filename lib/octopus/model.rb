@@ -43,12 +43,11 @@ module Octopus
       def set_current_shard
         return unless Octopus.enabled?
 
-        shard =
-          if new_record? || self.class.connection_proxy.block
-            self.class.connection_proxy.current_shard
-          else
-            self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
-          end
+        if new_record? || self.class.connection_proxy.block
+          shard = self.class.connection_proxy.current_shard
+        else
+          shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
+        end
 
         if self.class.allowed_shard?(shard)
           self.current_shard = shard

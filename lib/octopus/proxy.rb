@@ -324,12 +324,12 @@ module Octopus
 
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard
-      @shards.each do |_k, v|
+      @shards.each do |shard_name, v|
         begin
           yield(v)
         rescue => e
           if Octopus.robust_environment?
-            Octopus.logger.error "Error on shard #{_k}: #{e.message}"
+            Octopus.logger.error "Error on shard #{shard_name}: #{e.message}"
           else
             raise
           end
@@ -455,7 +455,7 @@ module Octopus
     end
 
     # Temporarily switch `current_shard` and run the block
-    def using_shard(shard, &block)
+    def using_shard(shard, &_block)
       older_shard = self.current_shard
 
       begin

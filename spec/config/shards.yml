@@ -3,6 +3,12 @@ mysql: &mysql
   username: <%= ENV['MYSQL_USER'] || 'root' %>
   host: localhost
 
+mysql_unavailable: &mysql_unavailable
+  adapter: mysql2
+  username: <%= ENV['MYSQL_USER'] || 'root' %>
+  host: 192.0.2.1
+  connect_timeout: 3
+
 octopus: &octopus
   shards:
     alone_shard:
@@ -86,6 +92,13 @@ replicated_with_one_slave:
     slave1:
       database: octopus_shard_2
       <<: *mysql
+
+replicated_with_one_slave_unavailable:
+  replicated: true
+  shards:
+    slave1:
+      database: octopus_shard_2
+      <<: *mysql_unavailable
 
 
 production_fully_replicated:

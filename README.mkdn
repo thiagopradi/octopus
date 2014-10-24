@@ -158,6 +158,24 @@ class CustomConnection < ActiveRecord::Base
 end
 ```
 
+### allow_shard
+If you'd like to use specific shards with a model that has a Rails-managed connection, you can use `allow_shard`:
+
+```ruby
+class CustomConnectedModel
+   octopus_establish_connection(...)
+   allow_shard :my_shard
+end
+
+#This uses :my_shard
+CustomConnectedModel.using(:my_shard).first
+
+#This uses the Rails-managed connection pool (the call to 'using' is ignored)
+CustomConnectedModel.using(:some_other_shard).first
+```
+
+This can be useful if you have a model that lives in a separate database and would like to add sharding or replication to it. For other use cases, you may be better off with <a href="https://github.com/tchandy/octopus/wiki/Slave-Groups">slave groups</a>.
+
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 

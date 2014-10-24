@@ -28,13 +28,19 @@ module Octopus
     end
 
     def connection
-      @klass.connection.current_shard = @current_shard
-      @klass.connection
+      @klass.connection_proxy.current_shard = @current_shard
+
+      if @klass.custom_octopus_connection && @klass.allowed_shard?(@current_shard)
+        # Force use of proxy, given we called 'using' explicitly to get here
+        @klass.connection_proxy.current_model = @klass
+        @klass.connection_proxy
+      else
+        @klass.connection
+      end
     end
 
     def method_missing(method, *args, &block)
       result = run_on_shard { @klass.send(method, *args, &block) }
-
       if result.respond_to?(:all)
         @klass = result
         return self

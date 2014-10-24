@@ -218,7 +218,7 @@ module Octopus
     end
 
     def run_queries_on_shard(shard, &_block)
-      keeping_connection_proxy do
+      keeping_connection_proxy(shard) do
         using_shard(shard) do
           yield
         end
@@ -233,8 +233,9 @@ module Octopus
 
     def clean_connection_proxy
       self.current_shard = :master
+      self.current_model = nil
       self.current_group = nil
-      self.block = false
+      self.block = nil
     end
 
     def check_schema_migrations(shard)
@@ -244,8 +245,7 @@ module Octopus
     end
 
     def transaction(options = {}, &block)
-      replicated = @replicated && (current_model.replicated || fully_replicated?)
-      if !sharded && replicated
+      if !sharded && current_model_replicated?
         run_queries_on_shard(:master) do
           select_connection.transaction(options, &block)
         end
@@ -281,23 +281,23 @@ module Octopus
 
     def enable_query_cache!
       clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).enable_query_cache! }
+      with_each_healthy_shard { |v| safe_connection(v).enable_query_cache! }
     end
 
     def disable_query_cache!
-      @shards.each { |_k, v| safe_connection(v).disable_query_cache! }
+      with_each_healthy_shard { |v| safe_connection(v).disable_query_cache! }
     end
 
     def clear_query_cache
-      @shards.each { |_k, v| safe_connection(v).clear_query_cache }
+      with_each_healthy_shard { |v| safe_connection(v).clear_query_cache }
     end
 
     def clear_active_connections!
-      @shards.each { |_k, v| v.release_connection }
+      with_each_healthy_shard(&:release_connection)
     end
 
     def clear_all_connections!
-      @shards.each { |_k, v| v.disconnect! }
+      with_each_healthy_shard(&:disconnect!)
     end
 
     def connected?
@@ -321,6 +321,44 @@ module Octopus
     end
 
     protected
+
+    # Ensure that a single failing slave doesn't take down the entire application
+    def with_each_healthy_shard
+      @shards.each do |shard_name, v|
+        begin
+          yield(v)
+        rescue => e
+          if Octopus.robust_environment?
+            Octopus.logger.error "Error on shard #{shard_name}: #{e.message}"
+          else
+            raise
+          end
+        end
+      end
+
+      conn_handler = ActiveRecord::Base.connection_handler
+      if conn_handler.respond_to?(:connection_pool_list)
+        # Rails 4+
+        ar_pools = conn_handler.connection_pool_list
+      else
+        # Rails 3.2
+        ar_pools = conn_handler.connection_pools.values
+      end
+
+      ar_pools.each do |pool|
+        next if pool == @shards[:master] # Already handled this
+
+        begin
+          yield(pool)
+        rescue => e
+          if Octopus.robust_environment?
+            Octopus.logger.error "Error on pool (spec: #{pool.spec}): #{e.message}"
+          else
+            raise
+          end
+        end
+      end
+    end
 
     def connection_pool_for(adapter, config)
       if Octopus.rails4?
@@ -356,12 +394,16 @@ module Octopus
     end
 
     def should_clean_connection_proxy?(method)
-      method.to_s =~ /insert|select|execute/ && !@replicated && !block
+      method.to_s =~ /insert|select|execute/ && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
       @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
+    end
+
+    def current_model_replicated?
+      @replicated && (current_model.try(:replicated) || fully_replicated?)
     end
 
     def send_queries_to_selected_slave(method, *args, &block)
@@ -384,7 +426,7 @@ module Octopus
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
     def should_use_slaves_for_method?(method)
-      @replicated && (current_model.replicated || fully_replicated?) && method.to_s =~ /select/
+      current_model_replicated? && method.to_s =~ /select/
     end
 
     def slaves_grouped?
@@ -409,14 +451,14 @@ module Octopus
     #
     # @see Octopus::Proxy#should_clean_connection?
     # @see Octopus::Proxy#clean_connection_proxy
-    def keeping_connection_proxy(&_block)
+    def keeping_connection_proxy(shard, &_block)
       last_block = block
 
       begin
-        self.block = true
+        self.block = shard
         yield
       ensure
-        self.block = last_block || false
+        self.block = last_block || nil
       end
     end
 
@@ -425,7 +467,9 @@ module Octopus
       older_shard = current_shard
 
       begin
-        self.current_shard = shard
+        unless current_model && !current_model.allowed_shard?(shard)
+          self.current_shard = shard
+        end
         yield
       ensure
         self.current_shard = older_shard

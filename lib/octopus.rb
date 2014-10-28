@@ -61,11 +61,25 @@ module Octopus
   end
 
   def self.environments=(environments)
-    @environments = environments.map { |element| element.to_s }
+    @environments = environments.map(&:to_s)
   end
 
   def self.environments
     @environments ||= config['environments'] || ['production']
+  end
+
+  def self.robust_environments=(environments)
+    @robust_environments = environments.map(&:to_s)
+  end
+
+  # Environments in which to swallow failures from a single shard
+  # when iterating through all.
+  def self.robust_environments
+    @robust_environments ||= config['robust_environments'] || ['production']
+  end
+
+  def self.robust_environment?
+    robust_environments.include? rails_env
   end
 
   def self.rails3?
@@ -82,6 +96,16 @@ module Octopus
 
   def self.rails?
     defined?(Rails)
+  end
+
+  attr_writer :logger
+
+  def self.logger
+    if defined?(Rails)
+      @logger ||= Rails.logger
+    else
+      @logger ||= Logger.new($stderr)
+    end
   end
 
   def self.shards=(shards)

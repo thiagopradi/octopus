@@ -1,6 +1,14 @@
 module Octopus
-  class ScopeProxy
-    include Octopus::ShardTracking::Attribute
+  class ScopeProxy < BasicObject
+    include ::Octopus::ShardTracking::Attribute
+
+    module CaseFixer
+      def ===(other)
+        other = other.klass while ::Octopus::ScopeProxy === other
+        super
+      end
+    end
+
     attr_accessor :klass
 
     def initialize(shard, klass)
@@ -20,23 +28,25 @@ module Octopus
     end
 
     def connection
-      @klass.connection.current_shard = @current_shard
-      @klass.connection
+      @klass.connection_proxy.current_shard = @current_shard
+
+      if @klass.custom_octopus_connection && @klass.allowed_shard?(@current_shard)
+        # Force use of proxy, given we called 'using' explicitly to get here
+        @klass.connection_proxy.current_model = @klass
+        @klass.connection_proxy
+      else
+        @klass.connection
+      end
     end
 
     def method_missing(method, *args, &block)
       result = run_on_shard { @klass.send(method, *args, &block) }
-
       if result.respond_to?(:all)
         @klass = result
         return self
       end
 
       result
-    end
-
-    def as_json(options = nil)
-      method_missing(:as_json, options)
     end
 
     # Delegates to method_missing (instead of @klass) so that User.using(:blah).where(:name => "Mike")
@@ -47,3 +57,5 @@ module Octopus
     alias_method :eql?, :==
   end
 end
+
+ActiveRecord::Relation.extend(Octopus::ScopeProxy::CaseFixer)

@@ -14,7 +14,7 @@ group :test do
   gem 'capybara'
   gem 'cucumber-rails', :require => false
   gem 'launchy'
-  gem "rspec-rails"
-  gem "aruba"
-  gem "database_cleaner"
+  gem 'rspec-rails'
+  gem 'aruba'
+  gem 'database_cleaner'
 end

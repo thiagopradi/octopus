@@ -12,6 +12,11 @@ describe Octopus::RelationProxy do
       expect(@relation.current_shard).to eq(:canada)
     end
 
+    it 'reports class equality with ActiveRecord::Relation' do
+      expect(@relation.ar_relation.class === @relation).to be_truthy
+      expect(@relation.is_a?(ActiveRecord::Relation)).to be_truthy
+    end
+
     context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset

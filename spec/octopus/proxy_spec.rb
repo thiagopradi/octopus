@@ -125,13 +125,13 @@ describe Octopus::Proxy do
     after(:each) do
       Object.send(:remove_const, :Rails)
       Octopus.instance_variable_set(:@config, nil)
-      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@config_env, nil)
       OctopusHelper.clean_connection_proxy
     end
 
     it 'should initialize correctly octopus common variables for the environments' do
       allow(Rails).to receive(:env).and_return('staging')
-      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@config_env, nil)
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
@@ -141,7 +141,7 @@ describe Octopus::Proxy do
 
     it 'should initialize correctly the shards for the staging environment' do
       allow(Rails).to receive(:env).and_return('staging')
-      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@config_env, nil)
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
@@ -150,7 +150,7 @@ describe Octopus::Proxy do
 
     it 'should initialize correctly the shard octopus_shard value for logging' do
       allow(Rails).to receive(:env).and_return('staging')
-      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@config_env, nil)
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
@@ -159,7 +159,7 @@ describe Octopus::Proxy do
 
     it 'should initialize correctly the shards for the production environment' do
       allow(Rails).to receive(:env).and_return('production')
-      Octopus.instance_variable_set(:@rails_env, nil)
+      Octopus.instance_variable_set(:@config_env, nil)
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 

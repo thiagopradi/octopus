@@ -21,7 +21,7 @@ module Octopus
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']
-        @shards_config = config[Octopus.rails_env]
+        @shards_config = config[Octopus.config_env]
       end
 
       @shards_config ||= []

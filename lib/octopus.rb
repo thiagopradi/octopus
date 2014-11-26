@@ -10,8 +10,12 @@ module Octopus
     @env ||= 'octopus'
   end
 
-  def self.rails_env
-    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
+  def self.config_env=(config_env)
+    @config_env = config_env
+  end
+
+  def self.config_env
+    @config_env ||= self.rails? ? Rails.env.to_s : 'shards'
   end
 
   def self.config
@@ -81,7 +85,7 @@ module Octopus
   end
 
   def self.shards=(shards)
-    config[rails_env] = HashWithIndifferentAccess.new(shards)
+    config[config_env] = HashWithIndifferentAccess.new(shards)
     ActiveRecord::Base.connection.initialize_shards(@config)
   end
 

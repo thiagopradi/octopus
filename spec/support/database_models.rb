@@ -76,6 +76,7 @@ end
 
 class Comment < ActiveRecord::Base
   belongs_to :commentable, :polymorphic => true
+  scope :open, -> { where(open: true) }
 end
 
 class Bacon < ActiveRecord::Base

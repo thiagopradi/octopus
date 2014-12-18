@@ -17,7 +17,7 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      run_on_shard { @ar_relation.send(method, *args, &block) }
+      run_on_shard { @ar_relation.public_send(method, *args, &block) }
     end
 
     def ==(other)

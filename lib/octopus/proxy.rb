@@ -17,7 +17,7 @@ module Octopus
       @slave_groups = HashWithIndifferentAccess.new
       @groups = {}
       @adapters = Set.new
-      @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
+      @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']

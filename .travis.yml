@@ -6,12 +6,21 @@ before_script:
 rvm:
   - 1.9.3
   - 2.0.0
-  - 2.1.1
+  - 2.1.5
 gemfile:
   - gemfiles/rails32.gemfile
   - gemfiles/rails4.gemfile
   - gemfiles/rails41.gemfile
+  - gemfiles/rails42.gemfile
+
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com
     - thiago.pradi@gmail.com
+matrix:
+  include:
+    - rvm: 2.2.0
+      gemfile:
+        - gemfiles/rails4.gemfile
+        - gemfiles/rails41.gemfile
+        - gemfiles/rails42.gemfile

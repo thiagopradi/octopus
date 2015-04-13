@@ -4,6 +4,7 @@ require 'bundler/setup'
 require 'octopus'
 
 Octopus.instance_variable_set(:@directory, File.dirname(__FILE__))
+Octopus.instance_variable_set(:@config, nil)
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

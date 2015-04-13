@@ -79,6 +79,7 @@ module Octopus
         base.class_attribute(:sharded)
         base.class_attribute(:allowed_shards)
         base.hijack_methods
+        base.replicated = Octopus.enabled? if base.replicated.nil?
       end
 
       def replicated_model
@@ -124,7 +125,7 @@ module Octopus
       end
 
       def should_use_normal_connection?
-        if !Octopus.enabled?
+        if !Octopus.enabled? || !replicated
           true
         elsif custom_octopus_connection
           !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)

@@ -53,6 +53,7 @@ namespace :db do
     require 'octopus'
     # Set the octopus variable directory to spec dir, in order to load the config/shards.yml file.
     Octopus.instance_variable_set(:@directory, "#{File.dirname(__FILE__)}/spec/")
+    Octopus.instance_variable_set(:@config, nil)
 
     # Require the database connection
     require "#{File.dirname(__FILE__)}/spec/support/database_connection"

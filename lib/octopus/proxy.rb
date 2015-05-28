@@ -102,8 +102,8 @@ module Octopus
     end
 
     def current_shard=(shard_symbol)
-      self.current_slave_group = nil
       if shard_symbol.is_a?(Array)
+        self.current_slave_group = nil
         shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
       elsif shard_symbol.is_a?(Hash)
         hash = shard_symbol
@@ -123,8 +123,8 @@ module Octopus
               (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
             fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{@shards_config.inspect}"
           end
-          self.current_slave_group = slave_group_symbol
         end
+        self.current_slave_group = slave_group_symbol
       else
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
@@ -468,6 +468,7 @@ module Octopus
     # Temporarily switch `current_shard` and run the block
     def using_shard(shard, &_block)
       older_shard = current_shard
+      older_slave_group = current_slave_group
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)
@@ -476,6 +477,7 @@ module Octopus
         yield
       ensure
         self.current_shard = older_shard
+        self.current_slave_group = older_slave_group
       end
     end
 

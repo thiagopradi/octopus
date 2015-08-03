@@ -19,6 +19,9 @@ module Octopus
       @adapters = Set.new
       @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
+      @default_shard = config['defaults'].try(:[], 'shard') || :master
+      @default_slave_group = config['defaults'].try(:[], 'slave_group')
+
       unless config.nil?
         @entire_sharded = config['entire_sharded']
         @shards_config = config[Octopus.rails_env]
@@ -73,6 +76,10 @@ module Octopus
         end
       end
 
+      if (@default_shard != :master) && @shards_slave_groups.present? && !@shards_slave_groups[@default_shard].try(:has_key?, @default_slave_group)
+        fail 'default slave group should be included in default shard'
+      end
+
       @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
     end
 
@@ -98,7 +105,7 @@ module Octopus
     end
 
     def current_shard
-      Thread.current['octopus.current_shard'] ||= :master
+      Thread.current['octopus.current_shard'] ||= @default_shard
     end
 
     def current_shard=(shard_symbol)
@@ -146,7 +153,7 @@ module Octopus
     end
 
     def current_slave_group
-      Thread.current['octopus.current_slave_group']
+      Thread.current['octopus.current_slave_group'] ||= @default_slave_group
     end
 
     def current_slave_group=(slave_group_symbol)

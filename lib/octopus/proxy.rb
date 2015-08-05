@@ -19,8 +19,11 @@ module Octopus
       @adapters = Set.new
       @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
-      @default_shard = config['defaults'].try(:[], 'shard') || :master
-      @default_slave_group = config['defaults'].try(:[], 'slave_group')
+      @default_shard = config['defaults'].try(:[], 'shard')
+      fail 'default shard shoule be set' if @default_shard.blank?
+
+      default_slave_group_name = config['defaults'].try(:[], 'slave_group')
+      @default_slave_groups = @shards_config.keys.inject(HashWithIndifferentAccess.new) { |h, k| h[k] = default_slave_group_name; h }
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']
@@ -76,11 +79,7 @@ module Octopus
         end
       end
 
-      if (@default_shard != :master) && @shards_slave_groups.present? && !@shards_slave_groups[@default_shard].try(:has_key?, @default_slave_group)
-        fail 'default slave group should be included in default shard'
-      end
-
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
+      #@shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
     end
 
     def initialize_replication(config)
@@ -109,7 +108,6 @@ module Octopus
     end
 
     def current_shard=(shard_symbol)
-      self.current_slave_group = nil
       if shard_symbol.is_a?(Array)
         shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
       elsif shard_symbol.is_a?(Hash)
@@ -136,6 +134,7 @@ module Octopus
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
 
+      self.current_slave_group ||= @default_slave_groups[shard_symbol]
       Thread.current['octopus.current_shard'] = shard_symbol
     end
 
@@ -153,7 +152,7 @@ module Octopus
     end
 
     def current_slave_group
-      Thread.current['octopus.current_slave_group'] ||= @default_slave_group
+      Thread.current['octopus.current_slave_group'] || @default_slave_groups[current_shard]
     end
 
     def current_slave_group=(slave_group_symbol)
@@ -209,7 +208,7 @@ module Octopus
     # reconnect, but in Rails 3.1 the flag prevents this.
     def safe_connection(connection_pool)
       connection_pool.automatic_reconnect ||= true
-      if !connection_pool.connected? && @shards[:master].connection.query_cache_enabled
+      if !connection_pool.connected? && @shards[@default_shard].connection.query_cache_enabled
         connection_pool.connection.enable_query_cache!
       end
       connection_pool.connection
@@ -242,7 +241,7 @@ module Octopus
     end
 
     def clean_connection_proxy
-      self.current_shard = :master
+      self.current_shard = @default_shard
       self.current_model = nil
       self.current_group = nil
       self.block = nil
@@ -250,13 +249,13 @@ module Octopus
 
     def check_schema_migrations(shard)
       OctopusModel.using(shard).connection.table_exists?(
-        ActiveRecord::Migrator.schema_migrations_table_name,
+          ActiveRecord::Migrator.schema_migrations_table_name,
       ) || OctopusModel.using(shard).connection.initialize_schema_migrations_table
     end
 
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
-        run_queries_on_shard(:master) do
+        run_queries_on_shard(@default_shard) do
           select_connection.transaction(options, &block)
         end
       else
@@ -356,7 +355,7 @@ module Octopus
       end
 
       ar_pools.each do |pool|
-        next if pool == @shards[:master] # Already handled this
+        next if pool == @shards[@default_shard] # Already handled this
 
         begin
           yield(pool)
@@ -420,7 +419,7 @@ module Octopus
       if current_model.replicated || fully_replicated?
         selected_slave = @slaves_load_balancer.next
       else
-        selected_slave = :master
+        selected_slave = @default_shard
       end
 
       send_queries_to_slave(selected_slave, method, *args, &block)
@@ -495,3 +494,4 @@ module Octopus
     end
   end
 end
+

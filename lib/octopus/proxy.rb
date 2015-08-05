@@ -22,15 +22,14 @@ module Octopus
       @default_shard = config['defaults'].try(:[], 'shard')
       fail 'default shard shoule be set' if @default_shard.blank?
 
-      default_slave_group_name = config['defaults'].try(:[], 'slave_group')
-      @default_slave_groups = @shards_config.keys.inject(HashWithIndifferentAccess.new) { |h, k| h[k] = default_slave_group_name; h }
-
       unless config.nil?
         @entire_sharded = config['entire_sharded']
         @shards_config = config[Octopus.rails_env]
       end
 
       @shards_config ||= []
+      default_slave_group_name = config['defaults'].try(:[], 'slave_group')
+      @default_slave_groups = @shards_config.keys.inject(HashWithIndifferentAccess.new) { |h, k| h[k] = default_slave_group_name; h }
 
       @shards_config.each do |key, value|
         if value.is_a?(String)

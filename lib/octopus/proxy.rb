@@ -29,7 +29,11 @@ module Octopus
 
       @shards_config ||= []
       default_slave_group_name = config['defaults'].try(:[], 'slave_group')
-      @default_slave_groups = @shards_config.keys.inject(HashWithIndifferentAccess.new) { |h, k| h[k] = default_slave_group_name; h }
+      if @shards_config.is_a?(Hash)
+        @default_slave_groups = @shards_config.keys.inject(HashWithIndifferentAccess.new) { |h, k| h[k] = default_slave_group_name; h }
+      else
+        @default_slave_groups = {}
+      end
 
       @shards_config.each do |key, value|
         if value.is_a?(String)

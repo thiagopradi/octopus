@@ -95,7 +95,7 @@ module Octopus
       end
 
       def hijack_methods
-        around_save :run_on_shard, :unless => -> { self.class.custom_octopus_connection }
+        around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
         after_initialize :set_current_shard
 
         class << self

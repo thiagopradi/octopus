@@ -16,7 +16,7 @@ module Octopus
 
   def self.config
     @config ||= begin
-      file_name = File.join(Octopus.directory,'config/shards.yml').to_s
+      file_name = File.join(Octopus.directory, 'config/shards.yml').to_s
 
       if File.exist?(file_name) || File.symlink?(file_name)
         config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env]

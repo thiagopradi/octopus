@@ -149,13 +149,16 @@ module Octopus
               ActiveRecord::Base.instance_variable_get(:@connection_proxy) ||
               ActiveRecord::Base.instance_variable_set(:@connection_proxy, Octopus::Proxy.new(self))
         else
+          puts self.name
           proxy = self.instance_variable_get(:@connection_proxy)
           if proxy == nil
             super_class = self.superclass
-            # This looks like an infinte while but it is not. This method is added to ActiveRecord::Base.
-            # So finally in the superclass chain, we will hit ActiveRecord::Base, which has the instance
-            # variable defined.
             while (proxy == nil)
+              if super_class.name == 'ActiveRecord::Base'
+                ActiveRecord::Base.instance_variable_defined?(:@connection_proxy) &&
+                    ActiveRecord::Base.instance_variable_get(:@connection_proxy) ||
+                    ActiveRecord::Base.instance_variable_set(:@connection_proxy, Octopus::Proxy.new(super_class))
+              end
               proxy = super_class.instance_variable_get(:@connection_proxy)
             end
             # Since this method is called everytime, we make any DB call, we just cache the value at each

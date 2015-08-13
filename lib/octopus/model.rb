@@ -149,7 +149,6 @@ module Octopus
               ActiveRecord::Base.instance_variable_get(:@connection_proxy) ||
               ActiveRecord::Base.instance_variable_set(:@connection_proxy, Octopus::Proxy.new(self))
         else
-          puts self.name
           proxy = self.instance_variable_get(:@connection_proxy)
           if proxy == nil
             super_class = self.superclass

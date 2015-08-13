@@ -117,11 +117,59 @@ module Octopus
         end
       end
 
+=begin
       def connection_proxy
         ActiveRecord::Base.class_variable_defined?(:@@connection_proxy) &&
           ActiveRecord::Base.class_variable_get(:@@connection_proxy) ||
           ActiveRecord::Base.class_variable_set(:@@connection_proxy, Octopus::Proxy.new)
       end
+=end
+      # A connection proxy implemented in proxy.rb is the heart and soul of octopus gem. This is
+      # the class that handles shards, replicas and chooses the appropriate connection pool. The
+      # connection_proxy encapsulate the connection pools for the shards and replicas.
+      # The original version of this function would store the connection_proxy as a class variable
+      # defined on ActiveRecord::Base. Class variables are inherited.
+      # In our code base we have three different databases that we connect to, HR, Recruit
+      # and Recruit_Analytics
+      # Since original connection_proxy was a class variable, NeoSQL, Recruit::SuperRecord and
+      # Recruit::Insights::SuperRecord will point to the same proxy. We want the classes that
+      # derive from these classes to have different proxies, so that they can point to different
+      # shards/replica.
+      # So this patch converts the class variable to class instance variable. For all classes
+      # who are in ActiveRecord:: namespace, we use the class instance variable created on
+      # ActiveRecord::Base
+      # In joint_record, after establish connection, we define the connection_proxy instance variable on
+      # NeoSQL, Recruit::SuperRecord and Recruit::Instance::SuperRecord. All classses that derive from these
+      # will use the proxy of their respective base class.
+
+      def connection_proxy
+
+        if self.name.start_with?('ActiveRecord::')
+          ActiveRecord::Base.instance_variable_defined?(:@connection_proxy) &&
+              ActiveRecord::Base.instance_variable_get(:@connection_proxy) ||
+              ActiveRecord::Base.instance_variable_set(:@connection_proxy, Octopus::Proxy.new(self))
+        else
+          proxy = self.instance_variable_get(:@connection_proxy)
+          if proxy == nil
+            super_class = self.superclass
+            while (proxy == nil)
+              if super_class.name == 'ActiveRecord::Base'
+                ActiveRecord::Base.instance_variable_defined?(:@connection_proxy) &&
+                    ActiveRecord::Base.instance_variable_get(:@connection_proxy) ||
+                    ActiveRecord::Base.instance_variable_set(:@connection_proxy, Octopus::Proxy.new(super_class))
+              end
+              proxy = super_class.instance_variable_get(:@connection_proxy)
+            end
+            # Since this method is called everytime, we make any DB call, we just cache the value at each
+            # class level, so only the first call traverses the superclass chain. The subsequent calls
+            # return cached value.s
+            self.instance_variable_set(:@connection_proxy, proxy)
+          end
+          proxy
+        end
+
+      end
+
 
       def should_use_normal_connection?
         if !Octopus.enabled?

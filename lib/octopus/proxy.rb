@@ -6,7 +6,12 @@ module Octopus
   class Proxy
     attr_accessor :config, :sharded
 
-    def initialize(config = Octopus.config)
+    # The original code does not take the klass parameter.
+    # The class parameter refers to which klass this connection proxy is meant for.
+    # This proxy should be used for this class and all its sub-classes. This is achieved
+    # via the connection_proxy method in model.rb. Refer to comments there.
+    def initialize(klass, config = Octopus.config)
+      @klass = klass
       initialize_shards(config)
       initialize_replication(config) if !config.nil? && config['replicated']
     end
@@ -17,7 +22,13 @@ module Octopus
       @slave_groups = HashWithIndifferentAccess.new
       @groups = {}
       @adapters = Set.new
-      @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
+      # The original code uses ActiveRecord::Base instead of class. This would mean that if a class
+      # has called establish_connection with a different config, that config will not be used and
+      # ActiveRecord::Base's config will be used. ActiveRecord::Base's config is picked from config/database.yml
+      # whereas klass's config file may be different. Also note, the proxy object should be created *after*
+      # the establish_connection call is made, else the config will be empty. The default config is used for
+      # :master shard.
+      @config = @klass.connection_pool_without_octopus.spec.config
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']
@@ -73,7 +84,9 @@ module Octopus
         end
       end
 
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
+      # The original code used ActiveRecord::Base's connection_pool. Change it to use the connection pool
+      # of klass.
+      @shards[:master] ||= @klass.connection_pool_without_octopus
     end
 
     def initialize_replication(config)
@@ -243,7 +256,7 @@ module Octopus
 
     def check_schema_migrations(shard)
       OctopusModel.using(shard).connection.table_exists?(
-        ActiveRecord::Migrator.schema_migrations_table_name,
+          ActiveRecord::Migrator.schema_migrations_table_name,
       ) || OctopusModel.using(shard).connection.initialize_schema_migrations_table
     end
 

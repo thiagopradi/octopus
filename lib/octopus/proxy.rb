@@ -54,8 +54,7 @@ module Octopus
             slave_group_configs.each do |slave_group_name, slave_configs|
               slaves = HashWithIndifferentAccess.new
               slave_configs.each do |slave_name, slave_config|
-                @shards[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
-                slaves[slave_name.to_sym] = slave_name.to_sym
+                slaves[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
               end
               slave_groups[slave_group_name.to_sym] = Octopus::SlaveGroup.new(slaves)
             end
@@ -81,8 +80,6 @@ module Octopus
           end
         end
       end
-
-      #@shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
     end
 
     def initialize_replication(config)
@@ -111,11 +108,13 @@ module Octopus
     end
 
     def current_shard=(shard_symbol)
+      self.current_slave_group = nil
+
       if shard_symbol.is_a?(Array)
         shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
       elsif shard_symbol.is_a?(Hash)
         hash = shard_symbol
-        shard_symbol = hash[:shard]
+        shard_symbol =       hash[:shard]
         slave_group_symbol = hash[:slave_group]
 
         if shard_symbol.nil? && slave_group_symbol.nil?
@@ -127,8 +126,8 @@ module Octopus
         end
 
         if slave_group_symbol.present?
-          if (@shards_slave_groups.try(:[], shard_symbol).present? && @shards_slave_groups[shard_symbol][slave_group_symbol].nil?) ||
-              (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
+          if (slave_group_symbol != :master) && ((@shards_slave_groups.try(:[], shard_symbol).present? && @shards_slave_groups[shard_symbol][slave_group_symbol].nil?) ||
+              (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?))
             fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{@shards_config.inspect}"
           end
           self.current_slave_group = slave_group_symbol
@@ -137,7 +136,7 @@ module Octopus
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
 
-      self.current_slave_group ||= @default_slave_groups[shard_symbol]
+      #self.current_slave_group ||= @default_slave_groups[shard_symbol]
       Thread.current['octopus.current_shard'] = shard_symbol
     end
 
@@ -217,8 +216,8 @@ module Octopus
       connection_pool.connection
     end
 
-    def select_connection
-      safe_connection(@shards[shard_name])
+    def select_connection(connection = nil)
+      safe_connection(connection || @shards[shard_name])
     end
 
     def shard_name
@@ -275,8 +274,10 @@ module Octopus
       elsif should_send_queries_to_shard_slave_group?(method)
         send_queries_to_shard_slave_group(method, *args, &block)
       elsif should_send_queries_to_slave_group?(method)
+        raise NotImplementedError.new
         send_queries_to_slave_group(method, *args, &block)
       elsif should_send_queries_to_replicated_databases?(method)
+        raise NotImplementedError.new
         send_queries_to_selected_slave(method, *args, &block)
       else
         select_connection.send(method, *args, &block)
@@ -321,7 +322,11 @@ module Octopus
     end
 
     def send_queries_to_shard_slave_group(method, *args, &block)
-      send_queries_to_balancer(@shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
+      if current_slave_group == :master
+        send_queries_to_slave(@shards[current_shard], method, *args, &block)
+      else
+        send_queries_to_balancer(@shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
+      end
     end
 
     def should_send_queries_to_slave_group?(method)
@@ -454,9 +459,7 @@ module Octopus
     # Temporarily switch `current_shard` to the specified slave and send queries to it
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
-      using_shard(slave) do
-        select_connection.send(method, *args, &block)
-      end
+      select_connection(slave).send(method, *args, &block)
     end
 
     # Temporarily block cleaning connection proxy and run the block
@@ -497,4 +500,3 @@ module Octopus
     end
   end
 end
-

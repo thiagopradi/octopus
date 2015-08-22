@@ -109,6 +109,7 @@ module Octopus
 
     def current_shard=(shard_symbol)
       self.current_slave_group = nil
+      self.current_slave = nil
 
       if shard_symbol.is_a?(Array)
         shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
@@ -116,6 +117,7 @@ module Octopus
         hash = shard_symbol
         shard_symbol =       hash[:shard]
         slave_group_symbol = hash[:slave_group]
+        slave_symbol = hash[:slave]
 
         if shard_symbol.nil? && slave_group_symbol.nil?
           fail 'Neither shard or slave group must be specified'
@@ -132,11 +134,18 @@ module Octopus
           end
           self.current_slave_group = slave_group_symbol
         end
+
+        if slave_symbol.present?
+          unless @shards_slave_groups[shard_symbol].try(:[], slave_group_symbol).try(:has_slave?, slave_symbol)
+            fail "Nonexistent Slave Name: #{slave_symbol} in slave group: #{slave_group_symbol}"
+          end
+
+          self.current_slave = slave_symbol
+        end
       else
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
 
-      #self.current_slave_group ||= @default_slave_groups[shard_symbol]
       Thread.current['octopus.current_shard'] = shard_symbol
     end
 
@@ -159,6 +168,14 @@ module Octopus
 
     def current_slave_group=(slave_group_symbol)
       Thread.current['octopus.current_slave_group'] = slave_group_symbol
+    end
+
+    def current_slave
+      Thread.current['octopus.current_slave']
+    end
+
+    def current_slave=(slave_symbol)
+      Thread.current['octopus.current_slave'] = slave_symbol
     end
 
     def block
@@ -453,7 +470,7 @@ module Octopus
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
     # while preserving `current_shard`
     def send_queries_to_balancer(balancer, method, *args, &block)
-      send_queries_to_slave(balancer.next, method, *args, &block)
+      send_queries_to_slave(balancer.next(current_slave), method, *args, &block)
     end
 
     # Temporarily switch `current_shard` to the specified slave and send queries to it

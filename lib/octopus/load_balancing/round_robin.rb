@@ -11,8 +11,12 @@ module Octopus
       end
 
       # Returns the next available slave in the pool
-      def next
-        @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
+      def next(index = nil)
+        if index
+          @slaves_list[index]
+        else
+          @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
+        end
       end
     end
   end

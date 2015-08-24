@@ -15,6 +15,7 @@ module Octopus
       @shards = HashWithIndifferentAccess.new
       @shards_slave_groups = HashWithIndifferentAccess.new
       @slave_groups = HashWithIndifferentAccess.new
+      @shard_servers = HashWithIndifferentAccess.new
       @groups = {}
       @adapters = Set.new
       @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
@@ -44,6 +45,7 @@ module Octopus
           value.merge!(:octopus_shard => key)
           initialize_adapter(value['adapter'])
           @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+          @shard_servers[key.to_sym] = [@shards[key.to_sym]]
 
           slave_group_configs = value.select do |_k, v|
             structurally_slave_group? v
@@ -55,6 +57,7 @@ module Octopus
               slaves = HashWithIndifferentAccess.new
               slave_configs.each do |slave_name, slave_config|
                 slaves[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
+                @shard_servers[key.to_sym] << slaves[slave_name.to_sym]
               end
               slave_groups[slave_group_name.to_sym] = Octopus::SlaveGroup.new(slaves)
             end
@@ -356,9 +359,13 @@ module Octopus
 
     protected
 
+    def shard_servers
+      @shard_servers[current_shard]
+    end
+
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard
-      @shards.each do |shard_name, v|
+      shard_servers.each do |shard_name, v|
         begin
           yield(v)
         rescue => e

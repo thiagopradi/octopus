@@ -365,12 +365,12 @@ module Octopus
 
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard
-      shard_servers.each do |shard_name, v|
+      shard_servers.each do |v|
         begin
           yield(v)
         rescue => e
           if Octopus.robust_environment?
-            Octopus.logger.error "Error on shard #{shard_name}: #{e.message}"
+            Octopus.logger.error "Error on shard #{v.spec.config['host']}, database #{v.spec.config['database']}: #{e.message}"
           else
             raise
           end

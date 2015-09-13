@@ -11,7 +11,7 @@ module Octopus
   end
 
   def self.rails_env
-    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
+    @rails_env ||= (Rails.env.to_s if self.rails?) || ENV["RAILS_ENV"] || ENV["RACK_ENV"] || 'shards'
   end
 
   def self.config

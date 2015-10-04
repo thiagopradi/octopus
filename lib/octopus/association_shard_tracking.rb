@@ -26,8 +26,8 @@ module Octopus
 
       METHODS.each do |m|
         define_method m.to_sym do |*args, &block|
-          if self.respond_to?(:proxy_association) && proxy_association
-            proxy_association.owner.run_on_shard { super(*args, &block) }
+          if defined?(@association) && @association
+            @association.owner.run_on_shard { super(*args, &block) }
           else
             super(*args, &block)
           end

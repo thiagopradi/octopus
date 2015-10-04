@@ -263,6 +263,12 @@ describe Octopus::Model do
       expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
     end
 
+    it 'reuses parent model connection' do
+      klass = Class.new(CustomConnection)
+
+      expect(klass.connection).to be klass.connection
+    end
+
     it 'should not mess with custom connection table names' do
       expect(Advert.connection.current_database).to eq('octopus_shard_1')
       Advert.create!(:name => 'Teste')

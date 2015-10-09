@@ -68,14 +68,14 @@ describe Octopus::RelationProxy do
       it 'uses the correct shard' do
         expect(Item.using(:brazil).count).to eq(0)
         _clients_on_brazil = Client.using(:brazil).all
-        Client.using(:brazil) do
+        Octopus.using(:brazil) do
           expect(@relation.count).to eq(1)
         end
       end
 
       it 'lazily evaluates on the correct shard' do
         expect(Item.using(:brazil).count).to eq(0)
-        Client.using(:brazil) do
+        Octopus.using(:brazil) do
           expect(@relation.select(:client_id).count).to eq(1)
         end
       end

@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Octopus::Model do
   describe '#using method' do
+    it 'raise when Model#using receives a block' do
+      expect { User.using(:master) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
+    end
+
     it 'should allow to send a block to the master shard' do
       Octopus.using(:master) do
         User.create!(:name => 'Block test')

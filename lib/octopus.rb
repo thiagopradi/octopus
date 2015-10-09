@@ -128,6 +128,8 @@ module Octopus
   end
 end
 
+require 'octopus/exception'
+
 require 'octopus/shard_tracking'
 require 'octopus/shard_tracking/attribute'
 require 'octopus/shard_tracking/dynamic'

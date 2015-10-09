@@ -46,7 +46,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory
-    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
+    @directory ||= (defined?(Rails) && Rails.root) ? Rails.root.to_s : Dir.pwd
   end
 
   # This is the default way to do Octopus Setup

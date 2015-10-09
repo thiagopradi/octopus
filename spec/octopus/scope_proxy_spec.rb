@@ -20,7 +20,7 @@ describe Octopus::ScopeProxy do
     end
 
     it 'allows a block to select an item' do
-      @evans.select { |u| u.number == 2 }.first.number.should eq(2)
+      expect(@evans.select { |u| u.number == 2 }.first.number).to eq(2)
     end
   end
 
@@ -31,28 +31,28 @@ describe Octopus::ScopeProxy do
     end
 
     it 'allows single field selection' do
-      @evan.select('name').first.name.should eq('Evan')
+      expect(@evan.select('name').first.name).to eq('Evan')
     end
 
     it 'allows selection by array' do
-      @evan.select(['name']).first.name.should eq('Evan')
+      expect(@evan.select(['name']).first.name).to eq('Evan')
     end
 
     it 'allows multiple selection by string' do
-      @evan.select('id, name').first.id.should be_a Fixnum
+      expect(@evan.select('id, name').first.id).to be_a(Fixnum)
     end
 
     it 'allows multiple selection by array' do
-      @evan.select(%w(id name)).first.id.should be_a Fixnum
+      expect(@evan.select(%w(id name)).first.id).to be_a(Fixnum)
     end
 
     if Octopus.rails4?
       it 'allows multiple selection by symbol' do
-        @evan.select(:id, :name).first.id.should be_a Fixnum
+        expect(@evan.select(:id, :name).first.id).to be_a(Fixnum)
       end
 
       it 'allows multiple selection by string and symbol' do
-        @evan.select(:id, 'name').first.id.should be_a Fixnum
+        expect(@evan.select(:id, 'name').first.id).to be_a(Fixnum)
       end
     end
   end

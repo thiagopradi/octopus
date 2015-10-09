@@ -27,6 +27,7 @@ end
 
 # This class sets its own connection
 class CustomConnection < ActiveRecord::Base
+  self.table_name = 'custom'
   octopus_establish_connection(:adapter => 'mysql2', :database => 'octopus_shard_2', :username => 'root', :password => '')
 end
 
@@ -75,6 +76,7 @@ end
 
 class Comment < ActiveRecord::Base
   belongs_to :commentable, :polymorphic => true
+  scope :open, -> { where(open: true) }
 end
 
 class Bacon < ActiveRecord::Base

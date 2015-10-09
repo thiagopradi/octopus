@@ -12,6 +12,13 @@ describe Octopus::RelationProxy do
       expect(@relation.current_shard).to eq(:canada)
     end
 
+    unless Octopus.rails3?
+      it 'can define collection association with the same name as ancestor private method' do
+        @client.comments << Comment.using(:canada).create!(open: true)
+        expect(@client.comments.open).to be_a_kind_of(ActiveRecord::Relation)
+      end
+    end
+
     context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset
@@ -61,14 +68,14 @@ describe Octopus::RelationProxy do
       it 'uses the correct shard' do
         expect(Item.using(:brazil).count).to eq(0)
         _clients_on_brazil = Client.using(:brazil).all
-        Client.using(:brazil) do
+        Octopus.using(:brazil) do
           expect(@relation.count).to eq(1)
         end
       end
 
       it 'lazily evaluates on the correct shard' do
         expect(Item.using(:brazil).count).to eq(0)
-        Client.using(:brazil) do
+        Octopus.using(:brazil) do
           expect(@relation.select(:client_id).count).to eq(1)
         end
       end

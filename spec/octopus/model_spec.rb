@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Octopus::Model do
   describe '#using method' do
+    it 'raise when Model#using receives a block' do
+      expect { User.using(:master) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
+    end
+
     it 'should allow to send a block to the master shard' do
       Octopus.using(:master) do
         User.create!(:name => 'Block test')
@@ -116,7 +120,7 @@ describe Octopus::Model do
 
     it 'should work when you have a SQLite3 shard' do
       u = User.using(:sqlite_shard).create!(:name => 'Sqlite3')
-      expect(User.using(:sqlite_shard).find_by_name('Sqlite3')).to eq(u)
+      expect(User.using(:sqlite_shard).where(name: 'Sqlite3').first).to eq(u)
     end
 
     it 'should clean #current_shard from proxy when using execute' do
@@ -295,6 +299,12 @@ describe Octopus::Model do
   describe 'AR basic methods' do
     it 'establish_connection' do
       expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+    end
+
+    it 'reuses parent model connection' do
+      klass = Class.new(CustomConnection)
+
+      expect(klass.connection).to be klass.connection
     end
 
     it 'should not mess with custom connection table names' do
@@ -501,6 +511,99 @@ describe Octopus::Model do
           expect(User.connection.current_shard).to eq(:brazil)
           expect(User.find(@user3.id)).to eq(@user3)
         end
+      end
+    end
+  end
+
+  describe 'custom connection' do
+    context 'by default' do
+      it 'with plain call should use custom connection' do
+        expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+      end
+
+      it 'should ignore using called on relation' do
+        expect(CustomConnection.using(:postgresql_shard).connection.current_database).to eq('octopus_shard_2')
+      end
+
+      it 'should ignore Octopus.using block' do
+        Octopus.using(:postgresql_shard) do
+          expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+        end
+      end
+
+      it 'should save to correct shard' do
+        expect { CustomConnection.create(:value => 'custom value') }.to change {
+          CustomConnection
+            .connection
+            .execute("select count(*) as ct from custom where value = 'custom value'")
+            .to_a.first.first
+        }.by 1
+      end
+    end
+
+    context 'with allowed_shards configured' do
+      before do
+        CustomConnection.allow_shard :postgresql_shard
+      end
+
+      it 'with plain call should use custom connection' do
+        expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+      end
+
+      it 'with using called on relation with allowed shard should use' do
+        expect(CustomConnection.using(:postgresql_shard).connection.current_database).to eq('octopus_shard_1')
+      end
+
+      it 'within Octopus.using block with allowed shard should use' do
+        Octopus.using(:postgresql_shard) do
+          expect(CustomConnection.connection.current_database).to eq('octopus_shard_1')
+        end
+      end
+
+      it 'with using called on relation with disallowed shard should not use' do
+        expect(CustomConnection.using(:brazil).connection.current_database).to eq('octopus_shard_2')
+      end
+
+      it 'within Octopus.using block with disallowed shard should not use' do
+        Octopus.using(:brazil) do
+          expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+        end
+      end
+
+      it 'should save to correct shard' do
+        expect { CustomConnection.create(:value => 'custom value') }.to change {
+          CustomConnection
+            .connection
+            .execute("select count(*) as ct from custom where value = 'custom value'")
+            .to_a.first.first
+        }.by 1
+      end
+
+      it 'should clean up correctly' do
+        User.create!(:name => 'CleanUser')
+        CustomConnection.using(:postgresql_shard).first
+        expect(User.first).not_to be_nil
+      end
+
+      it 'should clean up correctly even inside block' do
+        User.create!(:name => 'CleanUser')
+
+        Octopus.using(:master) do
+          CustomConnection.using(:postgresql_shard).connection.execute('select count(*) from users')
+          expect(User.first).not_to be_nil
+        end
+      end
+    end
+
+    describe 'clear_active_connections!' do
+      it 'should not leak connection' do
+        CustomConnection.create(:value => 'custom value')
+
+        # This is what Rails, Sidekiq etc call--this normally handles all connection pools in the app
+        expect { ActiveRecord::Base.clear_active_connections! }
+          .to change { CustomConnection.connection_pool.active_connection? }
+
+        expect(CustomConnection.connection_pool.active_connection?).to be_falsey
       end
     end
   end

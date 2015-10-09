@@ -6,7 +6,7 @@ require 'appraisal'
 RSpec::Core::RakeTask.new
 RuboCop::RakeTask.new
 
-task :default => [:spec, :rubocop]
+task :default => [:spec]
 
 namespace :db do
   desc 'Build the databases for tests'
@@ -127,6 +127,7 @@ namespace :db do
         u.string :name
         u.string :commentable_type
         u.integer :commentable_id
+        u.boolean :open, default: false
       end
 
       BlankModel.using(shard_symbol).connection.create_table(:parts) do |u|
@@ -140,6 +141,10 @@ namespace :db do
 
       BlankModel.using(shard_symbol).connection.create_table(:adverts) do |u|
         u.string :name
+      end
+
+      BlankModel.using(shard_symbol).connection.create_table(:custom) do |u|
+        u.string :value
       end
 
       if shard_symbol == :alone_shard

@@ -66,14 +66,7 @@ module Octopus
         end
         super
       end
-    else
-      def has_many(association_id, options = {}, &extension)
-        default_octopus_opts(options)
-        super
-      end
-    end
 
-    if Octopus.rails4?
       def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
         if options == {} && scope.is_a?(Hash)
           default_octopus_opts(scope)
@@ -82,7 +75,13 @@ module Octopus
         end
         super
       end
+
     else
+      def has_many(association_id, options = {}, &extension)
+        default_octopus_opts(options)
+        super
+      end
+
       def has_and_belongs_to_many(association_id, options = {}, &extension)
         default_octopus_opts(options)
         super
@@ -90,22 +89,8 @@ module Octopus
     end
 
     def default_octopus_opts(options)
-      if options[:before_add].is_a?(Array)
-        options[:before_add] << :connection_on_association=
-      elsif options[:before_add].is_a?(Symbol)
-        options[:before_add] = [:connection_on_association=, options[:before_add]]
-      else
-        options[:before_add] = :connection_on_association=
-      end
-
-      if options[:before_remove].is_a?(Array)
-        options[:before_remove] << :connection_on_association=
-      elsif options[:before_remove].is_a?(Symbol)
-        options[:before_remove] = [:connection_on_association=, options[:before_remove]]
-      else
-        options[:before_remove] = :connection_on_association=
-      end
-
+      options[:before_add] = [ :connection_on_association=, options[:before_add] ].compact.flatten
+      options[:before_remove] = [ :connection_on_association=, options[:before_remove] ].compact.flatten
       options[:extend] = [Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend]].flatten.compact
     end
   end

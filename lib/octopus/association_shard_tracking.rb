@@ -4,47 +4,6 @@ module Octopus
       base.send(:include, InstanceMethods)
     end
 
-    module QueryOnCurrentShard
-      METHODS = %w(
-        all
-        average
-        count
-        empty?
-        exists?
-        find
-        find_by_sql
-        first
-        last
-        maximum
-        minimum
-        pluck
-        scoping
-        size
-        sum
-        to_a
-      )
-
-      METHODS.each do |m|
-        if Octopus.rails4?
-          define_method m.to_sym do |*args, &block|
-            if defined?(@association) && @association
-              @association.owner.run_on_shard { super(*args, &block) }
-            else
-              super(*args, &block)
-            end
-          end
-        else
-          define_method m.to_sym do |*args, &block|
-            if respond_to?(:proxy_association) && proxy_association
-              proxy_association.owner.run_on_shard { super(*args, &block) }
-            else
-              super(*args, &block)
-            end
-          end
-        end
-      end
-    end
-
     module InstanceMethods
       def connection_on_association=(record)
         return unless ::Octopus.enabled?
@@ -91,7 +50,6 @@ module Octopus
     def default_octopus_opts(options)
       options[:before_add] = [ :connection_on_association=, options[:before_add] ].compact.flatten
       options[:before_remove] = [ :connection_on_association=, options[:before_remove] ].compact.flatten
-      options[:extend] = [Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend]].flatten.compact
     end
   end
 end

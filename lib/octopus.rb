@@ -145,7 +145,7 @@ require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
 
-require 'octopus/railtie' if defined?(::Rails)
+require 'octopus/railtie' if defined?(::Rails::Railtie)
 
 require 'octopus/proxy'
 require 'octopus/collection_proxy'

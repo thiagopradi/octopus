@@ -211,6 +211,14 @@ describe Octopus::Proxy do
         expect(proxy.shard_name).to eq(:master)
       end
 
+      it 'when current_shard is empty with custom master' do
+        OctopusHelper.using_environment :octopus do
+          Octopus.config[:master_shard] = :brazil
+          expect(proxy.shard_name).to eq(:brazil)
+          Octopus.config[:master_shard] = nil
+        end
+      end
+
       it 'when current_shard is a single shard' do
         proxy.current_shard = :canada
         expect(proxy.shard_name).to eq(:canada)

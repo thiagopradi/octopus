@@ -145,6 +145,19 @@ octopus:
 
 There is no need for a corresponding `default_migration_shard` - simply define that database to be your master. You might want this setting if all of your databases have identical schemas, but are not replicated.
 
+You can configure a master shard for the rails application, to connect to when rails is going up. The safest would be to configure this to the shard specified in `database.yml` (some things still use it).
+
+```yaml
+octopus:
+  master_shard: <%= ENV['SHARD'] || 'shard1' %>
+```
+
+Then you can use the `SHARD` environment variable to override the `master_shard` specified in `config/shards.yml`, useful for running rake tasks.
+
+```bash
+SHARD=shard1 rake db:setup && SHARD=shard2 rake db:setup
+```
+
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:

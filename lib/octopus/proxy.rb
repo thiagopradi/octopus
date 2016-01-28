@@ -81,7 +81,7 @@ module Octopus
         end
       end
 
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus
+      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus if Octopus.master_shard == :master
     end
 
     def initialize_replication(config)
@@ -106,7 +106,7 @@ module Octopus
     end
 
     def current_shard
-      Thread.current[CURRENT_SHARD_KEY] ||= :master
+      Thread.current[CURRENT_SHARD_KEY] ||= Octopus.master_shard
     end
 
     def current_shard=(shard_symbol)
@@ -210,7 +210,7 @@ module Octopus
     # reconnect, but in Rails 3.1 the flag prevents this.
     def safe_connection(connection_pool)
       connection_pool.automatic_reconnect ||= true
-      if !connection_pool.connected? && @shards[:master].connection.query_cache_enabled
+      if !connection_pool.connected? && @shards[Octopus.master_shard].connection.query_cache_enabled
         connection_pool.connection.enable_query_cache!
       end
       connection_pool.connection
@@ -253,7 +253,7 @@ module Octopus
     end
 
     def clean_connection_proxy
-      self.current_shard = :master
+      self.current_shard = Octopus.master_shard
       self.current_model = nil
       self.current_group = nil
       self.block = nil
@@ -267,7 +267,7 @@ module Octopus
 
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
-        run_queries_on_shard(:master) do
+        run_queries_on_shard(Octopus.master_shard) do
           select_connection.transaction(options, &block)
         end
       else
@@ -431,7 +431,7 @@ module Octopus
       if current_model.replicated || fully_replicated?
         selected_slave = @slaves_load_balancer.next
       else
-        selected_slave = :master
+        selected_slave = Octopus.master_shard
       end
 
       send_queries_to_slave(selected_slave, method, *args, &block)

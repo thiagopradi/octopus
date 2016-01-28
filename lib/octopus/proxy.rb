@@ -256,7 +256,8 @@ module Octopus
     end
 
     def transaction(options = {}, &block)
-      if !sharded && current_model_replicated?
+      #All Activesession Store queries will go to master database.
+      if (!sharded && current_model_replicated?) || current_model.eql?(ActiveRecord::SessionStore::Session)
         run_queries_on_shard(:master) do
           select_connection.transaction(options, &block)
         end

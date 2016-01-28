@@ -1,6 +1,4 @@
 begin
-  require 'rails/railtie'
-
   module Octopus
     class Railtie < Rails::Railtie
       rake_tasks do

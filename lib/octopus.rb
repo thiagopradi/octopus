@@ -11,7 +11,7 @@ module Octopus
   end
 
   def self.rails_env
-    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
+    @rails_env ||= defined?(::Rails.env) ? Rails.env.to_s : 'shards'
   end
 
   def self.config
@@ -34,7 +34,7 @@ module Octopus
   #
   # Returns a boolean
   def self.enabled?
-    if defined?(::Rails)
+    if defined?(::Rails.env)
       Octopus.environments.include?(Rails.env.to_s)
     else
       # TODO: This doens't feel right but !Octopus.config.blank? is breaking a
@@ -46,7 +46,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory
-    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
+    @directory ||= defined?(::Rails.root) ? Rails.root.to_s : Dir.pwd
   end
 
   # This is the default way to do Octopus Setup
@@ -90,14 +90,10 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end
 
-  def self.rails?
-    defined?(Rails)
-  end
-
   attr_writer :logger
 
   def self.logger
-    if defined?(Rails)
+    if defined?(Rails.logger)
       @logger ||= Rails.logger
     else
       @logger ||= Logger.new($stderr)
@@ -145,7 +141,7 @@ require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
 
-require 'octopus/railtie' if defined?(::Rails)
+require 'octopus/railtie' if defined?(::Rails::Railtie)
 
 require 'octopus/proxy'
 require 'octopus/collection_proxy'

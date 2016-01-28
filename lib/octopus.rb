@@ -116,11 +116,11 @@ module Octopus
   end
 
   def self.fully_replicated(&_block)
-    old_fully_replicated = Thread.current['octopus.fully_replicated']
-    Thread.current['octopus.fully_replicated'] = true
+    old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true
     yield
   ensure
-    Thread.current['octopus.fully_replicated'] = old_fully_replicated
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = old_fully_replicated
   end
 end
 

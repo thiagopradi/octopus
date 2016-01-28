@@ -15,7 +15,7 @@ module Octopus
   end
 
   def self.config_env
-    @config_env ||= self.rails? ? Rails.env.to_s : 'shards'
+    @config_env ||= defined?(::Rails.env) ? Rails.env.to_s : 'shards'
   end
 
   def self.config
@@ -33,7 +33,7 @@ module Octopus
   end
 
   def self.master_shard
-    (ENV['SHARD'] || (config && config[:master_shard]) || :master).to_sym
+    ((config && config[:master_shard]) || :master).to_sym
   end
 
   # Public: Whether or not Octopus is configured and should hook into the
@@ -42,7 +42,7 @@ module Octopus
   #
   # Returns a boolean
   def self.enabled?
-    if defined?(::Rails)
+    if defined?(::Rails.env)
       Octopus.environments.include?(Rails.env.to_s)
     else
       # TODO: This doens't feel right but !Octopus.config.blank? is breaking a
@@ -54,7 +54,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory
-    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
+    @directory ||= defined?(::Rails.root) ? Rails.root.to_s : Dir.pwd
   end
 
   # This is the default way to do Octopus Setup
@@ -83,7 +83,7 @@ module Octopus
   end
 
   def self.robust_environment?
-    robust_environments.include? rails_env
+    robust_environments.include? config_env
   end
 
   def self.rails3?
@@ -98,14 +98,10 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end
 
-  def self.rails?
-    defined?(Rails)
-  end
-
   attr_writer :logger
 
   def self.logger
-    if defined?(Rails)
+    if defined?(Rails.logger)
       @logger ||= Rails.logger
     else
       @logger ||= Logger.new($stderr)
@@ -148,11 +144,11 @@ module Octopus
   end
 
   def self.fully_replicated(&_block)
-    old_fully_replicated = Thread.current['octopus.fully_replicated']
-    Thread.current['octopus.fully_replicated'] = true
+    old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true
     yield
   ensure
-    Thread.current['octopus.fully_replicated'] = old_fully_replicated
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = old_fully_replicated
   end
 end
 
@@ -173,7 +169,7 @@ require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
 
-require 'octopus/railtie' if defined?(::Rails)
+require 'octopus/railtie' if defined?(::Rails::Railtie)
 
 require 'octopus/proxy'
 require 'octopus/collection_proxy'

@@ -73,6 +73,15 @@ describe Octopus::RelationProxy do
         end
       end
 
+      it 'uses the correct shard in block when method_missing is triggered on CollectionProxy objects' do
+        Octopus.using(:brazil) do
+          @client.items.each do |item|
+            expect(item.current_shard).to eq(:canada)
+            expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
+          end
+        end
+      end
+
       it 'lazily evaluates on the correct shard' do
         expect(Item.using(:brazil).count).to eq(0)
         Octopus.using(:brazil) do

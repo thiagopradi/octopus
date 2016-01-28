@@ -115,6 +115,26 @@ module Octopus
     end
   end
 
+  def self.using_group(group, &block)
+    conn = ActiveRecord::Base.connection
+
+    if conn.is_a?(Octopus::Proxy)
+      conn.send_queries_to_group(group, &block)
+    else
+      yield
+    end
+  end
+
+  def self.using_all(&block)
+    conn = ActiveRecord::Base.connection
+
+    if conn.is_a?(Octopus::Proxy)
+      conn.send_queries_to_all_shards(&block)
+    else
+      yield
+    end
+  end
+
   def self.fully_replicated(&_block)
     old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
     Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true

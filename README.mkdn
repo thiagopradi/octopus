@@ -149,10 +149,10 @@ You can configure a master shard for the rails application, to connect to when r
 
 ```yaml
 octopus:
-  master_shard: shard1
+  master_shard: <%= ENV['SHARD'] || 'shard1' %>
 ```
 
-You can use the `SHARD` environment variable to override the `master_shard` specified in `config/shards.yml`, useful for running rake tasks.
+Then you can use the `SHARD` environment variable to override the `master_shard` specified in `config/shards.yml`, useful for running rake tasks.
 
 ```bash
 SHARD=shard1 rake db:setup && SHARD=shard2 rake db:setup

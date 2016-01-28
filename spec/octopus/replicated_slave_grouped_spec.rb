@@ -61,4 +61,31 @@ describe 'when the database is replicated and has slave groups' do
       expect(Cat.count).to eq(2)
     end
   end
+
+  it 'should keep sending to slaves in a using block' do
+    OctopusHelper.using_environment :replicated_slave_grouped do
+      Cat.create!(:name => 'Thiago1')
+      Cat.create!(:name => 'Thiago2')
+
+      expect(Cat.count).to eq(2)
+      Octopus.using(:slave_group => :slaves1) do
+        expect(Cat.count).to eq(0)
+        expect(Cat.count).to eq(0)
+      end
+    end
+  end
+  
+  it 'should restore previous slave group after a using block' do
+    OctopusHelper.using_environment :replicated_slave_grouped do
+      Cat.create!(:name => 'Thiago1')
+      Cat.create!(:name => 'Thiago2')
+
+      Octopus.using(:slave_group => :slaves1) do
+        Octopus.using(:slave_group => :slaves2) do
+          expect(Cat.count).to eq(2)
+        end
+        expect(Cat.count).to eq(0)
+      end
+    end
+  end
 end

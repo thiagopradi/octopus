@@ -11,12 +11,12 @@ module Octopus
   end
 
   def self.rails_env
-    @rails_env ||= self.rails? ? Rails.env.to_s : 'shards'
+    @rails_env ||= defined?(::Rails.env) ? Rails.env.to_s : 'shards'
   end
 
   def self.config
     @config ||= begin
-      file_name = Octopus.directory + '/config/shards.yml'
+      file_name = File.join(Octopus.directory, 'config/shards.yml').to_s
 
       if File.exist?(file_name) || File.symlink?(file_name)
         config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env]
@@ -38,7 +38,7 @@ module Octopus
   #
   # Returns a boolean
   def self.enabled?
-    if defined?(::Rails)
+    if defined?(::Rails.env)
       Octopus.environments.include?(Rails.env.to_s)
     else
       # TODO: This doens't feel right but !Octopus.config.blank? is breaking a
@@ -50,7 +50,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory
-    @directory ||= defined?(Rails) ?  Rails.root.to_s : Dir.pwd
+    @directory ||= defined?(::Rails.root) ? Rails.root.to_s : Dir.pwd
   end
 
   # This is the default way to do Octopus Setup
@@ -94,14 +94,10 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end
 
-  def self.rails?
-    defined?(Rails)
-  end
-
   attr_writer :logger
 
   def self.logger
-    if defined?(Rails)
+    if defined?(Rails.logger)
       @logger ||= Rails.logger
     else
       @logger ||= Logger.new($stderr)
@@ -123,14 +119,36 @@ module Octopus
     end
   end
 
+  def self.using_group(group, &block)
+    conn = ActiveRecord::Base.connection
+
+    if conn.is_a?(Octopus::Proxy)
+      conn.send_queries_to_group(group, &block)
+    else
+      yield
+    end
+  end
+
+  def self.using_all(&block)
+    conn = ActiveRecord::Base.connection
+
+    if conn.is_a?(Octopus::Proxy)
+      conn.send_queries_to_all_shards(&block)
+    else
+      yield
+    end
+  end
+
   def self.fully_replicated(&_block)
-    old_fully_replicated = Thread.current['octopus.fully_replicated']
-    Thread.current['octopus.fully_replicated'] = true
+    old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true
     yield
   ensure
-    Thread.current['octopus.fully_replicated'] = old_fully_replicated
+    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = old_fully_replicated
   end
 end
+
+require 'octopus/exception'
 
 require 'octopus/shard_tracking'
 require 'octopus/shard_tracking/attribute'
@@ -147,7 +165,7 @@ require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
 
-require 'octopus/railtie' if defined?(::Rails)
+require 'octopus/railtie' if defined?(::Rails::Railtie)
 
 require 'octopus/proxy'
 require 'octopus/collection_proxy'

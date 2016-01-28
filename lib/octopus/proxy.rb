@@ -6,6 +6,14 @@ module Octopus
   class Proxy
     attr_accessor :config, :sharded
 
+    CURRENT_MODEL_KEY = 'octopus.current_model'.freeze
+    CURRENT_SHARD_KEY = 'octopus.current_shard'.freeze
+    CURRENT_GROUP_KEY = 'octopus.current_group'.freeze
+    CURRENT_SLAVE_GROUP_KEY = 'octopus.current_slave_group'.freeze
+    BLOCK_KEY = 'octopus.block'.freeze
+    LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
+    FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
+
     def initialize(config = Octopus.config)
       initialize_shards(config)
       initialize_replication(config) if !config.nil? && config['replicated']
@@ -17,7 +25,7 @@ module Octopus
       @slave_groups = HashWithIndifferentAccess.new
       @groups = {}
       @adapters = Set.new
-      @config = ActiveRecord::Base.connection_pool_without_octopus.connection.instance_variable_get(:@config)
+      @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']
@@ -90,20 +98,20 @@ module Octopus
     end
 
     def current_model
-      Thread.current['octopus.current_model']
+      Thread.current[CURRENT_MODEL_KEY]
     end
 
     def current_model=(model)
-      Thread.current['octopus.current_model'] = model.is_a?(ActiveRecord::Base) ? model.class : model
+      Thread.current[CURRENT_MODEL_KEY] = model.is_a?(ActiveRecord::Base) ? model.class : model
     end
 
     def current_shard
-      Thread.current['octopus.current_shard'] ||= Octopus.master_shard
+      Thread.current[CURRENT_SHARD_KEY] ||= Octopus.master_shard
     end
 
     def current_shard=(shard_symbol)
-      self.current_slave_group = nil
       if shard_symbol.is_a?(Array)
+        self.current_slave_group = nil
         shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
       elsif shard_symbol.is_a?(Hash)
         hash = shard_symbol
@@ -123,17 +131,17 @@ module Octopus
               (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
             fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{@shards_config.inspect}"
           end
-          self.current_slave_group = slave_group_symbol
         end
+        self.current_slave_group = slave_group_symbol
       else
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
 
-      Thread.current['octopus.current_shard'] = shard_symbol
+      Thread.current[CURRENT_SHARD_KEY] = shard_symbol
     end
 
     def current_group
-      Thread.current['octopus.current_group']
+      Thread.current[CURRENT_GROUP_KEY]
     end
 
     def current_group=(group_symbol)
@@ -142,35 +150,35 @@ module Octopus
         fail "Nonexistent Group Name: #{group}" unless has_group?(group)
       end
 
-      Thread.current['octopus.current_group'] = group_symbol
+      Thread.current[CURRENT_GROUP_KEY] = group_symbol
     end
 
     def current_slave_group
-      Thread.current['octopus.current_slave_group']
+      Thread.current[CURRENT_SLAVE_GROUP_KEY]
     end
 
     def current_slave_group=(slave_group_symbol)
-      Thread.current['octopus.current_slave_group'] = slave_group_symbol
+      Thread.current[CURRENT_SLAVE_GROUP_KEY] = slave_group_symbol
     end
 
     def block
-      Thread.current['octopus.block']
+      Thread.current[BLOCK_KEY]
     end
 
     def block=(block)
-      Thread.current['octopus.block'] = block
+      Thread.current[BLOCK_KEY] = block
     end
 
     def last_current_shard
-      Thread.current['octopus.last_current_shard']
+      Thread.current[LAST_CURRENT_SHARD_KEY]
     end
 
     def last_current_shard=(last_current_shard)
-      Thread.current['octopus.last_current_shard'] = last_current_shard
+      Thread.current[LAST_CURRENT_SHARD_KEY] = last_current_shard
     end
 
     def fully_replicated?
-      @fully_replicated || Thread.current['octopus.fully_replicated']
+      @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
     end
 
     # Public: Whether or not a group exists with the given name converted to a
@@ -229,9 +237,19 @@ module Octopus
     end
 
     def send_queries_to_multiple_shards(shards, &block)
-      shards.each do |shard|
+      shards.map do |shard|
         run_queries_on_shard(shard, &block)
       end
+    end
+
+    def send_queries_to_group(group, &block)
+      using_group(group) do
+        send_queries_to_multiple_shards(shards_for_group(group), &block)
+      end
+    end
+
+    def send_queries_to_all_shards(&block)
+      send_queries_to_multiple_shards(shard_names.uniq { |shard_name| @shards[shard_name] }, &block)
     end
 
     def clean_connection_proxy
@@ -468,6 +486,7 @@ module Octopus
     # Temporarily switch `current_shard` and run the block
     def using_shard(shard, &_block)
       older_shard = current_shard
+      older_slave_group = current_slave_group
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)
@@ -476,6 +495,19 @@ module Octopus
         yield
       ensure
         self.current_shard = older_shard
+        self.current_slave_group = older_slave_group
+      end
+    end
+
+    # Temporarily switch `current_group` and run the block
+    def using_group(group, &_block)
+      older_group = current_group
+
+      begin
+        self.current_group = group
+        yield
+      ensure
+        self.current_group = older_group
       end
     end
 

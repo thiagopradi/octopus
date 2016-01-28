@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Octopus::Model do
   describe '#using method' do
+    it 'raise when Model#using receives a block' do
+      expect { User.using(:master) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
+    end
+
     it 'should allow to send a block to the master shard' do
       Octopus.using(:master) do
         User.create!(:name => 'Block test')
@@ -116,7 +120,7 @@ describe Octopus::Model do
 
     it 'should work when you have a SQLite3 shard' do
       u = User.using(:sqlite_shard).create!(:name => 'Sqlite3')
-      expect(User.using(:sqlite_shard).find_by_name('Sqlite3')).to eq(u)
+      expect(User.using(:sqlite_shard).where(name: 'Sqlite3').first).to eq(u)
     end
 
     it 'should clean #current_shard from proxy when using execute' do
@@ -295,6 +299,12 @@ describe Octopus::Model do
   describe 'AR basic methods' do
     it 'establish_connection' do
       expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+    end
+
+    it 'reuses parent model connection' do
+      klass = Class.new(CustomConnection)
+
+      expect(klass.connection).to be klass.connection
     end
 
     it 'should not mess with custom connection table names' do

@@ -127,6 +127,7 @@ namespace :db do
         u.string :name
         u.string :commentable_type
         u.integer :commentable_id
+        u.boolean :open, default: false
       end
 
       BlankModel.using(shard_symbol).connection.create_table(:parts) do |u|

@@ -468,6 +468,7 @@ module Octopus
     # Temporarily switch `current_shard` and run the block
     def using_shard(shard, &_block)
       older_shard = current_shard
+      older_slave_group = current_slave_group
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)
@@ -476,6 +477,7 @@ module Octopus
         yield
       ensure
         self.current_shard = older_shard
+        self.current_slave_group = older_slave_group
       end
     end
 

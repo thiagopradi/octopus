@@ -28,6 +28,19 @@ describe 'when the database is replicated and has slave groups' do
     end
   end
 
+  it 'should recover current_slave_group' do
+    OctopusHelper.using_environment :replicated_slave_grouped do
+      Cat.create!(:name => 'Thiago1')
+      Cat.create!(:name => 'Thiago2')
+
+      Octopus.using(:slave_group => :slaves2) do
+        expect(Cat.connection.current_slave_group).to eq(:slaves2)
+        expect(Cat.first).to_not eq(nil)
+        expect(Cat.connection.current_slave_group).to eq(:slaves2)
+      end
+    end
+  end
+
   it 'should distribute queries between slaves in a slave group in round-robin' do
     OctopusHelper.using_environment :replicated_slave_grouped do
       # The query goes to :master(`octopus_shard_1`)

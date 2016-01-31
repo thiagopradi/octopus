@@ -10,6 +10,7 @@ module Octopus
     CURRENT_SHARD_KEY = 'octopus.current_shard'.freeze
     CURRENT_GROUP_KEY = 'octopus.current_group'.freeze
     CURRENT_SLAVE_GROUP_KEY = 'octopus.current_slave_group'.freeze
+    CURRENT_LOAD_BALANCE_OPTIONS_KEY = 'octopus.current_load_balance_options'.freeze
     BLOCK_KEY = 'octopus.block'.freeze
     LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
     FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
@@ -94,7 +95,7 @@ module Octopus
 
       @slaves_list = @shards.keys.map(&:to_s).sort
       @slaves_list.delete('master')
-      @slaves_load_balancer = Octopus::LoadBalancing::RoundRobin.new(@slaves_list)
+      @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end
 
     def current_model
@@ -117,6 +118,7 @@ module Octopus
         hash = shard_symbol
         shard_symbol = hash[:shard]
         slave_group_symbol = hash[:slave_group]
+        load_balance_options = hash[:load_balance_options]
 
         if shard_symbol.nil? && slave_group_symbol.nil?
           fail 'Neither shard or slave group must be specified'
@@ -133,6 +135,7 @@ module Octopus
           end
         end
         self.current_slave_group = slave_group_symbol
+        self.current_load_balance_options = load_balance_options
       else
         fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
       end
@@ -159,6 +162,15 @@ module Octopus
 
     def current_slave_group=(slave_group_symbol)
       Thread.current[CURRENT_SLAVE_GROUP_KEY] = slave_group_symbol
+      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY] = nil if slave_group_symbol.nil?
+    end
+
+    def current_load_balance_options
+      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY]
+    end
+
+    def current_load_balance_options=(options)
+      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY] = options
     end
 
     def block
@@ -429,7 +441,7 @@ module Octopus
 
     def send_queries_to_selected_slave(method, *args, &block)
       if current_model.replicated || fully_replicated?
-        selected_slave = @slaves_load_balancer.next
+        selected_slave = @slaves_load_balancer.next current_load_balance_options
       else
         selected_slave = Octopus.master_shard
       end
@@ -457,7 +469,7 @@ module Octopus
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
     # while preserving `current_shard`
     def send_queries_to_balancer(balancer, method, *args, &block)
-      send_queries_to_slave(balancer.next, method, *args, &block)
+      send_queries_to_slave(balancer.next(current_load_balance_options), method, *args, &block)
     end
 
     # Temporarily switch `current_shard` to the specified slave and send queries to it
@@ -487,6 +499,8 @@ module Octopus
     def using_shard(shard, &_block)
       older_shard = current_shard
       older_slave_group = current_slave_group
+      older_load_balance_options = current_load_balance_options
+
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)
@@ -496,6 +510,7 @@ module Octopus
       ensure
         self.current_shard = older_shard
         self.current_slave_group = older_slave_group
+        self.current_load_balance_options = older_load_balance_options
       end
     end
 

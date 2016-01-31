@@ -28,6 +28,14 @@ module Octopus
     end
   end
 
+  def self.load_balancer=(balancer)
+    @load_balancer = balancer
+  end
+
+  def self.load_balancer
+    @load_balancer ||= Octopus::LoadBalancing::RoundRobin
+  end
+
   def self.master_shard
     ((config && config[:master_shard]) || :master).to_sym
   end

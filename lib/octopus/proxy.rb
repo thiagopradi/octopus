@@ -1,9 +1,12 @@
 require 'set'
 require 'octopus/slave_group'
 require 'octopus/load_balancing/round_robin'
+require 'octopus/query_analysis'
 
 module Octopus
   class Proxy
+    include ::Octopus::QueryAnalysis
+
     attr_accessor :config, :sharded
 
     CURRENT_MODEL_KEY = 'octopus.current_model'.freeze
@@ -293,11 +296,11 @@ module Octopus
         self.last_current_shard = current_shard
         clean_connection_proxy
         conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
+      elsif should_send_queries_to_shard_slave_group?(method, args)
         send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
+      elsif should_send_queries_to_slave_group?(method, args)
         send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
+      elsif should_send_queries_to_replicated_databases?(method, args)
         send_queries_to_selected_slave(method, *args, &block)
       else
         select_connection.send(method, *args, &block)
@@ -337,16 +340,16 @@ module Octopus
       @shards.any? { |_k, v| v.connected? }
     end
 
-    def should_send_queries_to_shard_slave_group?(method)
-      should_use_slaves_for_method?(method) && @shards_slave_groups.try(:[], current_shard).try(:[], current_slave_group).present?
+    def should_send_queries_to_shard_slave_group?(method, args)
+      should_use_slaves_for_method?(method, args) && @shards_slave_groups.try(:[], current_shard).try(:[], current_slave_group).present?
     end
 
     def send_queries_to_shard_slave_group(method, *args, &block)
       send_queries_to_balancer(@shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
     end
 
-    def should_send_queries_to_slave_group?(method)
-      should_use_slaves_for_method?(method) && @slave_groups.try(:[], current_slave_group).present?
+    def should_send_queries_to_slave_group?(method, args)
+      should_use_slaves_for_method?(method, args) && @slave_groups.try(:[], current_slave_group).present?
     end
 
     def send_queries_to_slave_group(method, *args, &block)
@@ -431,8 +434,8 @@ module Octopus
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
-    def should_send_queries_to_replicated_databases?(method)
-      @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
+    def should_send_queries_to_replicated_databases?(method, args)
+      @replicated && select?(method, args) && !block && !slaves_grouped?
     end
 
     def current_model_replicated?
@@ -458,8 +461,23 @@ module Octopus
     # (3) It's a SELECT query
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
-    def should_use_slaves_for_method?(method)
-      current_model_replicated? && method.to_s =~ /select/
+    def should_use_slaves_for_method?(method, args)
+      current_model_replicated? && select?(method, args)
+    end
+
+    # Given an ActiveRecord::Base.connection method and its arguments, determine if it is a single select query
+    # suitable to send to a slave.
+    def select?(method, args)
+      is_single_select = method.to_s =~ /select/
+      unless is_single_select
+        if method.to_s =~ /execute/
+          query = args.first
+          if query.kind_of? String
+            is_single_select = definitely_select_query?(query) && !possibly_multiple_queries?(query)
+          end
+        end
+      end
+      is_single_select
     end
 
     def slaves_grouped?

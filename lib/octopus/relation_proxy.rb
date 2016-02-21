@@ -20,7 +20,7 @@ module Octopus
       if block
         @ar_relation.public_send(method, *args, &block)
       else
-        run_on_shard { @ar_relation.public_send(method, *args, &block) }
+        run_on_shard { @ar_relation.public_send(method, *args) }
       end
     end
 

@@ -106,7 +106,7 @@ module Octopus
         options[:before_remove] = :connection_on_association=
       end
 
-      options[:extend] = [Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend]].flatten.compact
+      # options[:extend] = [Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend]].flatten.compact
     end
   end
 end

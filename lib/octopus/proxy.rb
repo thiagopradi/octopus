@@ -413,7 +413,7 @@ module Octopus
     end
 
     def resolve_string_connection(spec)
-      if Octopus.rails41?
+      if Octopus.rails41? || Octopus.rails5?
         resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
         HashWithIndifferentAccess.new(resolver.spec(spec).config)
       else

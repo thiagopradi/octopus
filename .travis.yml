@@ -6,12 +6,20 @@ before_script:
 rvm:
   - 2.0.0
   - 2.1.6
-  - 2.2.2
+  - 2.2.4
+  - 2.3.0
 gemfile:
   - gemfiles/rails32.gemfile
   - gemfiles/rails4.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
+  - gemfiles/rails5beta3.gemfile
+matrix:
+  exclude:
+    - rvm: 2.0.0
+      gemfile: gemfiles/rails5beta3.gemfile
+    - rvm: 2.1.6
+      gemfile: gemfiles/rails5beta3.gemfile
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com

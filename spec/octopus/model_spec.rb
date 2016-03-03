@@ -2,6 +2,10 @@ require 'spec_helper'
 
 describe Octopus::Model do
   describe '#using method' do
+    it 'raise when Model#using receives a block' do
+      expect { User.using(:master) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
+    end
+
     it 'should allow to send a block to the master shard' do
       Octopus.using(:master) do
         User.create!(:name => 'Block test')
@@ -14,6 +18,16 @@ describe Octopus::Model do
       User.using('canada').create!(:name => 'Rafael Pilha')
 
       expect(User.using('canada').find_by_name('Rafael Pilha')).not_to be_nil
+    end
+
+    it 'should allow comparison of a string shard name with symbol shard name' do
+      u = User.using('canada').create!(:name => 'Rafael Pilha')
+      expect(u).to eq(User.using(:canada).find_by_name('Rafael Pilha'))
+    end
+
+    it 'should allow comparison of a symbol shard name with string shard name' do
+      u = User.using(:canada).create!(:name => 'Rafael Pilha')
+      expect(u).to eq(User.using('canada').find_by_name('Rafael Pilha'))
     end
 
     it 'should allow to pass a string as the shard name to a block' do
@@ -81,6 +95,21 @@ describe Octopus::Model do
       expect(ActiveRecord::Base.connection.current_shard).to eq(:master)
     end
 
+    it 'should ensure that the connection will be cleaned with custom master' do
+      OctopusHelper.using_environment :octopus do
+        Octopus.config[:master_shard] = :brazil
+        expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
+        expect do
+          Octopus.using(:canada) do
+            fail 'Some Exception'
+          end
+        end.to raise_error
+
+        expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
+        Octopus.config[:master_shard] = nil
+      end
+    end
+
     it 'should allow creating more than one user' do
       User.using(:canada).create([{ :name => 'America User 1' }, { :name => 'America User 2' }])
       User.create!(:name => 'Thiago')
@@ -97,6 +126,15 @@ describe Octopus::Model do
     it 'should clean #current_shard from proxy when using execute' do
       User.using(:canada).connection.execute('select * from users limit 1;')
       expect(User.connection.current_shard).to eq(:master)
+    end
+
+    it 'should clean #current_shard from proxy when using execute' do
+      OctopusHelper.using_environment :octopus do
+        Octopus.config[:master_shard] = :brazil
+        User.using(:canada).connection.execute('select * from users limit 1;')
+        expect(User.connection.current_shard).to eq(:brazil)
+        Octopus.config[:master_shard] = nil
+      end
     end
 
     it 'should allow scoping dynamically' do
@@ -261,6 +299,12 @@ describe Octopus::Model do
   describe 'AR basic methods' do
     it 'establish_connection' do
       expect(CustomConnection.connection.current_database).to eq('octopus_shard_2')
+    end
+
+    it 'reuses parent model connection' do
+      klass = Class.new(CustomConnection)
+
+      expect(klass.connection).to be klass.connection
     end
 
     it 'should not mess with custom connection table names' do

@@ -21,6 +21,14 @@ module Octopus
       end
 
       def using(shard)
+        if block_given?
+          raise Octopus::Exception, <<-EOF
+#{name}.using is not allowed to receive a block, it works just like a regular scope.
+
+If you are trying to scope everything to a specific shard, use Octopus.using instead.
+          EOF
+        end
+
         if Octopus.enabled?
           clean_table_name
           Octopus::ScopeProxy.new(shard, self)
@@ -57,7 +65,7 @@ module Octopus
       end
 
       def equality_with_octopus(comparison_object)
-        equality_without_octopus(comparison_object) && comparison_object.current_shard == current_shard
+        equality_without_octopus(comparison_object) && comparison_object.current_shard.to_s == current_shard.to_s
       end
 
       def perform_validations_with_octopus(*args)
@@ -98,8 +106,9 @@ module Octopus
         around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
         after_initialize :set_current_shard
 
+        class_attribute :custom_octopus_connection
+
         class << self
-          attr_accessor :custom_octopus_connection
           attr_accessor :custom_octopus_table_name
 
           alias_method_chain :connection, :octopus

@@ -20,20 +20,16 @@ module Octopus
         end
       end
 
-      def self.included(base)
-        base.alias_method_chain :initialize, :octopus_shard
-      end
-
       def octopus_shard
         @config[:octopus_shard]
       end
 
-      def initialize_with_octopus_shard(*args)
-        initialize_without_octopus_shard(*args)
+      def initialize(*args)
+        super
         @instrumenter = InstrumenterDecorator.new(self, @instrumenter)
       end
     end
   end
 end
 
-ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, Octopus::AbstractAdapter::OctopusShard)
+ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:prepend, Octopus::AbstractAdapter::OctopusShard)

@@ -1,6 +1,6 @@
 # Octopus  - Easy Database Sharding for ActiveRecord
 
-<a href='http://www.pledgie.com/campaigns/20950'><img alt='Click here to lend your support to: Octopus and make a donation at www.pledgie.com !' src='http://www.pledgie.com/campaigns/20950.png?skin_name=chrome' border='0' /></a> [![Build Status](https://travis-ci.org/tchandy/octopus.png)](https://travis-ci.org/tchandy/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/tchandy/octopus)
+<a href='http://www.pledgie.com/campaigns/20950'><img alt='Click here to lend your support to: Octopus and make a donation at www.pledgie.com !' src='http://www.pledgie.com/campaigns/20950.png?skin_name=chrome' border='0' /></a> [![Build Status](https://travis-ci.org/thiagopradi/octopus.png)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)
 
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 
@@ -15,15 +15,15 @@ Octopus supports:
 - Tools to manage database configurations. (soon)
 
 ### Replication
-When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/tchandy/octopus/replication"> Wiki</a>
+When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/thiagopradi/octopus/replication"> Wiki</a>
 
 ### Sharding
- When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/tchandy/octopus/sharding"> Wiki</a>
+ When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/thiagopradi/octopus/sharding"> Wiki</a>
 
 ### Replication + Sharding
- When using replication and sharding concurrently, you must specify a shard, and can optionally specify a <a href="https://github.com/tchandy/octopus/wiki/Slave-Groups">slave group</a>.
+ When using replication and sharding concurrently, you must specify a shard, and can optionally specify a <a href="https://github.com/thiagopradi/octopus/wiki/Slave-Groups">slave group</a>.
  All write queries will be sent to each shard's master. If the slave group is specified read queries will be sent to slaves in it, or else to shard's master.
- More info could be found at <a href="https://github.com/tchandy/octopus/wiki/Slave-Groups"> Wiki</a>
+ More info could be found at <a href="https://github.com/thiagopradi/octopus/wiki/Slave-Groups"> Wiki</a>
 
 ## Install
 
@@ -55,7 +55,7 @@ going forward.
 
 ## How to use Octopus?
 
-First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/tchandy/octopus/config-file">this page on wiki</a>.
+First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/thiagopradi/octopus/config-file">this page on wiki</a>.
 
 ### Syntax
 
@@ -70,6 +70,20 @@ Octopus also supports queries within a block. When you pass a block to the using
 ```ruby
 Octopus.using(:slave_two) do
   User.create(:name => "Mike")
+end
+```
+
+If you want to use the same code for all shards or all shards in a specific group (for example in `db/seeds.rb`), you can use this syntax.
+
+```ruby
+# This will return a list of the given block's results, per shard.
+Octopus.using_all do
+  User.create_from_csv!
+end
+
+# This will return a list of the given block's results, per shard in history_shards group.
+Octopus.using_group(:history_shards) do
+  HistoryCategory.create_from_csv!
 end
 ```
 
@@ -131,6 +145,19 @@ octopus:
 
 There is no need for a corresponding `default_migration_shard` - simply define that database to be your master. You might want this setting if all of your databases have identical schemas, but are not replicated.
 
+You can configure a master shard for the rails application, to connect to when rails is going up. The safest would be to configure this to the shard specified in `database.yml` (some things still use it).
+
+```yaml
+octopus:
+  master_shard: <%= ENV['SHARD'] || 'shard1' %>
+```
+
+Then you can use the `SHARD` environment variable to override the `master_shard` specified in `config/shards.yml`, useful for running rake tasks.
+
+```bash
+SHARD=shard1 rake db:setup && SHARD=shard2 rake db:setup
+```
+
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard,  use this syntax:
@@ -145,8 +172,8 @@ class ApplicationController < ActionController::Base
 end
 ```
 
- To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/tchandy/octopus/"> Wiki</a>
-Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/tchandy/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/tchandy/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/tchandy/octopus_sinatra"> Octopus + Sinatra Example</a>.
+ To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/thiagopradi/octopus/"> Wiki</a>
+Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/thiagopradi/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/thiagopradi/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/thiagopradi/octopus_sinatra"> Octopus + Sinatra Example</a>.
 
 ## Mixing Octopus with the Rails multiple database model
 If you want to set a custom connection to a specific model, use the syntax `octopus_establish_connection` syntax:
@@ -174,13 +201,13 @@ CustomConnectedModel.using(:my_shard).first
 CustomConnectedModel.using(:some_other_shard).first
 ```
 
-This can be useful if you have a model that lives in a separate database and would like to add sharding or replication to it. For other use cases, you may be better off with <a href="https://github.com/tchandy/octopus/wiki/Slave-Groups">slave groups</a>.
+This can be useful if you have a model that lives in a separate database and would like to add sharding or replication to it. For other use cases, you may be better off with <a href="https://github.com/thiagopradi/octopus/wiki/Slave-Groups">slave groups</a>.
 
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 
 ```bash
-git clone http://github.com/tchandy/octopus.git
+git clone http://github.com/thiagopradi/octopus.git
 cd octopus
 bundle install
 bundle exec rake db:prepare
@@ -200,7 +227,7 @@ cucumber
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
 
 ## Contributors:
-- <a href="https://github.com/tchandy/octopus/contributors">All Contributors</a>
+- <a href="https://github.com/thiagopradi/octopus/contributors">All Contributors</a>
 
 ## Mailing List:
 - <a href="http://groups.google.com/group/octopus-activerecord/">Octopus Mailing List</a>

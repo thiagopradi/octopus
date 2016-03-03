@@ -4,47 +4,6 @@ module Octopus
       base.send(:include, InstanceMethods)
     end
 
-    module QueryOnCurrentShard
-      METHODS = %w(
-        all
-        average
-        count
-        empty?
-        exists?
-        find
-        find_by_sql
-        first
-        last
-        maximum
-        minimum
-        pluck
-        scoping
-        size
-        sum
-        to_a
-      )
-
-      METHODS.each do |m|
-        if Octopus.rails4?
-          define_method m.to_sym do |*args, &block|
-            if defined?(@association) && @association
-              @association.owner.run_on_shard { super(*args, &block) }
-            else
-              super(*args, &block)
-            end
-          end
-        else
-          define_method m.to_sym do |*args, &block|
-            if respond_to?(:proxy_association) && proxy_association
-              proxy_association.owner.run_on_shard { super(*args, &block) }
-            else
-              super(*args, &block)
-            end
-          end
-        end
-      end
-    end
-
     module InstanceMethods
       def connection_on_association=(record)
         return unless ::Octopus.enabled?
@@ -66,14 +25,7 @@ module Octopus
         end
         super
       end
-    else
-      def has_many(association_id, options = {}, &extension)
-        default_octopus_opts(options)
-        super
-      end
-    end
 
-    if Octopus.rails4?
       def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
         if options == {} && scope.is_a?(Hash)
           default_octopus_opts(scope)
@@ -82,7 +34,13 @@ module Octopus
         end
         super
       end
+
     else
+      def has_many(association_id, options = {}, &extension)
+        default_octopus_opts(options)
+        super
+      end
+
       def has_and_belongs_to_many(association_id, options = {}, &extension)
         default_octopus_opts(options)
         super
@@ -90,23 +48,8 @@ module Octopus
     end
 
     def default_octopus_opts(options)
-      if options[:before_add].is_a?(Array)
-        options[:before_add] << :connection_on_association=
-      elsif options[:before_add].is_a?(Symbol)
-        options[:before_add] = [:connection_on_association=, options[:before_add]]
-      else
-        options[:before_add] = :connection_on_association=
-      end
-
-      if options[:before_remove].is_a?(Array)
-        options[:before_remove] << :connection_on_association=
-      elsif options[:before_remove].is_a?(Symbol)
-        options[:before_remove] = [:connection_on_association=, options[:before_remove]]
-      else
-        options[:before_remove] = :connection_on_association=
-      end
-
-      options[:extend] = [Octopus::AssociationShardTracking::QueryOnCurrentShard, options[:extend]].flatten.compact
+      options[:before_add] = [ :connection_on_association=, options[:before_add] ].compact.flatten
+      options[:before_remove] = [ :connection_on_association=, options[:before_remove] ].compact.flatten
     end
   end
 end

@@ -13,7 +13,6 @@ module Octopus
     CURRENT_LOAD_BALANCE_OPTIONS_KEY = 'octopus.current_load_balance_options'.freeze
     BLOCK_KEY = 'octopus.block'.freeze
     LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
-    FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
 
     def initialize(config = Octopus.config)
       initialize_shards(config)
@@ -34,7 +33,6 @@ module Octopus
       end
 
       @shards_config ||= []
-
       @shards_config.each do |key, value|
         if value.is_a?(String)
           value = resolve_string_connection(value).merge(:octopus_shard => key)
@@ -86,7 +84,12 @@ module Octopus
     end
 
     def initialize_replication(config)
-      @replicated = true
+      if config.key?('replicated')
+        @replicated = config['replicated']
+      else
+        @replicated = true
+      end
+
       if config.key?('fully_replicated')
         @fully_replicated = config['fully_replicated']
       else
@@ -94,7 +97,6 @@ module Octopus
       end
 
       @slaves_list = @shards.keys.map(&:to_s).sort
-      @slaves_list.delete('master')
       @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end
 
@@ -190,7 +192,7 @@ module Octopus
     end
 
     def fully_replicated?
-      @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
+      @fully_replicated
     end
 
     # Public: Whether or not a group exists with the given name converted to a
@@ -463,7 +465,7 @@ module Octopus
     end
 
     def slaves_grouped?
-      @slave_groups.present?
+      current_group && @slave_groups[current_group]
     end
 
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
@@ -500,7 +502,6 @@ module Octopus
       older_shard = current_shard
       older_slave_group = current_slave_group
       older_load_balance_options = current_load_balance_options
-
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)

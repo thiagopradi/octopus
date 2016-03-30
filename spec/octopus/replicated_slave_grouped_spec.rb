@@ -54,11 +54,13 @@ describe 'when the database is replicated and has slave groups' do
       # In `database.yml` and `shards.yml`, we have configured 1 master and 4 slaves.
       # So we can ensure Octopus is not distributing queries between them
       # by asserting 1 + 4 = 5 queries go to :master(`octopus_shard_1`)
-      expect(Cat.count).to eq(2)
-      expect(Cat.count).to eq(2)
-      expect(Cat.count).to eq(2)
-      expect(Cat.count).to eq(2)
-      expect(Cat.count).to eq(2)
+      Octopus.using(:master) do
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+        expect(Cat.count).to eq(2)
+      end
     end
   end
 
@@ -74,7 +76,7 @@ describe 'when the database is replicated and has slave groups' do
       end
     end
   end
-  
+
   it 'should restore previous slave group after a using block' do
     OctopusHelper.using_environment :replicated_slave_grouped do
       Cat.create!(:name => 'Thiago1')

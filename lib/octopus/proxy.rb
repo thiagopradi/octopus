@@ -13,6 +13,7 @@ module Octopus
     CURRENT_LOAD_BALANCE_OPTIONS_KEY = 'octopus.current_load_balance_options'.freeze
     BLOCK_KEY = 'octopus.block'.freeze
     LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
+    FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
 
     def initialize(config = Octopus.config)
       initialize_shards(config)
@@ -97,6 +98,7 @@ module Octopus
       end
 
       @slaves_list = @shards.keys.map(&:to_s).sort
+      @slaves_list.delete('master')
       @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end
 
@@ -192,7 +194,11 @@ module Octopus
     end
 
     def fully_replicated?
-      @fully_replicated
+      if Thread.current[FULLY_REPLICATED_KEY].nil?
+        @fully_replicated
+      else
+        @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
+      end
     end
 
     # Public: Whether or not a group exists with the given name converted to a
@@ -429,12 +435,12 @@ module Octopus
     end
 
     def should_clean_connection_proxy?(method)
-      method.to_s =~ /insert|select|execute/ && !current_model_replicated? && (!block || block != current_shard)
+      !(method.to_s =~ /insert|select|execute/).nil? && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
-      @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
+      @replicated && !(method.to_s =~ /select/).nil? && !block && !slaves_grouped?
     end
 
     def current_model_replicated?
@@ -461,7 +467,7 @@ module Octopus
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
     def should_use_slaves_for_method?(method)
-      current_model_replicated? && method.to_s =~ /select/
+      current_model_replicated? && !(method.to_s =~ /select/).nil?
     end
 
     def slaves_grouped?

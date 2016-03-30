@@ -73,11 +73,15 @@ module Octopus
   end
 
   def self.environments
+    return @environments if @environments
+
     if config
       @environments ||= config['environments'] || ['production']
     else
       @environments ||= ['production']
     end
+
+    @environments
   end
 
   def self.robust_environments=(environments)

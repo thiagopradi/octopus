@@ -301,12 +301,16 @@ module Octopus
         self.last_current_shard = current_shard
         clean_connection_proxy
         conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
+      elsif method_contains_select?(method)
+        if should_send_queries_to_shard_slave_group?(method)
+          send_queries_to_shard_slave_group(method, *args, &block)
+        elsif should_send_queries_to_slave_group?(method)
+          send_queries_to_slave_group(method, *args, &block)
+        elsif should_send_queries_to_replicated_databases?(method)
+          send_queries_to_selected_slave(method, *args, &block)
+        else
+          select_connection.send(method, *args, &block)
+        end
       else
         select_connection.send(method, *args, &block)
       end
@@ -434,13 +438,17 @@ module Octopus
       end
     end
 
+    def method_contains_select?(method)
+      method && !(method.to_s =~ /select/).nil?
+    end
+
     def should_clean_connection_proxy?(method)
       !(method.to_s =~ /insert|select|execute/).nil? && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
-      @replicated && !(method.to_s =~ /select/).nil? && !block && !slaves_grouped?
+      @replicated && !block && !slaves_grouped?
     end
 
     def current_model_replicated?
@@ -467,7 +475,7 @@ module Octopus
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
     def should_use_slaves_for_method?(method)
-      current_model_replicated? && !(method.to_s =~ /select/).nil?
+      current_model_replicated?
     end
 
     def slaves_grouped?

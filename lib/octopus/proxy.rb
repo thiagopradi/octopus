@@ -436,7 +436,7 @@ module Octopus
     end
 
     def method_contains_select?(method)
-      method && !(method.to_s =~ /select/).nil?
+      !(method.to_s =~ /select/).nil?
     end
 
     def should_clean_connection_proxy?(method)

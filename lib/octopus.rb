@@ -6,26 +6,33 @@ require 'yaml'
 require 'erb'
 
 module Octopus
+  DEFAULT_ENVIRONMENTS = ['production']
+
   def self.env
+    return @env if @env
     @env ||= 'octopus'
   end
 
   def self.rails_env
+    return @rails_env if @rails_env
     @rails_env ||= defined?(::Rails.env) ? Rails.env.to_s : 'shards'
   end
 
   def self.config
-    @config ||= begin
+    return @config if @config
+
+    @config = begin
       file_name = File.join(Octopus.directory, 'config/shards.yml').to_s
 
       if File.exist?(file_name) || File.symlink?(file_name)
-        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env]
-      else
-        config ||= HashWithIndifferentAccess.new
+        hash = HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result)) || HashWithIndifferentAccess.new
+        config ||= hash[Octopus.env]
       end
 
-      config
+      config ||= HashWithIndifferentAccess.new
     end
+
+    @config
   end
 
   def self.load_balancer=(balancer)
@@ -33,6 +40,7 @@ module Octopus
   end
 
   def self.load_balancer
+    return @load_balancer if @load_balancer
     @load_balancer ||= Octopus::LoadBalancing::RoundRobin
   end
 
@@ -58,6 +66,7 @@ module Octopus
   # Returns the Rails.root_to_s when you are using rails
   # Running the current directory in a generic Ruby process
   def self.directory
+    return @directory if @directory
     @directory ||= defined?(::Rails.root) ? Rails.root.to_s : Dir.pwd
   end
 
@@ -76,12 +85,12 @@ module Octopus
     return @environments if @environments
 
     if config
-      @environments ||= config['environments'] || ['production']
+      environments = (config['environments'] || []) + DEFAULT_ENVIRONMENTS
     else
-      @environments ||= ['production']
+      environments = DEFAULT_ENVIRONMENTS
     end
 
-    @environments
+    @environments = environments.compact.uniq
   end
 
   def self.robust_environments=(environments)
@@ -91,7 +100,15 @@ module Octopus
   # Environments in which to swallow failures from a single shard
   # when iterating through all.
   def self.robust_environments
-    @robust_environments ||= config['robust_environments'] || ['production']
+    return @robust_environments if @robust_environments
+
+    if config
+      robust_environments = (config['robust_environments'] || []) + DEFAULT_ENVIRONMENTS
+    else
+      robust_environments = DEFAULT_ENVIRONMENTS
+    end
+
+    @robust_environments = robust_environments.compact.uniq
   end
 
   def self.robust_environment?
@@ -113,11 +130,15 @@ module Octopus
   attr_writer :logger
 
   def self.logger
+    return @logger if @logger
+
     if defined?(Rails.logger)
-      @logger ||= Rails.logger
+      @logger = Rails.logger
     else
-      @logger ||= Logger.new($stderr)
+      @logger = Logger.new($stderr)
     end
+
+    @logger
   end
 
   def self.shards=(shards)

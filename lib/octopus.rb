@@ -85,9 +85,9 @@ module Octopus
     return @environments if @environments
 
     if config
-      environments = (config['environments'] || []) + DEFAULT_ENVIRONMENTS
+      environments = (config['environments'] || [])
     else
-      environments = DEFAULT_ENVIRONMENTS
+      environments = []
     end
 
     @environments = environments.compact.uniq

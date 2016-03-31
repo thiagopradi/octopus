@@ -194,11 +194,8 @@ module Octopus
     end
 
     def fully_replicated?
-      if Thread.current[FULLY_REPLICATED_KEY].nil?
-        @fully_replicated
-      else
-        @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
-      end
+      return @fully_replicated if Thread.current[FULLY_REPLICATED_KEY].nil?
+      Thread.current[FULLY_REPLICATED_KEY]
     end
 
     # Public: Whether or not a group exists with the given name converted to a

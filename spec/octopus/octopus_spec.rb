@@ -49,7 +49,7 @@ describe Octopus, :shards => [] do
 
   describe '#setup' do
     it 'should have the default octopus environment as production' do
-      expect(Octopus.environments).to eq(['production'])
+      expect(Octopus.environments).to eq([])
     end
 
     it 'should allow the user to configure the octopus environments' do

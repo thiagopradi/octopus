@@ -630,6 +630,12 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.comments.count).to eq(2)
       end
 
+      it 'group + count' do
+        expect(@brazil_client.comments.group(:id).count.length).to eq(1)
+        _cmt = @brazil_client.comments.create(:name => 'Builded Comment')
+        expect(@brazil_client.comments.group(:id).count.length).to eq(2)
+      end
+
       it 'size' do
         expect(@brazil_client.comments.size).to eq(1)
         _cmt = @brazil_client.comments.create(:name => 'Builded Comment')

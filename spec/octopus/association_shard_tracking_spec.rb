@@ -399,7 +399,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
     it 'should raise error if you try to add a record from a different shard' do
       expect do
         @brazil_client.items << Item.using(:canada).create!(:name => 'New User')
-      end.to raise_error('Association Error: Records are from different shards')
+      end.to raise_error(Octopus::AssociationShardTracking::MismatchedShards)
     end
 
     it 'should update the attribute for the item' do

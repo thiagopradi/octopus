@@ -12,6 +12,10 @@ describe Octopus::RelationProxy do
       expect(@relation.current_shard).to eq(:canada)
     end
 
+    it 'can be dumped and loaded' do
+      expect(Marshal.load(Marshal.dump(@relation))).to eq @relation
+    end
+
     unless Octopus.rails3?
       it 'can define collection association with the same name as ancestor private method' do
         @client.comments << Comment.using(:canada).create!(open: true)

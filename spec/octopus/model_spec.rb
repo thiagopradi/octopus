@@ -277,8 +277,12 @@ describe Octopus::Model do
 
       context 'replicated mode' do
         it 'should not check current_shard when determining equality' do
+          old_value = Octopus.config['replicated']
+          Octopus.config['replicated'] = true
           expect(canada1).to eq(brazil1)
           expect(canada1).to eq(canada1_dup)
+        ensure
+          Octopus.config['replicated'] = old_value
         end
       end
 

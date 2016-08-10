@@ -13,7 +13,7 @@ gemfile:
   - gemfiles/rails4.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
-  - gemfiles/rails5.gemfile
+  # - gemfiles/rails5.gemfile # TODO: Not ready yet.
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com

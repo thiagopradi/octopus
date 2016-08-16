@@ -62,14 +62,14 @@ First, you need to create a config file, shards.yml, inside your config/ directo
 Octopus adds a method to each AR Class and object: the using method is used to select the shard like this:
 
 ```ruby
-User.where(:name => "Thiago").limit(3).using(:slave_one)
+User.where(:name => "Boba").limit(3).using(:slave_one)
 ```
 
 Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard.
 
 ```ruby
 Octopus.using(:slave_two) do
-  User.create(:name => "Mike")
+  User.create(:name => "Thiago")
 end
 ```
 

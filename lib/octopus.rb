@@ -98,6 +98,10 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end
 
+  def self.rails42?
+    rails4? && ActiveRecord::VERSION::MINOR == 2
+  end
+
   def self.rails5?
     ActiveRecord::VERSION::MAJOR == 5
   end
@@ -172,6 +176,7 @@ require 'octopus/persistence'
 require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
+require 'octopus/finder_methods'
 
 require 'octopus/railtie' if defined?(::Rails::Railtie)
 

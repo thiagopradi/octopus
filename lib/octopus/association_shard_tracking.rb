@@ -16,7 +16,7 @@ module Octopus
       end
     end
 
-    if Octopus.rails4?
+    if Octopus.rails4? || Octopus.rails5?
       def has_many(association_id, scope = nil, options = {}, &extension)
         if options == {} && scope.is_a?(Hash)
           default_octopus_opts(scope)

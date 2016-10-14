@@ -46,14 +46,12 @@ describe Octopus::ScopeProxy do
       expect(@evan.select(%w(id name)).first.id).to be_a(Fixnum)
     end
 
-    if Octopus.rails4?
-      it 'allows multiple selection by symbol' do
-        expect(@evan.select(:id, :name).first.id).to be_a(Fixnum)
-      end
+    it 'allows multiple selection by symbol' do
+      expect(@evan.select(:id, :name).first.id).to be_a(Fixnum)
+    end
 
-      it 'allows multiple selection by string and symbol' do
-        expect(@evan.select(:id, 'name').first.id).to be_a(Fixnum)
-      end
+    it 'allows multiple selection by string and symbol' do
+      expect(@evan.select(:id, 'name').first.id).to be_a(Fixnum)
     end
   end
 

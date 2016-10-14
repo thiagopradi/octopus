@@ -397,7 +397,8 @@ module Octopus
       if Octopus.rails4?
         arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(adapter.dup, config)
       else
-        arg = ActiveRecord::Base::ConnectionSpecification.new(adapter.dup, config)
+        name = adapter["octopus_shard"]
+        arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, adapter.dup, config)
       end
 
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(arg)
@@ -413,15 +414,11 @@ module Octopus
     end
 
     def resolve_string_connection(spec)
-      if Octopus.rails41?
+      if Octopus.rails41? || Octopus.rails5?
         resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
         HashWithIndifferentAccess.new(resolver.spec(spec).config)
       else
-        if Octopus.rails4?
-          resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
-        else
-          resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
-        end
+        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
         HashWithIndifferentAccess.new(resolver.spec.config)
       end
     end

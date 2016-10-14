@@ -31,6 +31,14 @@ module Octopus
     def update_column(*args)
       run_on_shard { super }
     end
+
+    def increment!(*args)
+      run_on_shard { super }
+    end
+
+    def decrement!(*args)
+      run_on_shard { super }
+    end
   end
 end
 

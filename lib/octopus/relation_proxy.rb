@@ -16,6 +16,10 @@ module Octopus
       @ar_relation = ar_relation
     end
 
+    def respond_to?(*args)
+      method_missing(:respond_to?, *args)
+    end
+
     def method_missing(method, *args, &block)
       if block
         @ar_relation.public_send(method, *args, &block)

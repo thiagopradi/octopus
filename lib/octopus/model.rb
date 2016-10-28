@@ -86,6 +86,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         base.class_attribute(:replicated)
         base.class_attribute(:sharded)
         base.class_attribute(:allowed_shards)
+        base.class_attribute(:ignore_shard)
         base.hijack_methods
       end
 
@@ -97,31 +98,37 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         self.sharded = true
       end
 
+      def ignore_shard
+        self.ignore_shard = true
+      end
+
       def allow_shard(*shards)
         self.allowed_shards ||= []
         self.allowed_shards += shards
       end
 
       def hijack_methods
-        around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
-        after_initialize :set_current_shard
+        if !ignore_shard
+          around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
+          after_initialize :set_current_shard
 
-        class_attribute :custom_octopus_connection
+          class_attribute :custom_octopus_connection
 
-        class << self
-          attr_accessor :custom_octopus_table_name
+          class << self
+            attr_accessor :custom_octopus_table_name
 
-          alias_method_chain :connection, :octopus
-          alias_method_chain :connection_pool, :octopus
-          alias_method_chain :clear_all_connections!, :octopus
-          alias_method_chain :clear_active_connections!, :octopus
-          alias_method_chain :connected?, :octopus
+            alias_method_chain :connection, :octopus
+            alias_method_chain :connection_pool, :octopus
+            alias_method_chain :clear_all_connections!, :octopus
+            alias_method_chain :clear_active_connections!, :octopus
+            alias_method_chain :connected?, :octopus
 
-          alias_method_chain(:set_table_name, :octopus) if Octopus.rails3?
+            alias_method_chain(:set_table_name, :octopus) if Octopus.rails3?
 
-          def table_name=(value = nil)
-            self.custom_octopus_table_name = true
-            super
+            def table_name=(value = nil)
+              self.custom_octopus_table_name = true
+              super
+            end
           end
         end
       end

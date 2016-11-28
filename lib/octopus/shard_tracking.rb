@@ -24,6 +24,8 @@ module Octopus
       end
     end
 
+    IMPLEMENTS_WHERE_CHAIN = Octopus.rails4?
+
     # Adds run_on_shard method, but does not implement current_shard method
     def run_on_shard(&block)
       if (cs = current_shard)
@@ -31,8 +33,11 @@ module Octopus
         # Use a case statement to avoid any path through ActiveRecord::Delegation's
         # respond_to? code. We want to avoid the respond_to? code because it can have
         # the side effect of causing a call to load_target
-        r = Octopus::RelationProxy.new(cs, r) if ActiveRecord::Relation === r and not Octopus::RelationProxy === r
-        r
+        if (ActiveRecord::Relation === r || (IMPLEMENTS_WHERE_CHAIN && ActiveRecord::QueryMethods::WhereChain === r)) && !(Octopus::RelationProxy === r)
+          Octopus::RelationProxy.new(cs, r)
+        else
+          r
+        end
       else
         yield
       end

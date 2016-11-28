@@ -292,7 +292,6 @@ describe Octopus::Model do
       u = User.using(:postgresql_shard).create!(:name => 'PostgreSQL User')
       expect(User.using(:postgresql_shard).all).to eq([u])
       expect(User.using(:alone_shard).all).to eq([])
-      User.connection_handler.connection_pools['ActiveRecord::Base'] = User.connection.instance_variable_get(:@shards)[:master]
     end
   end
 

@@ -46,18 +46,31 @@ describe Octopus::ScopeProxy do
       expect(@evan.select(%w(id name)).first.id).to be_a(Fixnum)
     end
 
-    if Octopus.rails4?
-      it 'allows multiple selection by symbol' do
-        expect(@evan.select(:id, :name).first.id).to be_a(Fixnum)
-      end
+    it 'allows multiple selection by symbol' do
+      expect(@evan.select(:id, :name).first.id).to be_a(Fixnum)
+    end
 
-      it 'allows multiple selection by string and symbol' do
-        expect(@evan.select(:id, 'name').first.id).to be_a(Fixnum)
-      end
+    it 'allows multiple selection by string and symbol' do
+      expect(@evan.select(:id, 'name').first.id).to be_a(Fixnum)
     end
   end
 
   it "should raise a exception when trying to send a query to a shard that don't exists" do
     expect { User.using(:dont_exists).all }.to raise_exception('Nonexistent Shard Name: dont_exists')
+  end
+
+  context "dup / clone" do
+    before(:each) do
+      User.using(:brazil).create!(:name => 'Thiago', :number => 1)
+    end
+
+    it "should change it's object id" do
+      user = User.using(:brazil).where(id: 1)
+      dupped_object = user.dup
+      cloned_object = user.clone
+
+      expect(dupped_object.object_id).not_to eq(user.object_id)
+      expect(cloned_object.object_id).not_to eq(user.object_id)
+    end
   end
 end

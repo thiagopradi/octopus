@@ -16,35 +16,22 @@ module Octopus
       end
     end
 
-    if Octopus.rails4?
-      def has_many(association_id, scope = nil, options = {}, &extension)
-        if options == {} && scope.is_a?(Hash)
-          default_octopus_opts(scope)
-        else
-          default_octopus_opts(options)
-        end
-        super
-      end
-
-      def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
-        if options == {} && scope.is_a?(Hash)
-          default_octopus_opts(scope)
-        else
-          default_octopus_opts(options)
-        end
-        super
-      end
-
-    else
-      def has_many(association_id, options = {}, &extension)
+    def has_many(association_id, scope = nil, options = {}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
         default_octopus_opts(options)
-        super
       end
+      super
+    end
 
-      def has_and_belongs_to_many(association_id, options = {}, &extension)
+    def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
         default_octopus_opts(options)
-        super
       end
+      super
     end
 
     def default_octopus_opts(options)

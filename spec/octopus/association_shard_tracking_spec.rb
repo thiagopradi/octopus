@@ -73,6 +73,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@brazil_role.permissions).to eq([@permission_brazil])
 
       expect(@brazil_role.permissions.first).to eq(@permission_brazil)
+      expect(@brazil_role.permissions.first!).to eq(@permission_brazil)
       expect(@brazil_role.permissions.last).to eq(@permission_brazil)
     end
 
@@ -81,6 +82,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@permission_brazil.roles).to eq([@brazil_role])
 
       expect(@permission_brazil.roles.first).to eq(@brazil_role)
+      expect(@permission_brazil.roles.first!).to eq(@brazil_role)
       expect(@permission_brazil.roles.last).to eq(@brazil_role)
     end
 

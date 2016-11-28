@@ -17,6 +17,10 @@ describe Octopus::RelationProxy do
       expect(@client.comments.open).to be_a_kind_of(ActiveRecord::Relation)
     end
 
+    it 'can be dumped and loaded' do
+      expect(Marshal.load(Marshal.dump(@relation))).to eq @relation
+    end
+
     context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset

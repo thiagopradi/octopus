@@ -45,7 +45,8 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         base.send(:alias_method, :equality_without_octopus, :==)
         base.send(:alias_method, :==, :equality_with_octopus)
         base.send(:alias_method, :eql?, :==)
-        base.send(:alias_method_chain, :perform_validations, :octopus)
+        base.send(:alias_method, :perform_validations_without_octopus, :perform_validations)
+        base.send(:alias_method, :perform_validations, :perform_validations_with_octopus)
       end
 
       def set_current_shard
@@ -111,11 +112,20 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         class << self
           attr_accessor :custom_octopus_table_name
 
-          alias_method_chain :connection, :octopus
-          alias_method_chain :connection_pool, :octopus
-          alias_method_chain :clear_all_connections!, :octopus
-          alias_method_chain :clear_active_connections!, :octopus
-          alias_method_chain :connected?, :octopus
+          alias_method :connection_without_octopus, :connection
+          alias_method :connection, :connection_with_octopus
+
+          alias_method :connection_pool_without_octopus, :connection_pool
+          alias_method :connection_pool, :connection_pool_with_octopus
+
+          alias_method :clear_all_connections_without_octopus!, :clear_all_connections!
+          alias_method :clear_all_connections!, :clear_all_connections_with_octopus!
+
+          alias_method :clear_active_connections_without_octopus!, :clear_active_connections!
+          alias_method :clear_active_connections!, :clear_active_connections_with_octopus!
+
+          alias_method :connected_without_octopus?, :connected?
+          alias_method :connected?, :connected_with_octopus?
 
           def table_name=(value = nil)
             self.custom_octopus_table_name = true

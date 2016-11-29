@@ -21,6 +21,13 @@ describe Octopus::RelationProxy do
       expect(Marshal.load(Marshal.dump(@relation))).to eq @relation
     end
 
+    it 'maintains the current shard when using where.not(...)' do
+      where_chain = @relation.where
+      expect(where_chain.current_shard).to eq(@relation.current_shard)
+      not_relation = where_chain.not("1=0")
+      expect(not_relation.current_shard).to eq(@relation.current_shard)
+    end
+
     context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset

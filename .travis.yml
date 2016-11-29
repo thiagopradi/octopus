@@ -10,6 +10,7 @@ gemfile:
   - gemfiles/rails4.gemfile
   - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
+  - gemfiles/rails5.gemfile
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com

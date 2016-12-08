@@ -11,6 +11,8 @@ describe 'octopus.rake' do
     class SchemaMigration < ActiveRecord::Base; end
 
     before do
+      ActiveRecord::Base.logger = Logger.new(STDOUT)
+
       Rake::Task['octopus:copy_schema_versions'].reenable
 
       path = File.expand_path('../../migrations', __FILE__)

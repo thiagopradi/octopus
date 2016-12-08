@@ -9,7 +9,7 @@ describe Octopus::LogSubscriber, :shards => [:canada] do
   end
 
   after :each do
-    ActiveRecord::Base.logger = Logger.new(STDOUT)
+    ActiveRecord::Base.logger = nil
   end
 
   it 'should add to the default logger the shard name the query was sent to' do

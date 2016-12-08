@@ -90,16 +90,20 @@ module Octopus
     robust_environments.include? rails_env
   end
 
-  def self.rails3?
-    ActiveRecord::VERSION::MAJOR <= 3
-  end
-
   def self.rails4?
-    ActiveRecord::VERSION::MAJOR >= 4
+    ActiveRecord::VERSION::MAJOR == 4
   end
 
   def self.rails41?
     rails4? && ActiveRecord::VERSION::MINOR >= 1
+  end
+
+  def self.rails42?
+    rails4? && ActiveRecord::VERSION::MINOR == 2
+  end
+
+  def self.rails5?
+    ActiveRecord::VERSION::MAJOR == 5
   end
 
   attr_writer :logger
@@ -166,12 +170,13 @@ require 'octopus/model'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
-require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41?
+require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41? || Octopus.rails5?
 require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
 require 'octopus/singular_association'
+require 'octopus/finder_methods'
 
 require 'octopus/railtie' if defined?(::Rails::Railtie)
 

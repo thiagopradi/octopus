@@ -39,8 +39,10 @@ describe Octopus::Proxy do
       expect(adapters.to_a).to match_array(%w(sqlite3 mysql2 postgresql))
     end
 
-    it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do
-      expect(proxy.respond_to?(:pk_and_sequence_for)).to be true
+    unless Octopus.rails5?
+      it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do
+        expect(proxy.respond_to?(:pk_and_sequence_for)).to be true
+      end
     end
 
     it 'should respond correctly to respond_to?(:primary_key)' do

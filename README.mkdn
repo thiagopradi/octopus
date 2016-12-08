@@ -1,6 +1,6 @@
 # Octopus  - Easy Database Sharding for ActiveRecord
 
-<a href='http://www.pledgie.com/campaigns/20950'><img alt='Click here to lend your support to: Octopus and make a donation at www.pledgie.com !' src='http://www.pledgie.com/campaigns/20950.png?skin_name=chrome' border='0' /></a> [![Build Status](https://travis-ci.org/thiagopradi/octopus.png)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)
+<a href='http://www.pledgie.com/campaigns/20950'><img alt='Click here to lend your support to: Octopus and make a donation at www.pledgie.com !' src='http://www.pledgie.com/campaigns/20950.png?skin_name=chrome' border='0' /></a> [![Build Status](https://travis-ci.org/thiagopradi/octopus.svg)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)
 
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 
@@ -62,14 +62,14 @@ First, you need to create a config file, shards.yml, inside your config/ directo
 Octopus adds a method to each AR Class and object: the using method is used to select the shard like this:
 
 ```ruby
-User.where(:name => "Thiago").limit(3).using(:slave_one)
+User.where(:name => "Boba").limit(3).using(:slave_one)
 ```
 
 Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard.
 
 ```ruby
 Octopus.using(:slave_two) do
-  User.create(:name => "Mike")
+  User.create(:name => "Thiago")
 end
 ```
 

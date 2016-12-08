@@ -11,6 +11,10 @@ module Octopus
 
     attr_accessor :klass
 
+    # Dup and clone should be delegated to the class.
+    # We want to dup the query, not the scope proxy.
+    delegate :dup, :clone, to: :klass
+
     def initialize(shard, klass)
       @current_shard = shard
       @klass = klass

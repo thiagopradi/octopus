@@ -118,8 +118,6 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
           alias_method_chain :clear_active_connections!, :octopus
           alias_method_chain :connected?, :octopus
 
-          alias_method_chain(:set_table_name, :octopus) if Octopus.rails3?
-
           def table_name=(value = nil)
             self.custom_octopus_table_name = true
             super

@@ -8,6 +8,7 @@ namespace :octopus do
     current_version  = ActiveRecord::Migrator.current_version
     migrations_paths = ActiveRecord::Migrator.migrations_paths
 
+    puts connection.shard_names
     connection.send_queries_to_multiple_shards(connection.shard_names) do
       ActiveRecord::Schema.initialize_schema_migrations_table
       ActiveRecord::Schema.assume_migrated_upto_version(current_version, migrations_paths)

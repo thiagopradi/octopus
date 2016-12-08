@@ -25,6 +25,7 @@ describe 'octopus.rake' do
       Rake::Task['octopus:copy_schema_versions'].invoke
 
       ActiveRecord::Base.connection.shard_names.each do |shard_name|
+        puts shard_name
         expect(Octopus.using(shard_name) { ActiveRecord::Migrator.get_all_versions }).to eq([1, 2, 3])
       end
     end

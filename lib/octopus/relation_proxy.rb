@@ -24,7 +24,13 @@ module Octopus
       if block
         @ar_relation.public_send(method, *args, &block)
       else
-        run_on_shard { @ar_relation.send(method, *args) }
+        run_on_shard do
+          if method == :load_records
+            @ar_relation.send(method, *args)
+          else
+            @ar_relation.public_send(method, *args)
+          end
+        end
       end
     end
 

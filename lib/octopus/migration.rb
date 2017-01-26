@@ -19,7 +19,9 @@ module Octopus
     def self.included(base)
       base.extend(ClassMethods)
 
-      base.alias_method_chain :announce, :octopus
+      base.send :alias_method, :announce_without_octopus, :announce
+      base.send :alias_method, :announce, :announce_with_octopus
+
       base.class_attribute :current_shard, :current_group, :current_group_specified, :instance_reader => false, :instance_writer => false
     end
 
@@ -64,16 +66,28 @@ module Octopus
 
       base.class_eval do
         class << self
-          alias_method_chain :migrate, :octopus
-          alias_method_chain :up, :octopus
-          alias_method_chain :down, :octopus
-          alias_method_chain :run, :octopus
+          alias_method :migrate_without_octopus, :migrate
+          alias_method :migrate, :migrate_with_octopus
+
+          alias_method :up_without_octopus, :up
+          alias_method :up, :up_with_octopus
+
+          alias_method :down_without_octopus, :down
+          alias_method :down, :down_with_octopus
+
+          alias_method :run_without_octopus, :run
+          alias_method :run, :run_with_octopus
         end
       end
 
-      base.alias_method_chain :run, :octopus
-      base.alias_method_chain :migrate, :octopus
-      base.alias_method_chain :migrations, :octopus
+      base.send :alias_method, :run_without_octopus, :run
+      base.send :alias_method, :run, :run_with_octopus
+
+      base.send :alias_method, :migrate_without_octopus, :migrate
+      base.send :alias_method, :migrate, :migrate_with_octopus
+
+      base.send :alias_method, :migrations_without_octopus, :migrations
+      base.send :alias_method, :migrations, :migrations_with_octopus
     end
 
     def run_with_octopus(&block)
@@ -151,7 +165,9 @@ end
 module Octopus
   module UnknownMigrationVersionError
     def self.included(base)
-      base.alias_method_chain :initialize, :octopus
+      base.send :alias_method, :initialize_without_octopus, :initialize
+      base.send :alias_method, :initialize, :initialize_with_octopus
+
       base.send(:attr_accessor, :version)
     end
 

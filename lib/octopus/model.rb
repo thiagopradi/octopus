@@ -51,13 +51,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def set_current_shard
         return unless Octopus.enabled?
-
-        if new_record? || self.class.connection_proxy.block
-          shard = self.class.connection_proxy.current_shard
-        else
-          shard = self.class.connection_proxy.last_current_shard || self.class.connection_proxy.current_shard
-        end
-
+        shard = self.class.connection_proxy.current_shard
         self.current_shard = shard if self.class.allowed_shard?(shard)
       end
 

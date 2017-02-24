@@ -12,7 +12,6 @@ module Octopus
     CURRENT_SLAVE_GROUP_KEY = 'octopus.current_slave_group'.freeze
     CURRENT_LOAD_BALANCE_OPTIONS_KEY = 'octopus.current_load_balance_options'.freeze
     BLOCK_KEY = 'octopus.block'.freeze
-    LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
     FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
 
     def initialize(config = Octopus.config)
@@ -181,14 +180,6 @@ module Octopus
       Thread.current[BLOCK_KEY] = block
     end
 
-    def last_current_shard
-      Thread.current[LAST_CURRENT_SHARD_KEY]
-    end
-
-    def last_current_shard=(last_current_shard)
-      Thread.current[LAST_CURRENT_SHARD_KEY] = last_current_shard
-    end
-
     def fully_replicated?
       @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
     end
@@ -290,7 +281,6 @@ module Octopus
     def method_missing(method, *args, &block)
       if should_clean_connection_proxy?(method)
         conn = select_connection
-        self.last_current_shard = current_shard
         clean_connection_proxy
         conn.send(method, *args, &block)
       elsif should_send_queries_to_shard_slave_group?(method)

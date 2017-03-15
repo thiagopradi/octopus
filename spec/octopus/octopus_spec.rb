@@ -37,7 +37,7 @@ describe Octopus, :shards => [] do
     end
 
     it 'should permit users to configure shards on initializer files, instead of on a yml file.' do
-      expect { User.using(:crazy_shard).create!(:name => 'Joaquim') }.to raise_error
+      expect { User.using(:crazy_shard).create!(:name => 'Joaquim') }.to raise_error(RuntimeError)
 
       Octopus.setup do |config|
         config.shards = { :crazy_shard => { :adapter => 'mysql2', :database => 'octopus_shard_5', :username => 'root', :password => '' } }

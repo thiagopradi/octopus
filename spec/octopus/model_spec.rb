@@ -90,7 +90,7 @@ describe Octopus::Model do
         Octopus.using(:canada) do
           fail 'Some Exception'
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
 
       expect(ActiveRecord::Base.connection.current_shard).to eq(:master)
     end
@@ -103,7 +103,7 @@ describe Octopus::Model do
           Octopus.using(:canada) do
             fail 'Some Exception'
           end
-        end.to raise_error
+        end.to raise_error(RuntimeError)
 
         expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
         Octopus.config[:master_shard] = nil
@@ -665,13 +665,14 @@ describe Octopus::Model do
     it 'should work correctly when using validations' do
       @key = Keyboard.create!(:name => 'Key')
       expect { Keyboard.using(:brazil).create!(:name => 'Key') }.not_to raise_error
-      expect { Keyboard.create!(:name => 'Key') }.to raise_error
+      expect { Keyboard.create!(:name => 'Key') }.to raise_error(ActiveRecord::RecordInvalid)
     end
 
     it 'should work correctly when using validations with using syntax' do
       @key = Keyboard.using(:brazil).create!(:name => 'Key')
       expect { Keyboard.create!(:name => 'Key') }.not_to raise_error
-      expect { Keyboard.using(:brazil).create!(:name => 'Key') }.to raise_error
+      expect { Keyboard.using(:brazil).create!(:name => 'Key') }
+        .to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 

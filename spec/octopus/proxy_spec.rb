@@ -26,7 +26,7 @@ describe Octopus::Proxy do
       expect(proxy.instance_variable_get(:@replicated)).to be_falsey
     end
 
-    it 'should work with thiking sphinx' do
+    it 'should work with thinking sphinx' do
       config = proxy.instance_variable_get(:@config)
       expect(config[:adapter]).to eq('mysql2')
       expect(config[:database]).to eq('octopus_shard_1')

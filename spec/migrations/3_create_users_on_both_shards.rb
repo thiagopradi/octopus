@@ -1,4 +1,4 @@
-class CreateUsersOnBothShards < ActiveRecord::Migration
+class CreateUsersOnBothShards < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   using(:brazil, :canada)
 
   def self.up

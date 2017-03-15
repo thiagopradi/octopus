@@ -1,4 +1,4 @@
-class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
+class CreateUsersOnMultiplesGroups < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   using_group('country_shards', 'history_shards')
 
   def self.up

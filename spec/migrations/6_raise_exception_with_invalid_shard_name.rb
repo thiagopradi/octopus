@@ -1,4 +1,4 @@
-class RaiseExceptionWithInvalidShardName < ActiveRecord::Migration
+class RaiseExceptionWithInvalidShardName < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   using(:amazing_shard)
 
   def self.up

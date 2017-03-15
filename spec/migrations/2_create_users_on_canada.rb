@@ -1,4 +1,4 @@
-class CreateUsersOnCanada < ActiveRecord::Migration
+class CreateUsersOnCanada < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   using(:canada)
 
   def self.up

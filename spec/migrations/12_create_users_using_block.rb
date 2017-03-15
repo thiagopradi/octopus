@@ -1,4 +1,4 @@
-class CreateUsersUsingBlock < ActiveRecord::Migration
+class CreateUsersUsingBlock < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   def self.up
     Octopus.using(:brazil) do
       User.create!(:name => 'UsingBlock1')

@@ -1,4 +1,4 @@
-class CreateUserOnShardsOfDefaultGroupWithVersions < ActiveRecord::Migration
+class CreateUserOnShardsOfDefaultGroupWithVersions < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   def self.up
     User.create!(:name => 'Default Group')
   end

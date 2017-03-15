@@ -1,4 +1,4 @@
-class RaiseExceptionWithInvalidMultipleShardNames < ActiveRecord::Migration
+class RaiseExceptionWithInvalidMultipleShardNames < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   using(:brazil, :invalid_shard)
 
   def self.up

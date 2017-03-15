@@ -1,4 +1,4 @@
-class CreateUsersUsingReplication < ActiveRecord::Migration
+class CreateUsersUsingReplication < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
   def self.up
     Cat.create!(:name => 'Replication')
   end

@@ -1,4 +1,4 @@
-class RaiseExceptionWithInvalidShardName < ActiveRecord::Migration
+class RaiseExceptionWithInvalidShardName < BaseOctopusMigrationClass
   using(:amazing_shard)
 
   def self.up

@@ -1,4 +1,4 @@
-class CreateUserOnShardsOfDefaultGroupWithVersions < ActiveRecord::Migration
+class CreateUserOnShardsOfDefaultGroupWithVersions < BaseOctopusMigrationClass
   def self.up
     User.create!(:name => 'Default Group')
   end

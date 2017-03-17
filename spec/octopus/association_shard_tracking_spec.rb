@@ -198,9 +198,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
 
       it 'exists?' do
         role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.exists?(role)).to be true
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be true
         @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.exists?(role)).to be false
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -352,9 +352,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
 
       it 'exists?' do
         role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.exists?(role)).to be true
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be true
         @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.exists?(role)).to be false
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -540,9 +540,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
 
       it 'exists?' do
-        expect(@brazil_client.items.exists?(@item_brazil)).to be true
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be true
         @brazil_client.items.destroy_all
-        expect(@brazil_client.items.exists?(@item_brazil)).to be false
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be false
       end
 
       it 'uniq' do
@@ -690,9 +690,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
 
       it 'exists?' do
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be true
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be true
         @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be false
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be false
       end
 
       it 'uniq' do

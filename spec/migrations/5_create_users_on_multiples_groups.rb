@@ -1,4 +1,4 @@
-class CreateUsersOnMultiplesGroups < ActiveRecord::Migration
+class CreateUsersOnMultiplesGroups < BaseOctopusMigrationClass
   using_group('country_shards', 'history_shards')
 
   def self.up

@@ -1,4 +1,4 @@
-class CreateUsersOnShardsOfAGroup < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class CreateUsersOnShardsOfAGroup < BaseOctopusMigrationClass
   using_group(:country_shards)
 
   def self.up

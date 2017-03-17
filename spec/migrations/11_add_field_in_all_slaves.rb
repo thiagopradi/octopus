@@ -1,4 +1,4 @@
-class AddFieldInAllSlaves < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class AddFieldInAllSlaves < BaseOctopusMigrationClass
   using(:slave1, :slave2, :slave3, :slave4)
 
   def self.up

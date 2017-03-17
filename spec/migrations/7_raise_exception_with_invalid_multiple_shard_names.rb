@@ -1,4 +1,4 @@
-class RaiseExceptionWithInvalidMultipleShardNames < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class RaiseExceptionWithInvalidMultipleShardNames < BaseOctopusMigrationClass
   using(:brazil, :invalid_shard)
 
   def self.up

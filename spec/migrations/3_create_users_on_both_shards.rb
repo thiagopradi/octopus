@@ -1,4 +1,4 @@
-class CreateUsersOnBothShards < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class CreateUsersOnBothShards < BaseOctopusMigrationClass
   using(:brazil, :canada)
 
   def self.up

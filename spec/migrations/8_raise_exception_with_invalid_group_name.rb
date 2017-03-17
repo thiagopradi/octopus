@@ -1,4 +1,4 @@
-class RaiseExceptionWithInvalidGroupName < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class RaiseExceptionWithInvalidGroupName < BaseOctopusMigrationClass
   using_group(:invalid_group)
 
   def self.up

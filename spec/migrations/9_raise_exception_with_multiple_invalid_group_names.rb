@@ -1,4 +1,4 @@
-class RaiseExceptionWithMultipleInvalidGroupNames < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class RaiseExceptionWithMultipleInvalidGroupNames < BaseOctopusMigrationClass
   using_group(:country_shards, :invalid_group)
 
   def self.up

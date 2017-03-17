@@ -1,4 +1,4 @@
-class CreateUsersUsingBlockAndUsing < ActiveRecord::Migration[ActiveRecord::VERSION::STRING[0..2]]
+class CreateUsersUsingBlockAndUsing < BaseOctopusMigrationClass
   using(:brazil)
 
   def self.up

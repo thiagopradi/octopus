@@ -359,14 +359,7 @@ module Octopus
         end
       end
 
-      conn_handler = ActiveRecord::Base.connection_handler
-      if conn_handler.respond_to?(:connection_pool_list)
-        # Rails 4+
-        ar_pools = conn_handler.connection_pool_list
-      else
-        # Rails 3.2
-        ar_pools = conn_handler.connection_pools.values
-      end
+      ar_pools = ActiveRecord::Base.connection_handler.connection_pool_list
 
       ar_pools.each do |pool|
         next if pool == @shards[:master] # Already handled this

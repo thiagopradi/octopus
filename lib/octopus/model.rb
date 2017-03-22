@@ -15,9 +15,6 @@ module Octopus
         if self != ActiveRecord::Base && self.respond_to?(:reset_table_name) && !custom_octopus_table_name
           reset_table_name
         end
-
-        reset_column_information
-        instance_variable_set(:@quoted_table_name, nil)
       end
 
       def using(shard)

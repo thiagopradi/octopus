@@ -1,43 +1,8 @@
 module Octopus
   module Persistence
-    def update_attribute(*args)
-      run_on_shard { super }
-    end
-
-    def update_attributes(*args)
-      run_on_shard { super }
-    end
-
-    def update_attributes!(*args)
-      run_on_shard { super }
-    end
-
-    def reload(*args)
-      run_on_shard { super }
-    end
-
-    def delete
-      run_on_shard { super }
-    end
-
-    def destroy
-      run_on_shard { super }
-    end
-
-    def touch(*args)
-      run_on_shard { super }
-    end
-
-    def update_column(*args)
-      run_on_shard { super }
-    end
-
-    def increment!(*args)
-      run_on_shard { super }
-    end
-
-    def decrement!(*args)
-      run_on_shard { super }
+    def self.included(base)
+      base.sharded_methods :update_attribute, :update_attributes, :update_attributes!, :reload,
+      :delete, :destroy, :touch, :update_column, :increment!, :decrement!
     end
   end
 end

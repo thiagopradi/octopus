@@ -9,19 +9,15 @@ module Octopus
       # method sharded_methods, then automagically alias_method_chain
       # a sharding-friendly version of each of those methods into existence
       def sharded_methods(*methods)
-        methods.each { |m| create_sharded_method(m) }
-      end
-
-      def create_sharded_method(name)
-        name.to_s =~ /([^!?]+)([!?])?/
-        method, punctuation = [Regexp.last_match[1], Regexp.last_match[2]]
-        with = :"#{method}_with_octopus#{punctuation}"
-        without = :"#{method}_without_octopus#{punctuation}"
-        define_method with do |*args, &block|
-          run_on_shard { send(without, *args, &block) }
+        prepended_module = Module.new do
+          methods.each do |method_name|
+            define_method method_name do |*args, &block|
+              run_on_shard { super(*args, &block) }
+            end
+          end
         end
-        alias_method without.to_sym, name.to_sym
-        alias_method name.to_sym, with.to_sym
+
+        self.send(:prepend, prepended_module)
       end
     end
 

@@ -33,7 +33,6 @@ module Octopus
       end
 
       @shards_config ||= []
-
       @shards_config.each do |key, value|
         if value.is_a?(String)
           value = resolve_string_connection(value).merge(:octopus_shard => key)
@@ -85,7 +84,12 @@ module Octopus
     end
 
     def initialize_replication(config)
-      @replicated = true
+      if config.key?('replicated')
+        @replicated = config['replicated']
+      else
+        @replicated = true
+      end
+
       if config.key?('fully_replicated')
         @fully_replicated = config['fully_replicated']
       else
@@ -181,7 +185,8 @@ module Octopus
     end
 
     def fully_replicated?
-      @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
+      return @fully_replicated if Thread.current[FULLY_REPLICATED_KEY].nil?
+      Thread.current[FULLY_REPLICATED_KEY]
     end
 
     # Public: Whether or not a group exists with the given name converted to a
@@ -283,12 +288,16 @@ module Octopus
         conn = select_connection
         clean_connection_proxy
         conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
+      elsif method_contains_select?(method)
+        if should_send_queries_to_shard_slave_group?(method)
+          send_queries_to_shard_slave_group(method, *args, &block)
+        elsif should_send_queries_to_slave_group?(method)
+          send_queries_to_slave_group(method, *args, &block)
+        elsif should_send_queries_to_replicated_databases?(method)
+          send_queries_to_selected_slave(method, *args, &block)
+        else
+          select_connection.send(method, *args, &block)
+        end
       else
         select_connection.send(method, *args, &block)
       end
@@ -406,13 +415,17 @@ module Octopus
       end
     end
 
+    def method_contains_select?(method)
+      !(method.to_s =~ /select/).nil?
+    end
+
     def should_clean_connection_proxy?(method)
-      method.to_s =~ /insert|select|execute/ && !current_model_replicated? && (!block || block != current_shard)
+      !(method.to_s =~ /insert|select|execute/).nil? && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
-      @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
+      @replicated && !block && !slaves_grouped?
     end
 
     def current_model_replicated?
@@ -439,11 +452,11 @@ module Octopus
     # while ensuring that we revert `current_shard` from the selected slave to the (shard's) master
     # not to make queries other than SELECT leak to the slave.
     def should_use_slaves_for_method?(method)
-      current_model_replicated? && method.to_s =~ /select/
+      current_model_replicated?
     end
 
     def slaves_grouped?
-      @slave_groups.present?
+      current_group && @slave_groups[current_group]
     end
 
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
@@ -480,7 +493,6 @@ module Octopus
       older_shard = current_shard
       older_slave_group = current_slave_group
       older_load_balance_options = current_load_balance_options
-
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)

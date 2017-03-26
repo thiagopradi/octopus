@@ -476,6 +476,22 @@ describe Octopus::Model do
       expect(User.using(:master).count).to eq(1)
     end
 
+    describe "#finder methods" do
+      it "#find_each should work" do
+        user1 = User.using(:brazil).create!(:name => 'User1')
+        user2 = User.using(:brazil).create!(:name => 'User2')
+        user3 = User.using(:brazil).create!(:name => 'User3')
+
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([user1, user2, user3])
+      end
+    end
+
     describe 'deleting a record' do
       before(:each) do
         @user = User.using(:brazil).create!(:name => 'User1')

@@ -477,18 +477,30 @@ describe Octopus::Model do
     end
 
     describe "#finder methods" do
-      it "#find_each should work" do
-        user1 = User.using(:brazil).create!(:name => 'User1')
-        user2 = User.using(:brazil).create!(:name => 'User2')
-        user3 = User.using(:brazil).create!(:name => 'User3')
+      before(:each) do
+        @user1 = User.using(:brazil).create!(:name => 'User1')
+        @user2 = User.using(:brazil).create!(:name => 'User2')
+        @user3 = User.using(:brazil).create!(:name => 'User3')
+      end
 
+      it "#find_each should work" do
         result_array = []
 
         User.using(:brazil).where("name is not NULL").find_each do |user|
           result_array << user
         end
 
-        expect(result_array).to eq([user1, user2, user3])
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_in_batches, should work" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1) do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
       end
     end
 

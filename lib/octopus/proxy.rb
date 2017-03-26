@@ -29,7 +29,7 @@ module Octopus
 
       unless config.nil?
         @entire_sharded = config['entire_sharded']
-        @shards_config = config[Octopus.rails_env]
+        @shards_config = config[Octopus.config_env]
       end
 
       @shards_config ||= []
@@ -362,7 +362,7 @@ module Octopus
       ar_pools = ActiveRecord::Base.connection_handler.connection_pool_list
 
       ar_pools.each do |pool|
-        next if pool == @shards[:master] # Already handled this
+        next if pool == @shards[Octopus.master_shard] # Already handled this
 
         begin
           yield(pool)

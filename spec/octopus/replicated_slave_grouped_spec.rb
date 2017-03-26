@@ -88,4 +88,42 @@ describe 'when the database is replicated and has slave groups' do
       end
     end
   end
+
+  it 'should send to slave group when performing select via execute' do
+    OctopusHelper.using_environment :replicated_slave_grouped do
+      Cat.create!(:name => 'Thiago1')
+      Cat.create!(:name => 'Thiago2')
+
+      Octopus.using(:slave_group => :slaves1) do
+        Octopus.using(:slave_group => :slaves2) do
+          count = ActiveRecord::Base.connection.execute('select count(*) from cats').to_a.flatten.first
+          expect(count).to eq(2)
+        end
+        count = ActiveRecord::Base.connection.execute('select count(*) from cats').to_a.flatten.first
+        expect(count).to eq(0)
+      end
+    end
+  end
+
+
+  it 'should only send to master when running insert via execute' do
+    OctopusHelper.using_environment :replicated_slave_grouped do
+      Octopus.using(:slave_group => :slaves1) do
+        Octopus.using(:slave_group => :slaves2) do
+          expect{ ActiveRecord::Base.connection.execute("insert into cats (name) values ('Thiago1')").to_a.flatten.first }.not_to raise_error
+        end
+        expect{ ActiveRecord::Base.connection.execute("insert into cats (name) values ('Thiago2')").to_a.flatten.first }.not_to raise_error
+      end
+
+      Octopus.using(:slave_group => :slaves1) do
+        Octopus.using(:slave_group => :slaves2) do
+          expect(Cat.count).to eq(2)
+        end
+        expect(Cat.count).to eq(0)
+      end
+    end
+  end
+
+
+
 end

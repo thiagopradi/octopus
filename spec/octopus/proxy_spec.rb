@@ -63,22 +63,6 @@ describe Octopus::Proxy do
       end
     end
 
-    describe '#should_clean_table_name?' do
-      it 'should return true when you have a environment with multiple database types' do
-        expect(proxy.should_clean_table_name?).to be true
-      end
-
-      context 'when using a environment with a single table name' do
-        before(:each) do
-          OctopusHelper.octopus_env = 'production_replicated'
-        end
-
-        it 'should return false' do
-          expect(proxy.should_clean_table_name?).to be false
-        end
-      end
-    end
-
     describe 'should raise error if you have duplicated shard names' do
       before(:each) do
         OctopusHelper.octopus_env = 'production_raise_error'

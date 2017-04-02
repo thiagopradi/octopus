@@ -227,10 +227,6 @@ module Octopus
       current_shard.is_a?(Array) ? current_shard.first : current_shard
     end
 
-    def should_clean_table_name?
-      @adapters.size > 1
-    end
-
     def run_queries_on_shard(shard, &_block)
       keeping_connection_proxy(shard) do
         using_shard(shard) do

@@ -133,7 +133,6 @@ module Octopus
       @shards_slave_groups = HashWithIndifferentAccess.new
       @slave_groups = HashWithIndifferentAccess.new
       @groups = {}
-      @adapters = Set.new
       @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
       unless config.nil?

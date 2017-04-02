@@ -13,7 +13,7 @@ module Octopus
              :current_load_balance_options, :current_load_balance_options=,
              :block, :block=, :fully_replicated?, :has_group?,
              :shard_names, :shards_for_group, :shards, :sharded, :slaves_list,
-             :shards_slave_groups, :slave_groups, :adapters, :replicated, :slaves_load_balancer,
+             :shards_slave_groups, :slave_groups, :replicated, :slaves_load_balancer,
              :config, :initialize_shards, to: :proxy_config, prefix: false
 
     def initialize(config = Octopus.config)

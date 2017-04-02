@@ -6,10 +6,10 @@ describe Octopus::Proxy do
   describe 'creating a new instance', :shards => [] do
     it 'should initialize all shards and groups' do
       # FIXME: Don't test implementation details
-      expect(proxy.instance_variable_get(:@shards)).to include('canada', 'brazil', 'master', 'sqlite_shard', 'russia', 'alone_shard',
+      expect(proxy.shards).to include('canada', 'brazil', 'master', 'sqlite_shard', 'russia', 'alone_shard',
                                                                'aug2009', 'postgresql_shard', 'aug2010', 'aug2011')
 
-      expect(proxy.instance_variable_get(:@shards)).to include('protocol_shard')
+      expect(proxy.shards).to include('protocol_shard')
 
       expect(proxy.has_group?('country_shards')).to be true
       expect(proxy.shards_for_group('country_shards')).to include(:canada, :brazil, :russia)
@@ -23,20 +23,14 @@ describe Octopus::Proxy do
     end
 
     it 'should initialize replicated attribute as false' do
-      expect(proxy.instance_variable_get(:@replicated)).to be_falsey
+      expect(proxy.replicated).to be_falsey
     end
 
     it 'should work with thinking sphinx' do
-      config = proxy.instance_variable_get(:@config)
+      config = proxy.config
       expect(config[:adapter]).to eq('mysql2')
       expect(config[:database]).to eq('octopus_shard_1')
       expect(config[:username]).to eq('root')
-    end
-
-    it 'should create a set with all adapters, to ensure that is needed to clean the table name.' do
-      adapters = proxy.instance_variable_get(:@adapters)
-      expect(adapters).to be_kind_of(Set)
-      expect(adapters.to_a).to match_array(%w(sqlite3 mysql2 postgresql))
     end
 
     unless Octopus.rails50? || Octopus.rails51?
@@ -79,11 +73,11 @@ describe Octopus::Proxy do
       end
 
       it 'should initialize just the master shard' do
-        expect(proxy.instance_variable_get(:@shards).keys).to eq(['master'])
+        expect(proxy.shards.keys).to eq(['master'])
       end
 
       it 'should not initialize replication' do
-        expect(proxy.instance_variable_get(:@replicated)).to be_nil
+        expect(proxy.replicated).to be_nil
       end
     end
   end
@@ -94,11 +88,11 @@ describe Octopus::Proxy do
     end
 
     it 'should have the replicated attribute as true' do
-      expect(proxy.instance_variable_get(:@replicated)).to be true
+      expect(proxy.replicated).to be true
     end
 
     it 'should initialize the list of shards' do
-      expect(proxy.instance_variable_get(:@slaves_list)).to eq(%w(slave1 slave2 slave3 slave4))
+      expect(proxy.slaves_list).to eq(%w(slave1 slave2 slave3 slave4))
     end
   end
 
@@ -121,7 +115,7 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.instance_variable_get(:@replicated)).to be true
+      expect(proxy.replicated).to be true
       expect(Octopus.environments).to eq(%w(staging production))
     end
 
@@ -131,7 +125,7 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.instance_variable_get(:@shards).keys.to_set).to eq(Set.new(%w(slave1 slave2 master)))
+      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave1 slave2 master)))
     end
 
     it 'should initialize correctly the shard octopus_shard value for logging' do
@@ -140,7 +134,7 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.instance_variable_get(:@shards)['slave1'].spec.config).to have_key :octopus_shard
+      expect(proxy.shards['slave1'].spec.config).to have_key :octopus_shard
     end
 
     it 'should initialize correctly the shards for the production environment' do
@@ -149,7 +143,7 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.instance_variable_get(:@shards).keys.to_set).to eq(Set.new(%w(slave3 slave4 master)))
+      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave3 slave4 master)))
     end
 
     describe 'using the master connection', :shards => [:russia, :master]  do
@@ -218,12 +212,12 @@ describe Octopus::Proxy do
 
     describe 'should return the connection based on shard_name' do
       it 'when current_shard is empty' do
-        expect(proxy.select_connection).to eq(proxy.instance_variable_get(:@shards)[:master].connection)
+        expect(proxy.select_connection).to eq(proxy.shards[:master].connection)
       end
 
       it 'when current_shard is a single shard' do
         proxy.current_shard = :canada
-        expect(proxy.select_connection).to eq(proxy.instance_variable_get(:@shards)[:canada].connection)
+        expect(proxy.select_connection).to eq(proxy.shards[:canada].connection)
       end
     end
   end

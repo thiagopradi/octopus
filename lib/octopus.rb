@@ -156,11 +156,11 @@ module Octopus
   end
 
   def self.fully_replicated(&_block)
-    old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
-    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true
+    old_fully_replicated = Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY]
+    Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY] = true
     yield
   ensure
-    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = old_fully_replicated
+    Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY] = old_fully_replicated
   end
 end
 
@@ -184,6 +184,7 @@ require 'octopus/finder_methods'
 
 require 'octopus/railtie' if defined?(::Rails::Railtie)
 
+require 'octopus/proxy_config'
 require 'octopus/proxy'
 require 'octopus/collection_proxy'
 require 'octopus/relation_proxy'

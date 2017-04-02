@@ -1,7 +1,7 @@
 module OctopusHelper
   def self.clean_all_shards(shards)
     if shards.nil?
-      shards = BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
+      shards = BlankModel.using(:master).connection.shards.keys
     end
 
     shards.each do |shard_symbol|

@@ -9,11 +9,10 @@ module Octopus
     FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
 
     attr_accessor :config, :sharded, :shards, :shards_slave_groups, :slave_groups,
-                  :adapters, :replicated, :slaves_load_balancer, :slaves_list
+                  :adapters, :replicated, :slaves_load_balancer, :slaves_list, :shards_slave_groups,
+                  :slave_groups, :groups, :entire_sharded, :shards_config
 
     def initialize(config)
-      self.config = config
-
       initialize_shards(config)
       initialize_replication(config) if !config.nil? && config['replicated']
     end
@@ -33,7 +32,7 @@ module Octopus
     def current_shard=(shard_symbol)
       if shard_symbol.is_a?(Array)
         self.current_slave_group = nil
-        shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
+        shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if shards[symbol].nil? }
       elsif shard_symbol.is_a?(Hash)
         hash = shard_symbol
         shard_symbol = hash[:shard]
@@ -45,19 +44,19 @@ module Octopus
         end
 
         if shard_symbol.present?
-          fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
+          fail "Nonexistent Shard Name: #{shard_symbol}" if shards[shard_symbol].nil?
         end
 
         if slave_group_symbol.present?
-          if (@shards_slave_groups.try(:[], shard_symbol).present? && @shards_slave_groups[shard_symbol][slave_group_symbol].nil?) ||
-              (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
-            fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{@shards_config.inspect}"
+          if (shards_slave_groups.try(:[], shard_symbol).present? && shards_slave_groups[shard_symbol][slave_group_symbol].nil?) ||
+              (shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
+            fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{shards_config.inspect}"
           end
         end
         self.current_slave_group = slave_group_symbol
         self.current_load_balance_options = load_balance_options
       else
-        fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
+        fail "Nonexistent Shard Name: #{shard_symbol}" if shards[shard_symbol].nil?
       end
 
       Thread.current[CURRENT_SHARD_KEY] = shard_symbol
@@ -117,7 +116,7 @@ module Octopus
     #
     # Returns an array of shard names as symbols
     def shard_names
-      @shards.keys
+      shards.keys
     end
 
     # Public: Retrieves the defined shards for a given group.
@@ -129,28 +128,30 @@ module Octopus
     end
 
     def initialize_shards(config)
-      @shards = HashWithIndifferentAccess.new
-      @shards_slave_groups = HashWithIndifferentAccess.new
-      @slave_groups = HashWithIndifferentAccess.new
-      @groups = {}
-      @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
+      self.config = config
+
+      self.shards = HashWithIndifferentAccess.new
+      self.shards_slave_groups = HashWithIndifferentAccess.new
+      self.slave_groups = HashWithIndifferentAccess.new
+      self.groups = {}
+      self.config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
 
       unless config.nil?
-        @entire_sharded = config['entire_sharded']
-        @shards_config = config[Octopus.rails_env]
+        self.entire_sharded = config['entire_sharded']
+        self.shards_config = config[Octopus.rails_env]
       end
 
-      @shards_config ||= []
+      self.shards_config ||= []
 
-      @shards_config.each do |key, value|
+      shards_config.each do |key, value|
         if value.is_a?(String)
           value = resolve_string_connection(value).merge(:octopus_shard => key)
           initialize_adapter(value['adapter'])
-          @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+          shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
         elsif value.is_a?(Hash) && value.key?('adapter')
           value.merge!(:octopus_shard => key)
           initialize_adapter(value['adapter'])
-          @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+          shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
 
           slave_group_configs = value.select do |_k, v|
             structurally_slave_group? v
@@ -161,7 +162,7 @@ module Octopus
             slave_group_configs.each do |slave_group_name, slave_configs|
               slaves = HashWithIndifferentAccess.new
               slave_configs.each do |slave_name, slave_config|
-                @shards[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
+                shards[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
                 slaves[slave_name.to_sym] = slave_name.to_sym
               end
               slave_groups[slave_group_name.to_sym] = Octopus::SlaveGroup.new(slaves)
@@ -173,12 +174,12 @@ module Octopus
           @groups[key.to_s] = []
 
           value.each do |k, v|
-            fail 'You have duplicated shard names!' if @shards.key?(k.to_sym)
+            fail 'You have duplicated shard names!' if shards.key?(k.to_sym)
 
             initialize_adapter(v['adapter'])
             config_with_octopus_shard = v.merge(:octopus_shard => k)
 
-            @shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
+            shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
             @groups[key.to_s] << k.to_sym
           end
 
@@ -189,7 +190,7 @@ module Octopus
         end
       end
 
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus if Octopus.master_shard == :master
+      shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus if Octopus.master_shard == :master
     end
 
     def initialize_replication(config)
@@ -200,7 +201,7 @@ module Octopus
         @fully_replicated = true
       end
 
-      @slaves_list = @shards.keys.map(&:to_s).sort
+      @slaves_list = shards.keys.map(&:to_s).sort
       @slaves_list.delete('master')
       @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end

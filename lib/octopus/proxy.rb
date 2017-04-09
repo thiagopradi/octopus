@@ -20,6 +20,15 @@ module Octopus
       self.proxy_config = Octopus::ProxyConfig.new(config)
     end
 
+    # Rails Connection Methods - Those methods are overriden to add custom behavior that helps
+    # Octopus introduce Sharding / Replication.
+
+    delegate :adapter_name, :add_transaction_record, :case_sensitive_modifier,
+      :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
+      :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
+      :table_exists?, :in_clause_length, :supports_ddl_transactions?,
+      :sanitize_limit, :prefetch_primary_key?, to: :select_connection
+
     # Rails 3.1 sets automatic_reconnect to false when it removes
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just

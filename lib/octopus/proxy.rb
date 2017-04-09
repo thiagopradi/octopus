@@ -14,7 +14,7 @@ module Octopus
              :block, :block=, :fully_replicated?, :has_group?,
              :shard_names, :shards_for_group, :shards, :sharded, :slaves_list,
              :shards_slave_groups, :slave_groups, :replicated, :slaves_load_balancer,
-             :config, :initialize_shards, to: :proxy_config, prefix: false
+             :config, :initialize_shards, :shard_name, to: :proxy_config, prefix: false
 
     def initialize(config = Octopus.config)
       self.proxy_config = Octopus::ProxyConfig.new(config)
@@ -34,10 +34,6 @@ module Octopus
 
     def select_connection
       safe_connection(shards[shard_name])
-    end
-
-    def shard_name
-      current_shard.is_a?(Array) ? current_shard.first : current_shard
     end
 
     def run_queries_on_shard(shard, &_block)
@@ -259,7 +255,6 @@ module Octopus
       older_shard = current_shard
       older_slave_group = current_slave_group
       older_load_balance_options = current_load_balance_options
-
 
       begin
         unless current_model && !current_model.allowed_shard?(shard)

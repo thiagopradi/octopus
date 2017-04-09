@@ -119,6 +119,10 @@ module Octopus
       shards.keys
     end
 
+    def shard_name
+      current_shard.is_a?(Array) ? current_shard.first : current_shard
+    end
+
     # Public: Retrieves the defined shards for a given group.
     #
     # Returns an array of shard names as symbols or nil if the group is not
@@ -244,6 +248,5 @@ module Octopus
         raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
       end
     end
-
   end
 end

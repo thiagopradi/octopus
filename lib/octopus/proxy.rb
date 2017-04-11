@@ -57,6 +57,14 @@ module Octopus
       conn.update(arel, name, binds)
     end
 
+    def select_all(*args, &block)
+      legacy_method_missing_logic('select_all', *args, &block)
+    end
+
+    def select_value(*args, &block)
+      legacy_method_missing_logic('select_value', *args, &block)
+    end
+
     # Rails 3.1 sets automatic_reconnect to false when it removes
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just
@@ -121,19 +129,7 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      if should_clean_connection_proxy?(method)
-        conn = select_connection
-        clean_connection_proxy
-        conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
-      else
-        select_connection.send(method, *args, &block)
-      end
+      legacy_method_missing_logic(method, *args, &block)
     end
 
     def respond_to?(method, include_private = false)
@@ -186,6 +182,25 @@ module Octopus
     end
 
     protected
+
+    # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
+    # and will be removed when Octopus 1.0 will be released.
+    # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
+    def legacy_method_missing_logic(method, *args, &block)
+      if should_clean_connection_proxy?(method)
+        conn = select_connection
+        clean_connection_proxy
+        conn.send(method, *args, &block)
+      elsif should_send_queries_to_shard_slave_group?(method)
+        send_queries_to_shard_slave_group(method, *args, &block)
+      elsif should_send_queries_to_slave_group?(method)
+        send_queries_to_slave_group(method, *args, &block)
+      elsif should_send_queries_to_replicated_databases?(method)
+        send_queries_to_selected_slave(method, *args, &block)
+      else
+        select_connection.send(method, *args, &block)
+      end
+    end
 
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard

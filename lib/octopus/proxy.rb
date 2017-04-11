@@ -39,12 +39,6 @@ module Octopus
       conn.execute(sql, name)
     end
 
-    def delete(arel, name = nil, binds = [])
-      conn = select_connection
-      clean_connection_proxy
-      conn.delete(arel, name, binds)
-    end
-
     def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
       conn = select_connection
       clean_connection_proxy
@@ -55,6 +49,10 @@ module Octopus
       conn = select_connection
       clean_connection_proxy
       conn.update(arel, name, binds)
+    end
+
+    def delete(*args, &block)
+      legacy_method_missing_logic('delete', *args, &block)
     end
 
     def select_all(*args, &block)

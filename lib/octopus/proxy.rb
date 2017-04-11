@@ -20,6 +20,49 @@ module Octopus
       self.proxy_config = Octopus::ProxyConfig.new(config)
     end
 
+    # Rails Connection Methods - Those methods are overriden to add custom behavior that helps
+    # Octopus introduce Sharding / Replication.
+    delegate :adapter_name, :add_transaction_record, :case_sensitive_modifier,
+      :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
+      :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
+      :table_exists?, :in_clause_length, :supports_ddl_transactions?,
+      :sanitize_limit, :prefetch_primary_key?, :current_database, :initialize_schema_migrations_table,
+      :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
+      :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
+      :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
+      :release_advisory_lock, :prepare_binds_for_database, :cacheable_query, :column_name_for_operation,
+      :prepared_statements, :transaction_state, :create_table, to: :select_connection
+
+    def execute(sql, name = nil)
+      conn = select_connection
+      clean_connection_proxy
+      conn.execute(sql, name)
+    end
+
+    def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
+      conn = select_connection
+      clean_connection_proxy
+      conn.insert(arel, name, pk, id_value, sequence_name, binds)
+    end
+
+    def update(arel, name = nil, binds = [])
+      conn = select_connection
+      clean_connection_proxy
+      conn.update(arel, name, binds)
+    end
+
+    def delete(*args, &block)
+      legacy_method_missing_logic('delete', *args, &block)
+    end
+
+    def select_all(*args, &block)
+      legacy_method_missing_logic('select_all', *args, &block)
+    end
+
+    def select_value(*args, &block)
+      legacy_method_missing_logic('select_value', *args, &block)
+    end
+
     # Rails 3.1 sets automatic_reconnect to false when it removes
     # connection pool.  Octopus can potentially retain a reference to a closed
     # connection pool.  Previously, that would work since the pool would just
@@ -84,19 +127,7 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      if should_clean_connection_proxy?(method)
-        conn = select_connection
-        clean_connection_proxy
-        conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
-      else
-        select_connection.send(method, *args, &block)
-      end
+      legacy_method_missing_logic(method, *args, &block)
     end
 
     def respond_to?(method, include_private = false)
@@ -149,6 +180,25 @@ module Octopus
     end
 
     protected
+
+    # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
+    # and will be removed when Octopus 1.0 will be released.
+    # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
+    def legacy_method_missing_logic(method, *args, &block)
+      if should_clean_connection_proxy?(method)
+        conn = select_connection
+        clean_connection_proxy
+        conn.send(method, *args, &block)
+      elsif should_send_queries_to_shard_slave_group?(method)
+        send_queries_to_shard_slave_group(method, *args, &block)
+      elsif should_send_queries_to_slave_group?(method)
+        send_queries_to_slave_group(method, *args, &block)
+      elsif should_send_queries_to_replicated_databases?(method)
+        send_queries_to_selected_slave(method, *args, &block)
+      else
+        select_connection.send(method, *args, &block)
+      end
+    end
 
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard

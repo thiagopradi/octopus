@@ -11,7 +11,7 @@ module Octopus
   end
 
   def self.rails_env
-    @rails_env ||= defined?(::Rails.env) ? Rails.env.to_s : 'shards'
+    @rails_env ||= (Rails.env.to_s if defined?(::Rails.env)) || ENV['RAILS_ENV'] || 'shards'
   end
 
   def self.config
@@ -46,8 +46,8 @@ module Octopus
   #
   # Returns a boolean
   def self.enabled?
-    if defined?(::Rails.env)
-      Octopus.environments.include?(Rails.env.to_s)
+    if self.rails_env != 'shards'
+      Octopus.environments.include?(self.rails_env)
     else
       # TODO: This doens't feel right but !Octopus.config.blank? is breaking a
       #       test. Also, Octopus.config is always returning a hash.

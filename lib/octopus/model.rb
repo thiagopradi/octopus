@@ -109,6 +109,9 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
           alias_method :connected_without_octopus?, :connected?
           alias_method :connected?, :connected_with_octopus?
 
+          alias_method :establish_connection_without_octopus, :establish_connection
+          alias_method :establish_connection, :establish_connection_with_octopus
+
           def table_name=(value = nil)
             self.custom_octopus_table_name = true
             super
@@ -184,9 +187,9 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         set_table_name_without_octopus(value, &block)
       end
 
-      def octopus_establish_connection(spec = ENV['DATABASE_URL'])
+      def establish_connection_with_octopus(spec = ENV['DATABASE_URL'])
         self.custom_octopus_connection = true if spec
-        establish_connection(spec)
+        establish_connection_without_octopus(spec)
       end
 
       def octopus_set_table_name(value = nil)

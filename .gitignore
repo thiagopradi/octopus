@@ -10,3 +10,5 @@ pkg/*
 tmp/*
 .*.sw[a-z]
 database.log
+
+*.pem

@@ -20,8 +20,6 @@ notifications:
 matrix:
   exclude:
     - rvm: 2.4.1
-      gemfile: gemfiles/rails4.gemfiles
+      gemfile: gemfiles/rails4.gemfile
     - rvm: 2.4.1
-      gemfile: gemfiles/rails41.gemfiles
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails42.gemfiles
+      gemfile: gemfiles/rails41.gemfile

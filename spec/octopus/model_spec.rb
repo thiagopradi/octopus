@@ -270,14 +270,31 @@ describe Octopus::Model do
         expect(User.using(:brazil).find_by_name('Mike')).to eq(u)
       end
 
-      it 'should check current_shard when determining equality' do
-        expect(canada1).not_to eq(brazil1)
-        expect(canada1).to eq(canada1_dup)
-      end
-
       it 'delegates equality check on scopes' do
         u = User.using(:brazil).create!(:name => 'Mike')
         expect(User.using(:brazil).where(:name => 'Mike')).to eq([u])
+      end
+
+      context 'replicated mode' do
+        it 'should not check current_shard when determining equality' do
+          old_value = Octopus.config['replicated']
+          Octopus.config['replicated'] = true
+
+          begin
+            expect(canada1).to eq(brazil1)
+            expect(canada1).to eq(canada1_dup)
+          ensure
+            Octopus.config['replicated'] = old_value
+          end
+        end
+      end
+
+      context 'shard mode' do
+        it 'should check current_shard when determining equality' do
+          expect(Octopus.config['replicated']).to be_falsey
+          expect(canada1).not_to eq(brazil1)
+          expect(canada1).to eq(canada1_dup)
+        end
       end
     end
   end

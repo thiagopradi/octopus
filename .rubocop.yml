@@ -37,7 +37,7 @@ RegexpLiteral:
 Semicolon:
   AllowAsExpressionSeparator: true
 
-Style/TrailingComma:
+Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
 
 Style/TrivialAccessors:

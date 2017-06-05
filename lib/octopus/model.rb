@@ -48,7 +48,8 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def equality_with_octopus(comparison_object)
-        equality_without_octopus(comparison_object) && comparison_object.current_shard.to_s == current_shard.to_s
+        equality_without_octopus(comparison_object) &&
+          (Octopus.config['replicated'] || comparison_object.current_shard.to_s == current_shard.to_s)
       end
 
       def perform_validations_with_octopus(*args)

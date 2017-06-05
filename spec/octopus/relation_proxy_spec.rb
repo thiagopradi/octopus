@@ -38,6 +38,10 @@ describe Octopus::RelationProxy do
       end
     end
 
+    it "can deliver methods in ActiveRecord::Batches correctly" do
+      expect { @relation.find_each(&:inspect) }.not_to raise_error
+    end
+
     context 'under Rails 4' do
       it 'is an Octopus::RelationProxy' do
         expect{@relation.ar_relation}.not_to raise_error

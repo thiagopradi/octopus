@@ -132,7 +132,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def allowed_shard?(shard)
         if custom_octopus_connection
-          allowed_shards && shard && allowed_shards.include?(shard)
+          allowed_shards && shard && (allowed_shards.include?(shard.to_s) || allowed_shards.include?(shard.to_sym))
         else
           true
         end

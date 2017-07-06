@@ -1,4 +1,4 @@
-class CreateUsersUsingReplication < ActiveRecord::Migration
+class CreateUsersUsingReplication < BaseOctopusMigrationClass
   def self.up
     Cat.create!(:name => 'Replication')
   end

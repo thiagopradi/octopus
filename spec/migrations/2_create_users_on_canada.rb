@@ -1,4 +1,4 @@
-class CreateUsersOnCanada < ActiveRecord::Migration
+class CreateUsersOnCanada < BaseOctopusMigrationClass
   using(:canada)
 
   def self.up

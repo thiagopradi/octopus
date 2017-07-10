@@ -476,6 +476,34 @@ describe Octopus::Model do
       expect(User.using(:master).count).to eq(1)
     end
 
+    describe "#finder methods" do
+      before(:each) do
+        @user1 = User.using(:brazil).create!(:name => 'User1')
+        @user2 = User.using(:brazil).create!(:name => 'User2')
+        @user3 = User.using(:brazil).create!(:name => 'User3')
+      end
+
+      it "#find_each should work" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_in_batches, should work" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1) do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+    end
+
     describe 'deleting a record' do
       before(:each) do
         @user = User.using(:brazil).create!(:name => 'User1')
@@ -679,7 +707,7 @@ describe Octopus::Model do
   describe '#replicated_model method' do
     it 'should be replicated' do
       OctopusHelper.using_environment :production_replicated do
-        expect(ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated)).to be true
+        expect(ActiveRecord::Base.connection_proxy.replicated).to be true
       end
     end
 

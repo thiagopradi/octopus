@@ -102,8 +102,12 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR == 2
   end
 
-  def self.rails5?
-    ActiveRecord::VERSION::MAJOR == 5
+  def self.rails50?
+    ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0
+  end
+
+  def self.rails51?
+    ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1
   end
 
   attr_writer :logger
@@ -152,11 +156,11 @@ module Octopus
   end
 
   def self.fully_replicated(&_block)
-    old_fully_replicated = Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY]
-    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = true
+    old_fully_replicated = Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY]
+    Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY] = true
     yield
   ensure
-    Thread.current[Octopus::Proxy::FULLY_REPLICATED_KEY] = old_fully_replicated
+    Thread.current[Octopus::ProxyConfig::FULLY_REPLICATED_KEY] = old_fully_replicated
   end
 end
 
@@ -170,7 +174,7 @@ require 'octopus/model'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
-require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41? || Octopus.rails5?
+require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41? || Octopus.rails50? || Octopus.rails51?
 require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'
@@ -180,6 +184,7 @@ require 'octopus/finder_methods'
 
 require 'octopus/railtie' if defined?(::Rails::Railtie)
 
+require 'octopus/proxy_config'
 require 'octopus/proxy'
 require 'octopus/collection_proxy'
 require 'octopus/relation_proxy'

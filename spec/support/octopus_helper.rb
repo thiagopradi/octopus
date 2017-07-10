@@ -1,7 +1,7 @@
 module OctopusHelper
   def self.clean_all_shards(shards)
     if shards.nil?
-      shards = BlankModel.using(:master).connection.instance_variable_get(:@shards).keys
+      shards = BlankModel.using(:master).connection.shards.keys
     end
 
     shards.each do |shard_symbol|
@@ -23,7 +23,6 @@ module OctopusHelper
     Thread.current['octopus.current_group'] = nil
     Thread.current['octopus.current_slave_group'] = nil
     Thread.current['octopus.block'] = nil
-    Thread.current['octopus.last_current_shard'] = nil
 
     ActiveRecord::Base.class_variable_set(:@@connection_proxy, nil)
   end

@@ -42,7 +42,11 @@ describe 'when the database is replicated' do
           expect(Cat.find(cat3.id).id).to eq(cat3.id)
           expect(Cat.find(cat3.id).id).to eq(cat3.id)
 
-          expect(counter.query_count).to eq(14)
+          # Rails 5.1 count the cached queries as regular queries.
+          # TODO: How we can verify if the queries are using cache on Rails 5.1? - @thiagopradi
+          expected_records = Octopus.rails51? ? 19 : 14
+
+          expect(counter.query_count).to eq(expected_records)
         end
       end
     end

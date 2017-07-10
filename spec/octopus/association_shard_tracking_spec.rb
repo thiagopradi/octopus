@@ -96,7 +96,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@permission_brazil.roles).to eq([new_brazil_role])
     end
 
-    it 'should works for build method' do
+    it 'should work for build method' do
       new_brazil_role = Role.using(:brazil).create!(:name => 'Brazil Role')
       c = new_brazil_role.permissions.create(:name => 'new Permission')
       c.save
@@ -105,7 +105,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(new_brazil_role.permissions).to eq([c])
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @permission_brazil_2 = Permission.using(:brazil).create!(:name => 'Brazil Item 2')
         @role = Role.using(:brazil).create!(:name => 'testes')
@@ -198,9 +198,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
 
       it 'exists?' do
         role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.exists?(role)).to be true
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be true
         @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.exists?(role)).to be false
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -250,7 +250,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@project.programmers).to eq([new_brazil_programmer])
     end
 
-    it 'should works for create method' do
+    it 'should work for create method' do
       new_brazil_programmer = Programmer.using(:brazil).create!(:name => 'Joao')
       c = new_brazil_programmer.projects.create(:name => 'new Project')
       c.save
@@ -259,7 +259,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(new_brazil_programmer.projects).to eq([c])
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @new_brazil_programmer = Programmer.using(:brazil).create!(:name => 'Jose')
         @project = Project.using(:brazil).create!(:name => 'VB Application :-(')
@@ -352,9 +352,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
 
       it 'exists?' do
         role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.exists?(role)).to be true
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be true
         @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.exists?(role)).to be false
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -414,7 +414,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@item_brazil.client).to eq(new_brazil_client)
     end
 
-    it 'should works for build method' do
+    it 'should work for build method' do
       item2 = Item.using(:brazil).create!(:name => 'Brazil Item')
       c = item2.create_client(:name => 'new Client')
       c.save
@@ -442,7 +442,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @item_brazil_2 = Item.using(:brazil).create!(:name => 'Brazil Item 2')
         expect(@brazil_client.items.to_set).to eq([@item_brazil].to_set)
@@ -540,9 +540,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
 
       it 'exists?' do
-        expect(@brazil_client.items.exists?(@item_brazil)).to be true
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be true
         @brazil_client.items.destroy_all
-        expect(@brazil_client.items.exists?(@item_brazil)).to be false
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be false
       end
 
       it 'uniq' do
@@ -586,7 +586,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@comment_brazil.commentable).to eq(new_brazil_client)
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @comment_brazil_2 = Comment.using(:brazil).create!(:name => 'Brazil Comment 2')
         expect(@brazil_client.comments.to_set).to eq([@comment_brazil].to_set)
@@ -690,9 +690,9 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
 
       it 'exists?' do
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be true
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be true
         @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be false
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be false
       end
 
       it 'uniq' do

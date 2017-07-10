@@ -1,4 +1,3 @@
-require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'appraisal'
@@ -12,18 +11,20 @@ namespace :db do
   desc 'Build the databases for tests'
   task :build_databases do
     pg_spec = {
-      :adapter  => 'postgresql',
-      :host     => 'localhost',
-      :username => (ENV['POSTGRES_USER'] || 'postgres'),
-      :encoding => 'utf8',
+      adapter:  'postgresql',
+      host:     'localhost',
+      username: ENV['POSTGRES_USER'] || 'postgres',
+      encoding: 'utf8',
     }
+    pg_spec.merge!( password: ENV['PGPASS'] ) if ENV.key?('PGPASS')
 
     mysql_spec = {
-      :adapter  => 'mysql2',
-      :host     => 'localhost',
-      :username => (ENV['MYSQL_USER'] || 'root'),
-      :encoding => 'utf8',
+      adapter:  'mysql2',
+      host:     'localhost',
+      username: ENV['MYSQL_USER'] || 'root',
+      encoding: 'utf8',
     }
+    mysql_spec.merge!( password: ENV['MYSQL_PASS']) if ENV.key?('MYSQL_PASS')
 
     ` rm -f /tmp/database.sqlite3 `
 

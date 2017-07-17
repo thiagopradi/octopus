@@ -1,6 +1,7 @@
 require 'set'
 require 'octopus/slave_group'
 require 'octopus/load_balancing/round_robin'
+require 'parallel'
 
 module Octopus
   class Proxy
@@ -90,6 +91,14 @@ module Octopus
     def send_queries_to_multiple_shards(shards, &block)
       shards.map do |shard|
         run_queries_on_shard(shard, &block)
+      end
+    end
+
+    def send_queries_to_multiple_shards_in_parallel(shards, &block)
+      Parallel.map(shards, in_threads: shards.count) do |shard|
+        connection_pool.with_connection do
+          run_queries_on_shard(shard, &block)
+        end
       end
     end
 

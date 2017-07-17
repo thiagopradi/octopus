@@ -112,4 +112,27 @@ describe Octopus::Migration do
     end
   end
 
+  it 'should run the migrations in parallel on the shards' do
+    OctopusHelper.using_environment :not_entire_sharded do
+      OctopusHelper.enable_parallel_migration do
+        OctopusHelper.migrating_to_version 16 do
+          [:master, :europe, :canada, :brazil, :russia].each do |sym|
+            expect(Octopus.using(sym) { ActiveRecord::Migrator.get_all_versions }).to include(16)
+          end
+        end
+      end
+    end
+  end
+
+  it 'should run the old-style migrations in parallel on the shards' do
+    OctopusHelper.using_environment :not_entire_sharded do
+      OctopusHelper.enable_parallel_migration do
+        OctopusHelper.migrating_to_version 17 do
+          [:master, :europe, :canada, :brazil, :russia].each do |sym|
+            expect(Octopus.using(sym) { ActiveRecord::Migrator.get_all_versions }).to include(17)
+          end
+        end
+      end
+    end
+  end
 end

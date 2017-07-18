@@ -94,6 +94,14 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 4
   end
 
+  def self.rails40?
+    rails4? && ActiveRecord::VERSION::MINOR == 0
+  end
+
+  def self.rails41_only?
+    rails4? && ActiveRecord::VERSION::MINOR == 1
+  end
+
   def self.rails41?
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end

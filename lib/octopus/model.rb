@@ -43,6 +43,16 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         self.current_shard = shard if self.class.allowed_shard?(shard)
       end
 
+      def init_with(coder)
+        obj = super
+        if Octopus.rails40? || Octopus.rails41_only?
+          obj.current_shard = coder['attributes']['current_shard'] if coder['attributes']['current_shard'].present?
+        else
+          obj.current_shard = coder['attributes']['current_shard'].value if coder['attributes']['current_shard'].present? && coder['attributes']['current_shard'].value.present?
+        end
+        obj
+      end
+
       def should_set_current_shard?
         self.respond_to?(:current_shard) && !current_shard.nil?
       end
@@ -198,3 +208,23 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 end
 
 ActiveRecord::Base.extend(Octopus::Model)
+
+module SampleFoooBar
+  attr_accessor :current_shard
+
+  private
+
+  def hash_rows
+    if current_shard.blank?
+      super
+    else
+      foo = super
+      foo.each { |f| f.merge!('current_shard' => current_shard) }
+      foo
+    end
+  end
+end
+
+class ActiveRecord::Result
+  prepend SampleFoooBar
+end

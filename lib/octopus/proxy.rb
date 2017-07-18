@@ -281,7 +281,11 @@ module Octopus
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
       using_shard(slave) do
-        select_connection.send(method, *args, &block)
+        val = select_connection.send(method, *args, &block)
+        if val.instance_of? ActiveRecord::Result
+          val.current_shard = slave
+        end
+        val
       end
     end
 

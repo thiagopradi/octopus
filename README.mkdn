@@ -209,14 +209,26 @@ Contributors are welcome! To run the test suite, you need mysql, postgresql and 
 ```bash
 git clone http://github.com/thiagopradi/octopus.git
 cd octopus
+
+# install all the necessary gems
 bundle install
+
+# create some user/pwd envars as needed ...
+export MYSQL_USER=root
+export MYSQL_PASS=<somepwd>
+export POSTGRES_USER=postgres
+export PGPASS=<somepwd>
+
+# prepare the databases
 bundle exec rake db:prepare
 bundle exec rake appraisal:install
+
+# finally, run the tests
 bundle exec rake spec
 ```
 
 This command will run the spec suite for all rails versions supported.
-To run our integrations tests inside sample_app, you need to following commands:
+To run our integrations tests inside `sample_app`, you need to following commands:
 
 ```bash
 cd sample_app
@@ -225,6 +237,11 @@ cucumber
 ```
 
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
+
+The `rake db:prepare` task is actually comprised of two sub-tasks: `db:build_databases` and `db:create_tables`.  You can run `rake db:build_databases` first to make sure user access
+issues are sorted out, after which `rake db:create_tables` can be run (or `rake db:prepare`).
+
+Please note that the PostgreSQL credentials in `~/.pgpass` and the MySQL credentials in `~/.my.cnf` are not effective with this spec testing.  The only credentials that are passed along to the postgresql or mysql adapters are those obtained from the environment variables.
 
 ## Contributors:
 - <a href="https://github.com/thiagopradi/octopus/contributors">All Contributors</a>

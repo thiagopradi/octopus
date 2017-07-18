@@ -40,7 +40,10 @@ describe Octopus, :shards => [] do
       expect { User.using(:crazy_shard).create!(:name => 'Joaquim') }.to raise_error(RuntimeError)
 
       Octopus.setup do |config|
-        config.shards = { :crazy_shard => { :adapter => 'mysql2', :database => 'octopus_shard_5', :username => 'root', :password => '' } }
+        config.shards = { crazy_shard: { adapter:  'mysql2',
+                                         database: 'octopus_shard_5',
+                                         username: ENV['MYSQL_USER'] || 'root',
+                                         password: ENV['MYSQL_PASS'] || '' } }
       end
 
       expect { User.using(:crazy_shard).create!(:name => 'Joaquim')  }.not_to raise_error

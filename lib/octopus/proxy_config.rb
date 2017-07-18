@@ -150,12 +150,14 @@ module Octopus
       shards_config.each do |key, value|
         if value.is_a?(String)
           value = resolve_string_connection(value).merge(:octopus_shard => key)
-          initialize_adapter(value['adapter'])
-          shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+          adapter = value['adapter']
+          adapter_connection = initialize_adapter(adapter, key)
+          shards[key.to_sym] = connection_pool_for(value, adapter_connection)
         elsif value.is_a?(Hash) && value.key?('adapter')
           value.merge!(:octopus_shard => key)
-          initialize_adapter(value['adapter'])
-          shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
+          adapter = value['adapter']
+          adapter_connection = initialize_adapter(adapter, key)
+          shards[key.to_sym] = connection_pool_for(value, adapter_connection)
 
           slave_group_configs = value.select do |_k, v|
             structurally_slave_group? v
@@ -166,7 +168,7 @@ module Octopus
             slave_group_configs.each do |slave_group_name, slave_configs|
               slaves = HashWithIndifferentAccess.new
               slave_configs.each do |slave_name, slave_config|
-                shards[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
+                shards[slave_name.to_sym] = connection_pool_for(slave_config, adapter_connection)
                 slaves[slave_name.to_sym] = slave_name.to_sym
               end
               slave_groups[slave_group_name.to_sym] = Octopus::SlaveGroup.new(slaves)
@@ -180,10 +182,11 @@ module Octopus
           value.each do |k, v|
             fail 'You have duplicated shard names!' if shards.key?(k.to_sym)
 
-            initialize_adapter(v['adapter'])
+            adapter = v['adapter']
+            adapter_connection = initialize_adapter(adapter, k)
             config_with_octopus_shard = v.merge(:octopus_shard => k)
 
-            shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
+            shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, adapter_connection)
             @groups[key.to_s] << k.to_sym
           end
 
@@ -241,11 +244,16 @@ module Octopus
       config.is_a?(Hash) && config.values.any? { |v| structurally_slave? v }
     end
 
-    def initialize_adapter(adapter)
-      begin
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
+    def initialize_adapter(adapter, shard_name)
+      if adapter.present?
+        begin
+          require "active_record/connection_adapters/#{adapter}_adapter"
+          adapter + '_connection'
+        rescue LoadError
+          raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
+        end
+      else
+        raise "no adapter configured for Octopus shard '#{shard_name}'!"
       end
     end
   end

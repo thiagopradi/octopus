@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rubocop'
   s.add_development_dependency 'sqlite3', '>= 1.3.4'
   s.add_development_dependency 'pry-byebug'
+  s.add_development_dependency 'fuubar'
 
   s.license = 'MIT'
 end

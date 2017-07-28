@@ -31,6 +31,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def self.included(base)
         base.send(:alias_method, :equality_without_octopus, :==)
+        base.send(:alias_method, :equality_with_octopus, :equality_without_octopus) # comparing shards in equality is causing bugs when using Union and Intersection
         base.send(:alias_method, :==, :equality_with_octopus)
         base.send(:alias_method, :eql?, :==)
         base.send(:alias_method, :perform_validations_without_octopus, :perform_validations)

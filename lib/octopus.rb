@@ -110,6 +110,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1
   end
 
+  def self.atleast_rails51?
+    ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR >= 1)
+  end
+
   attr_writer :logger
 
   def self.logger

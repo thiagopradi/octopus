@@ -52,11 +52,11 @@ class Computer < ActiveRecord::Base
 end
 
 class Role < ActiveRecord::Base
-  has_and_belongs_to_many :permissions
+  has_and_belongs_to_many :permissions, required: false
 end
 
 class Permission < ActiveRecord::Base
-  has_and_belongs_to_many :roles
+  has_and_belongs_to_many :roles, required: false
 end
 
 class Assignment < ActiveRecord::Base

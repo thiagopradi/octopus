@@ -44,7 +44,7 @@ module Octopus
       super
     end
 
-    def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
+    def has_and_belongs_to_many(association_id, scope = nil, **options, &extension)
       if options == {} && scope.is_a?(Hash)
         default_octopus_opts(scope)
       else
@@ -53,7 +53,7 @@ module Octopus
       super
     end
 
-    def default_octopus_opts(options)
+    def default_octopus_opts(**options)
       options[:before_add] = [ :connection_on_association=, options[:before_add] ].compact.flatten
       options[:before_remove] = [ :connection_on_association=, options[:before_remove] ].compact.flatten
     end

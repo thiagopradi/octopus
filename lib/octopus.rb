@@ -179,6 +179,7 @@ require 'octopus/shard_tracking/attribute'
 require 'octopus/shard_tracking/dynamic'
 
 require 'octopus/model'
+require 'octopus/result_patch'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'

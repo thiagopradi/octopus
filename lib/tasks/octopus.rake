@@ -14,3 +14,16 @@ namespace :octopus do
     end
   end
 end
+
+namespace :db do
+  namespace :migrate do
+    desc 'Run migration for all shards in parallel'
+    task :parallel => :environment do
+      abort('Octopus is not enabled for this environment') unless Octopus.enabled?
+
+      ActiveRecord::Migrator.enable_parallel_migration
+
+      Rake::Task["db:migrate"].invoke
+    end
+  end
+end

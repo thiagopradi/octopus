@@ -22,6 +22,12 @@ module Octopus
       base.send :alias_method, :announce_without_octopus, :announce
       base.send :alias_method, :announce, :announce_with_octopus
 
+      base.instance_eval do
+        @default_delegate = delegate
+        alias :delegate :delegate_for_thread
+        alias :delegate= :delegate_for_thread=
+      end
+
       base.class_attribute :current_shard, :current_group, :current_group_specified, :instance_reader => false, :instance_writer => false
     end
 
@@ -54,6 +60,14 @@ module Octopus
         end
 
         shards.to_a.presence || [Octopus.master_shard]
+      end
+
+      def delegate_for_thread=(migration)
+        Thread.current[:migration_delegate] = migration
+      end
+
+      def delegate_for_thread
+        Thread.current[:migration_delegate] ||= @default_delegate
       end
     end
   end
@@ -111,16 +125,20 @@ module Octopus
     end
 
     module ClassMethods
+      @@parallel_migration = false
+
       def migrate_with_octopus(migrations_paths, target_version = nil, &block)
         return migrate_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
 
-        connection.send_queries_to_multiple_shards(connection.shard_names) do
+        multiplier = @@parallel_migration ? :send_queries_to_multiple_shards_in_parallel : :send_queries_to_multiple_shards
+        connection.send(multiplier, connection.shard_names) do
+          Thread.current[:parallel_migrartion] = true if @@parallel_migration
           migrate_without_octopus(migrations_paths, target_version, &block)
         end
       end
 
       def up_with_octopus(migrations_paths, target_version = nil, &block)
-        return up_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
+        return up_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy) && !Thread.current[:parallel_migrartion]
         return up_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard.to_s == Octopus.master_shard.to_s
 
         connection.send_queries_to_multiple_shards(connection.shard_names) do
@@ -129,7 +147,7 @@ module Octopus
       end
 
       def down_with_octopus(migrations_paths, target_version = nil, &block)
-        return down_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy)
+        return down_without_octopus(migrations_paths, target_version, &block) unless connection.is_a?(Octopus::Proxy) && !Thread.current[:parallel_migrartion]
         return down_without_octopus(migrations_paths, target_version, &block) unless connection.current_shard.to_s == Octopus.master_shard.to_s
 
         connection.send_queries_to_multiple_shards(connection.shard_names) do
@@ -140,9 +158,19 @@ module Octopus
       def run_with_octopus(direction, migrations_paths, target_version)
         return run_without_octopus(direction, migrations_paths, target_version) unless connection.is_a?(Octopus::Proxy)
 
-        connection.send_queries_to_multiple_shards(connection.shard_names) do
+        multiplier = @@parallel_migration ? :send_queries_to_multiple_shards_in_parallel : :send_queries_to_multiple_shards
+        connection.send(multiplier, connection.shard_names) do
+          Thread.current[:parallel_migrartion] = true if @@parallel_migration
           run_without_octopus(direction, migrations_paths, target_version)
         end
+      end
+
+      def enable_parallel_migration
+        @@parallel_migration = true
+      end
+
+      def disable_parallel_migration
+        @@parallel_migration = false
       end
 
       private

@@ -51,4 +51,11 @@ module OctopusHelper
     Octopus.instance_variable_set(:@config, nil)
     Octopus.stub(:env).and_return(env)
   end
+
+  def self.enable_parallel_migration
+    ActiveRecord::Migrator.enable_parallel_migration
+    yield
+  ensure
+    ActiveRecord::Migrator.disable_parallel_migration
+  end
 end

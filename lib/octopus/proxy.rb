@@ -196,7 +196,13 @@ module Octopus
       elsif should_send_queries_to_replicated_databases?(method)
         send_queries_to_selected_slave(method, *args, &block)
       else
-        select_connection.send(method, *args, &block)
+        val = select_connection.send(method, *args, &block)
+
+        if val.instance_of? ActiveRecord::Result
+          val.current_shard = shard_name
+        end
+
+        val
       end
     end
 

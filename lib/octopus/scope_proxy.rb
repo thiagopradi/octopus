@@ -50,6 +50,10 @@ module Octopus
         return self
       end
 
+      if result.respond_to?(:current_shard)
+        result.current_shard = current_shard
+      end
+
       result
     end
 

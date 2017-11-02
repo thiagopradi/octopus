@@ -252,6 +252,22 @@ describe Octopus::Proxy do
     end
   end
 
+
+  describe 'cleaning the connection proxy' do
+    it 'should not clean #current_shard from proxy when using a block and calling #execute' do
+      Octopus.using(:canada) do
+        expect(User.connection.current_shard).to eq(:canada)
+
+        connection = User.connection
+
+        result = connection.execute('select * from users limit 1;')
+        result = connection.execute('select * from users limit 1;')
+
+        expect(User.connection.current_shard).to eq(:canada)
+      end
+    end
+  end
+
   describe 'connection reuse' do
     before :each do
       @item_brazil_conn = Item.using(:brazil).new(:name => 'Brazil Item').class.connection.select_connection

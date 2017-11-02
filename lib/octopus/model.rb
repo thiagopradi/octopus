@@ -37,6 +37,12 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         base.send(:alias_method, :perform_validations, :perform_validations_with_octopus)
       end
 
+      def set_current_shard
+        return unless Octopus.enabled?
+        shard = self.class.connection_proxy.current_shard
+        self.current_shard = shard if self.class.allowed_shard?(shard)
+      end
+
       def init_with(coder)
         current_shard_value = if Octopus.rails40? || Octopus.rails41_only?
           coder['attributes']['current_shard'] if coder['attributes']['current_shard'].present?
@@ -48,7 +54,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard')
 
         obj = super
-        obj.current_shard = current_shard_value
+        obj.current_shard = current_shard_value if current_shard_value.present?
         obj
       end
 
@@ -95,6 +101,8 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def hijack_methods
+        after_initialize :set_current_shard
+
         around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
 
         class_attribute :custom_octopus_connection

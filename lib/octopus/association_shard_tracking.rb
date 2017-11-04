@@ -27,7 +27,7 @@ module Octopus
         return unless ::Octopus.enabled?
         return if !self.class.connection.respond_to?(:current_shard) || !self.respond_to?(:current_shard)
 
-        if !record.current_shard.nil? && !current_shard.nil? && record.current_shard != current_shard
+        if !record.current_shard.nil? && !current_shard.nil? && record.current_shard.to_s != current_shard.to_s
           raise MismatchedShards.new(record, current_shard)
         end
 

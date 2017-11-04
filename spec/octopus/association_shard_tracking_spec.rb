@@ -404,6 +404,12 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end.to raise_error(Octopus::AssociationShardTracking::MismatchedShards)
     end
 
+    it 'should make difference if the shard is a symbol or a string for raising Octopus::AssociationShardTracking::MismatchedShards' do
+      expect do
+        @brazil_client.items << Item.using('brazil').create!(:name => 'New Brazil Item')
+      end.not_to raise_error
+    end
+
     it 'should update the attribute for the item' do
       new_brazil_client = Client.using(:brazil).create!(:name => 'new Client')
       @item_brazil.client = new_brazil_client

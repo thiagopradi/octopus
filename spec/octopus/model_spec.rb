@@ -73,6 +73,18 @@ describe Octopus::Model do
       expect(@all_canadian_user_ids).to eq([canadian_user])
     end
 
+    it "should allow objects to be fetch using different blocks - GH #306" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using(:canada) { @users = User.where('id is not null') }
+      Octopus.using(:canada) { @user = @users.first }
+
+      Octopus.using(:canada) { @user2 = User.where('id is not null').first }
+
+      expect(@user).to eq(canadian_user)
+      expect(@user2).to eq(canadian_user)
+    end
+
     describe 'multiple calls to the same scope' do
       it 'works with nil response' do
         scope = User.using(:canada)

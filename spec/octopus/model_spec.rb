@@ -63,6 +63,16 @@ describe Octopus::Model do
       expect(User.all).to eq([u1])
     end
 
+    it "should allow the #select method to fetch the correct data when using a block" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using('canada') do
+        @all_canadian_user_ids = User.select('id').to_a
+      end
+
+      expect(@all_canadian_user_ids).to eq([canadian_user])
+    end
+
     describe 'multiple calls to the same scope' do
       it 'works with nil response' do
         scope = User.using(:canada)

@@ -94,6 +94,14 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 4
   end
 
+  def self.rails40?
+    rails4? && ActiveRecord::VERSION::MINOR == 0
+  end
+
+  def self.rails41_only?
+    rails4? && ActiveRecord::VERSION::MINOR == 1
+  end
+
   def self.rails41?
     rails4? && ActiveRecord::VERSION::MINOR >= 1
   end
@@ -175,6 +183,7 @@ require 'octopus/shard_tracking/attribute'
 require 'octopus/shard_tracking/dynamic'
 
 require 'octopus/model'
+require 'octopus/result_patch'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'

@@ -212,15 +212,15 @@ module Octopus
 
     private
 
-    def connection_pool_for(adapter, config)
+    def connection_pool_for(config, adapter)
       if Octopus.rails4?
-        arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(adapter.dup, config)
+        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config.dup, adapter )
       else
         name = adapter["octopus_shard"]
-        arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, adapter.dup, config)
+        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
       end
 
-      ActiveRecord::ConnectionAdapters::ConnectionPool.new(arg)
+      ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def resolve_string_connection(spec)

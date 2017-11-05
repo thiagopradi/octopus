@@ -30,6 +30,25 @@ describe Octopus::Migration do
     end
   end
 
+  it "should rollback correctly migrations" do
+    migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
+
+    ActiveRecord::Migrator.run(:up, migrations_root, 4)
+
+    expect(User.using(:canada).find_by_name('Group')).not_to be_nil
+    expect(User.using(:brazil).find_by_name('Group')).not_to be_nil
+    expect(User.using(:russia).find_by_name('Group')).not_to be_nil
+
+
+    Octopus.using(:canada) do
+      ActiveRecord::Migrator.rollback(migrations_root, 4)
+    end
+
+    expect(User.using(:canada).find_by_name('Group')).to be_nil
+    expect(User.using(:brazil).find_by_name('Group')).to be_nil
+    expect(User.using(:russia).find_by_name('Group')).to be_nil
+  end
+
   it 'should run once per shard' do
     OctopusHelper.migrating_to_version 5 do
       expect(User.using(:canada).where(:name => 'MultipleGroup').size).to eq(1)

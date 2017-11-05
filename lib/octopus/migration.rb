@@ -77,6 +77,9 @@ module Octopus
 
           alias_method :run_without_octopus, :run
           alias_method :run, :run_with_octopus
+
+          alias_method :rollback_without_octopus, :rollback
+          alias_method :rollback, :rollback_with_octopus
         end
       end
 
@@ -142,6 +145,14 @@ module Octopus
 
         connection.send_queries_to_multiple_shards(connection.shard_names) do
           run_without_octopus(direction, migrations_paths, target_version)
+        end
+      end
+
+      def rollback_with_octopus(migrations_paths, steps = 1)
+        return rollback_without_octopus(migrations_paths, steps) unless connection.is_a?(Octopus::Proxy)
+
+        connection.send_queries_to_multiple_shards(connection.shard_names) do
+          rollback_without_octopus(migrations_paths, steps)
         end
       end
 

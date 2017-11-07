@@ -35,7 +35,6 @@ describe Octopus::RelationProxy do
           original_sql = relation.to_sql
           new_relation = relation.where(id: 2)
           expect(relation.to_sql).to eq(original_sql)
-          puts new_relation.to_sql
         end
       end
 
@@ -45,7 +44,6 @@ describe Octopus::RelationProxy do
           original_sql = relation.to_sql
           new_relation = relation.where.not(id: 2)
           expect(relation.to_sql).to eq(original_sql)
-          puts new_relation.to_sql
         end
       end
     end

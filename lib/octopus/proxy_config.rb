@@ -152,8 +152,13 @@ module Octopus
           value = resolve_string_connection(value).merge(:octopus_shard => key)
           initialize_adapter(value['adapter'])
           shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
-        elsif value.is_a?(Hash) && value.key?('adapter')
-          value.merge!(:octopus_shard => key)
+        elsif value.is_a?(Hash) && (value.key?('adapter') || value.key?('url'))
+          value = if value.key?('adapter')
+                    value.merge(:octopus_shard => key)
+                  elsif value.key?('url')
+                    resolve_string_connection(value).merge(:octopus_shard => key)
+                  end
+
           initialize_adapter(value['adapter'])
           shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
 

@@ -2,6 +2,7 @@
 *.sqlite3
 .bundle
 .rvmrc
+.ruby-version
 Gemfile.lock
 gemfiles/*.lock
 pkg/*

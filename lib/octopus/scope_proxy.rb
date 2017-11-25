@@ -21,7 +21,7 @@ module Octopus
     end
 
     def using(shard)
-      fail "Nonexistent Shard Name: #{shard}" if @klass.connection.instance_variable_get(:@shards)[shard].nil?
+      fail "Nonexistent Shard Name: #{shard}" if @klass.connection.shards[shard].nil?
       @current_shard = shard
       self
     end
@@ -48,6 +48,10 @@ module Octopus
       if result.respond_to?(:all)
         @klass = result
         return self
+      end
+
+      if result.respond_to?(:current_shard)
+        result.current_shard = current_shard
       end
 
       result

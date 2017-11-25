@@ -15,6 +15,6 @@ appraise "rails5" do
 end
 
 appraise "rails51" do
-  gem "activerecord", "5.1.0beta1"
+  gem "activerecord", "~> 5.1.0"
 end
 # vim: ft=ruby

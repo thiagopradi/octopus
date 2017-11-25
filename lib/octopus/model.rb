@@ -9,17 +9,6 @@ module Octopus
     end
 
     module SharedMethods
-      def clean_table_name
-        return unless connection_proxy.should_clean_table_name?
-
-        if self != ActiveRecord::Base && self.respond_to?(:reset_table_name) && !custom_octopus_table_name
-          reset_table_name
-        end
-
-        reset_column_information
-        instance_variable_set(:@quoted_table_name, nil)
-      end
-
       def using(shard)
         if block_given?
           raise Octopus::Exception, <<-EOF
@@ -30,7 +19,6 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         end
 
         if Octopus.enabled?
-          clean_table_name
           Octopus::ScopeProxy.new(shard, self)
         else
           self
@@ -53,6 +41,25 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         return unless Octopus.enabled?
         shard = self.class.connection_proxy.current_shard
         self.current_shard = shard if self.class.allowed_shard?(shard)
+      end
+
+      def init_with(coder)
+        current_shard_value = if Octopus.rails40? || Octopus.rails41_only?
+          coder['attributes']['current_shard'] if coder['attributes']['current_shard'].present?
+        else
+          coder['attributes']['current_shard'].value if coder['attributes']['current_shard'].present? && coder['attributes']['current_shard'].value.present?
+        end
+
+        if Octopus.rails40? || Octopus.rails41_only?
+          coder['attributes'].delete('current_shard')
+        else
+          coder['attributes'].send(:attributes).send(:values).delete('current_shard')
+          coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard')
+        end
+
+        obj = super
+        obj.current_shard = current_shard_value if current_shard_value.present?
+        obj
       end
 
       def should_set_current_shard?
@@ -98,8 +105,9 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def hijack_methods
-        around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
         after_initialize :set_current_shard
+
+        around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
 
         class_attribute :custom_octopus_connection
 
@@ -144,7 +152,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def allowed_shard?(shard)
         if custom_octopus_connection
-          allowed_shards && shard && allowed_shards.include?(shard)
+          allowed_shards && shard && (allowed_shards.include?(shard.to_s) || allowed_shards.include?(shard.to_sym))
         else
           true
         end

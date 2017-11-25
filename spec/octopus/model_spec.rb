@@ -63,6 +63,28 @@ describe Octopus::Model do
       expect(User.all).to eq([u1])
     end
 
+    it "should allow the #select method to fetch the correct data when using a block" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using('canada') do
+        @all_canadian_user_ids = User.select('id').to_a
+      end
+
+      expect(@all_canadian_user_ids).to eq([canadian_user])
+    end
+
+    it "should allow objects to be fetch using different blocks - GH #306" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using(:canada) { @users = User.where('id is not null') }
+      Octopus.using(:canada) { @user = @users.first }
+
+      Octopus.using(:canada) { @user2 = User.where('id is not null').first }
+
+      expect(@user).to eq(canadian_user)
+      expect(@user2).to eq(canadian_user)
+    end
+
     describe 'multiple calls to the same scope' do
       it 'works with nil response' do
         scope = User.using(:canada)
@@ -476,6 +498,34 @@ describe Octopus::Model do
       expect(User.using(:master).count).to eq(1)
     end
 
+    describe "#finder methods" do
+      before(:each) do
+        @user1 = User.using(:brazil).create!(:name => 'User1')
+        @user2 = User.using(:brazil).create!(:name => 'User2')
+        @user3 = User.using(:brazil).create!(:name => 'User3')
+      end
+
+      it "#find_each should work" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_in_batches, should work" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1) do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+    end
+
     describe 'deleting a record' do
       before(:each) do
         @user = User.using(:brazil).create!(:name => 'User1')
@@ -679,7 +729,7 @@ describe Octopus::Model do
   describe '#replicated_model method' do
     it 'should be replicated' do
       OctopusHelper.using_environment :production_replicated do
-        expect(ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated)).to be true
+        expect(ActiveRecord::Base.connection_proxy.replicated).to be true
       end
     end
 
@@ -687,6 +737,17 @@ describe Octopus::Model do
       OctopusHelper.using_environment :production_replicated do
         expect(User.replicated).to be_falsey
         expect(Cat.replicated).to be true
+      end
+    end
+
+    it "should work on a fully replicated environment" do
+      OctopusHelper.using_environment :production_fully_replicated do
+        User.using(:slave1).create!(name: 'Thiago')
+        User.using(:slave2).create!(name: 'Thiago')
+
+        replicated_cat = User.find_by_name 'Thiago'
+
+        expect(replicated_cat.current_shard.to_s).to match(/slave/)
       end
     end
   end

@@ -751,4 +751,14 @@ describe Octopus::Model do
       end
     end
   end
+
+  describe "#octopus_disable! method" do
+    it "should return OctopusProxy if octopus enabled for model" do
+      expect(User.connection.class).to eq(Octopus::Proxy)
+    end
+
+    it "should return ActiveRecord connection instance" do
+      expect(DisabledModel.connection.class).to eq(ActiveRecord::ConnectionAdapters::Mysql2Adapter)
+    end
+  end
 end

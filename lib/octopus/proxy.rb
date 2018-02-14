@@ -34,19 +34,19 @@ module Octopus
       :prepared_statements, :transaction_state, :create_table, to: :select_connection
 
     def execute(sql, name = nil)
-      conn = ensure_master_if_replicated
+      conn = select_connection
       clean_connection_proxy if should_clean_connection_proxy?('execute')
       conn.execute(sql, name)
     end
 
     def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
-      conn = ensure_master_if_replicated
+      conn = select_connection
       clean_connection_proxy if should_clean_connection_proxy?('insert')
       conn.insert(arel, name, pk, id_value, sequence_name, binds)
     end
 
     def update(arel, name = nil, binds = [])
-      conn = ensure_master_if_replicated
+      conn = select_connection
       # Call the legacy should_clean_connection_proxy? method here, emulating an insert.
       clean_connection_proxy if should_clean_connection_proxy?('insert')
       conn.update(arel, name, binds)
@@ -185,14 +185,6 @@ module Octopus
     end
 
     protected
-
-    def ensure_master_if_replicated
-      return select_connection unless current_model_replicated?
-
-      using_shard(Octopus.master_shard) do
-        select_connection
-      end
-    end
 
     # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
     # and will be removed when Octopus 1.0 will be released.

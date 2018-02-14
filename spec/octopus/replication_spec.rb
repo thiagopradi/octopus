@@ -44,12 +44,10 @@ describe 'when the database is replicated' do
 
   context 'when updating model' do
     it 'should send writes to master' do
-      OctopusHelper.using_environment :production_fully_replicated do
-        cat = Cat.create!(:name => 'Cat')
-        cat.current_shard = :slave1
-        cat.name = 'Catman2'
-
-        Cat.where(:name => 'Catman2')
+      OctopusHelper.using_environment :replicated_with_one_slave do
+        Cat.using(:slave1).create!(:name => 'Cat')
+        cat = Cat.find_by_name('Cat')
+        cat.name = 'New name'
 
         expect(master_connection).to receive(:update).and_call_original
 
@@ -60,7 +58,7 @@ describe 'when the database is replicated' do
 
   context 'when querying' do
     it 'Reads from slave' do
-      OctopusHelper.using_environment :production_fully_replicated do
+      OctopusHelper.using_environment :replicated_with_one_slave do
         expect(master_connection).not_to receive(:select)
 
         Cat.where(:name => 'Catman2').first
@@ -71,8 +69,6 @@ describe 'when the database is replicated' do
   context 'When record is read from slave' do
     it 'Should write associations to master' do
       OctopusHelper.using_environment :replicated_with_one_slave do
-        allow_write_to_slave
-
         client = Client.using(:slave1).create!(:name => 'Client')
 
         client = Client.find(client.id)
@@ -87,8 +83,6 @@ describe 'when the database is replicated' do
     include_context 'with query cache enabled' do
       it 'should do the queries with cache' do
         OctopusHelper.using_environment :replicated_with_one_slave do
-          allow_write_to_slave
-
           cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
           _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
           expect(Cat.using(:master).find(cat1.id)).to eq(cat1)

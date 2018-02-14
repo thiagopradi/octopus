@@ -16,12 +16,3 @@ RSpec.configure do |config|
     OctopusHelper.clean_all_shards(example.metadata[:shards])
   end
 end
-
-# Stub allows for writing to slave, which is usually prohibited
-def allow_write_to_slave
-  allow(
-    ActiveRecord::Base.connection_proxy
-  ).to receive(:ensure_master_if_replicated).and_wrap_original do
-    ActiveRecord::Base.connection_proxy.select_connection
-  end
-end

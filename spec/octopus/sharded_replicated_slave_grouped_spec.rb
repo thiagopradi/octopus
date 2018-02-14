@@ -32,7 +32,6 @@ describe 'when the database is both sharded and replicated' do
   end
 
   it 'should make queries to master when slave groups are configured for the shard but not selected' do
-    pending('This specs intention is confusing')
     OctopusHelper.using_environment :sharded_replicated_slave_grouped do
       Octopus.using(:europe) do
         # All the queries go to :master(`octopus_shard_1`)

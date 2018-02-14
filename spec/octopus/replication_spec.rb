@@ -1,6 +1,22 @@
 require 'spec_helper'
 
 describe 'when the database is replicated' do
+  let(:slave_pool) do
+    ActiveRecord::Base.connection_proxy.shards['slave1']
+  end
+
+  let(:slave_connection) do
+    slave_pool.connection
+  end
+
+  let(:master_pool) do
+    ActiveRecord::Base.connection_proxy.shards['master']
+  end
+
+  let(:master_connection) do
+    master_pool.connection
+  end
+
   it 'should send all writes/reads queries to master when you have a non replicated model' do
     OctopusHelper.using_environment :production_replicated do
       u = User.create!(:name => 'Replicated')
@@ -26,10 +42,53 @@ describe 'when the database is replicated' do
     end
   end
 
+  context 'when updating model' do
+    it 'should send writes to master' do
+      OctopusHelper.using_environment :production_fully_replicated do
+        cat = Cat.create!(:name => 'Cat')
+        cat.current_shard = :slave1
+        cat.name = 'Catman2'
+
+        Cat.where(:name => 'Catman2')
+
+        expect(master_connection).to receive(:update).and_call_original
+
+        cat.save!
+      end
+    end
+  end
+
+  context 'when querying' do
+    it 'Reads from slave' do
+      OctopusHelper.using_environment :production_fully_replicated do
+        expect(master_connection).not_to receive(:select)
+
+        Cat.where(:name => 'Catman2').first
+      end
+    end
+  end
+
+  context 'When record is read from slave' do
+    it 'Should write associations to master' do
+      OctopusHelper.using_environment :replicated_with_one_slave do
+        allow_write_to_slave
+
+        client = Client.using(:slave1).create!(:name => 'Client')
+
+        client = Client.find(client.id)
+
+        client.items.create!(:name => 'Item')
+      end
+    end
+  end
+
+
   describe 'When enabling the query cache' do
     include_context 'with query cache enabled' do
       it 'should do the queries with cache' do
-        OctopusHelper.using_environment :replicated_with_one_slave  do
+        OctopusHelper.using_environment :replicated_with_one_slave do
+          allow_write_to_slave
+
           cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
           _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
           expect(Cat.using(:master).find(cat1.id)).to eq(cat1)

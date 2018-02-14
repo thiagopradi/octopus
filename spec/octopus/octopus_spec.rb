@@ -89,6 +89,8 @@ describe Octopus, :shards => [] do
 
   describe '#fully_replicated' do
     before do
+      allow_write_to_slave
+
       OctopusHelper.using_environment :production_replicated do
         OctopusHelper.clean_all_shards([:slave1, :slave2, :slave3, :slave4])
         4.times { |i| User.using(:"slave#{i + 1}").create!(:name => 'Slave User') }

@@ -34,19 +34,19 @@ module Octopus
       :prepared_statements, :transaction_state, :create_table, to: :select_connection
 
     def execute(sql, name = nil)
-      conn = select_connection
+      conn = ensure_master_if_replicated
       clean_connection_proxy if should_clean_connection_proxy?('execute')
       conn.execute(sql, name)
     end
 
     def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
-      conn = select_connection
+      conn = ensure_master_if_replicated
       clean_connection_proxy if should_clean_connection_proxy?('insert')
       conn.insert(arel, name, pk, id_value, sequence_name, binds)
     end
 
     def update(arel, name = nil, binds = [])
-      conn = select_connection
+      conn = ensure_master_if_replicated
       # Call the legacy should_clean_connection_proxy? method here, emulating an insert.
       clean_connection_proxy if should_clean_connection_proxy?('insert')
       conn.update(arel, name, binds)
@@ -180,7 +180,19 @@ module Octopus
       send_queries_to_balancer(slave_groups[current_slave_group], method, *args, &block)
     end
 
+    def current_model_replicated?
+      replicated && (current_model.try(:replicated) || fully_replicated?)
+    end
+
     protected
+
+    def ensure_master_if_replicated
+      return select_connection unless current_model_replicated?
+
+      using_shard(Octopus.master_shard) do
+        select_connection
+      end
+    end
 
     # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
     # and will be removed when Octopus 1.0 will be released.
@@ -245,10 +257,6 @@ module Octopus
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
       replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
-    end
-
-    def current_model_replicated?
-      replicated && (current_model.try(:replicated) || fully_replicated?)
     end
 
     def send_queries_to_selected_slave(method, *args, &block)

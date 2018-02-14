@@ -80,15 +80,17 @@ describe Octopus::Migration do
       OctopusHelper.using_environment :production_replicated do
         OctopusHelper.migrating_to_version 10 do
           expect(Cat.find_by_name('Replication')).to be_nil
+          expect(Cat.using(:master).find_by_name('Replication')).not_to be_nil
         end
       end
     end
 
-    it 'should run in all shards, master or another shards' do
+    it 'should never write to slave' do
       OctopusHelper.using_environment :production_replicated do
         OctopusHelper.migrating_to_version 11 do
           [:slave4, :slave1, :slave2, :slave3].each do |_sym|
-            expect(Cat.find_by_name('Slaves')).not_to be_nil
+            expect(Cat.find_by_name('Slaves')).to be_nil
+            expect(Cat.using(:master).find_by_name('Slaves')).not_to be_nil
           end
         end
       end

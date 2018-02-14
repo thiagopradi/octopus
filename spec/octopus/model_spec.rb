@@ -742,12 +742,14 @@ describe Octopus::Model do
 
     it "should work on a fully replicated environment" do
       OctopusHelper.using_environment :production_fully_replicated do
+        allow_write_to_slave
+
         User.using(:slave1).create!(name: 'Thiago')
         User.using(:slave2).create!(name: 'Thiago')
 
         replicated_cat = User.find_by_name 'Thiago'
 
-        expect(replicated_cat.current_shard.to_s).to match(/slave/)
+        expect(replicated_cat.current_shard.to_s).to match(/master/)
       end
     end
   end

@@ -73,6 +73,8 @@ describe 'when the database is replicated' do
 
         client = Client.find(client.id)
 
+        expect(master_connection).to receive(:insert).and_call_original
+
         client.items.create!(:name => 'Item')
       end
     end

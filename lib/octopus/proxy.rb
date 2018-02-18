@@ -180,6 +180,10 @@ module Octopus
       send_queries_to_balancer(slave_groups[current_slave_group], method, *args, &block)
     end
 
+    def current_model_replicated?
+      replicated && (current_model.try(:replicated) || fully_replicated?)
+    end
+
     protected
 
     # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
@@ -245,10 +249,6 @@ module Octopus
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
       replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
-    end
-
-    def current_model_replicated?
-      replicated && (current_model.try(:replicated) || fully_replicated?)
     end
 
     def send_queries_to_selected_slave(method, *args, &block)

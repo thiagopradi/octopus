@@ -44,6 +44,10 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def init_with(coder)
+        obj = super
+
+        return obj if obj.class.connection_proxy.current_model_replicated?
+
         current_shard_value = if Octopus.rails40? || Octopus.rails41_only?
           coder['attributes']['current_shard'] if coder['attributes']['current_shard'].present?
         else
@@ -57,7 +61,6 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
           coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard')
         end
 
-        obj = super
         obj.current_shard = current_shard_value if current_shard_value.present?
         obj
       end

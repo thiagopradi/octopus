@@ -747,7 +747,7 @@ describe Octopus::Model do
 
         replicated_cat = User.find_by_name 'Thiago'
 
-        expect(replicated_cat.current_shard.to_s).to match(/slave/)
+        expect(replicated_cat.current_shard.to_s).to match(/master/)
       end
     end
   end

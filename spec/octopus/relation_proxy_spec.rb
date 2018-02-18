@@ -28,6 +28,26 @@ describe Octopus::RelationProxy do
       expect(not_relation.current_shard).to eq(@relation.current_shard)
     end
 
+    context 'when a new relation is constructed from the original relation' do
+      context 'and a where(...) is used' do
+        it 'does not tamper with the original relation' do
+          relation = Item.using(:canada).where(id: 1)
+          original_sql = relation.to_sql
+          new_relation = relation.where(id: 2)
+          expect(relation.to_sql).to eq(original_sql)
+        end
+      end
+
+      context 'and a where.not(...) is used' do
+        it 'does not tamper with the original relation' do
+          relation = Item.using(:canada).where(id: 1)
+          original_sql = relation.to_sql
+          new_relation = relation.where.not(id: 2)
+          expect(relation.to_sql).to eq(original_sql)
+        end
+      end
+    end
+
     context 'when comparing to other Relation objects' do
       before :each do
         @relation.reset

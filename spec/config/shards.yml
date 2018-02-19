@@ -84,7 +84,8 @@ production_replicated:
     slave4:
       database: octopus_shard_5
       <<: *mysql
-
+    slave5:
+      url: mysql2://<%= ENV['MYSQL_USER'] || 'root' %>@localhost/octopus_shard_2
 
 production_fully_replicated:
   replicated: true

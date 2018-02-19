@@ -92,7 +92,7 @@ describe Octopus::Proxy do
     end
 
     it 'should initialize the list of shards' do
-      expect(proxy.slaves_list).to eq(%w(slave1 slave2 slave3 slave4))
+      expect(proxy.slaves_list).to eq(%w(slave1 slave2 slave3 slave4 slave5))
     end
   end
 

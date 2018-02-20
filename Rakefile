@@ -164,6 +164,10 @@ namespace :db do
           u.string :name
         end
       end
+
+      BlankModel.using(shard_symbol).connection.create_table(:disabled_models) do |u|
+        u.integer :name
+      end
     end
   end
 

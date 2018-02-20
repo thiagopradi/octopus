@@ -203,6 +203,17 @@ CustomConnectedModel.using(:some_other_shard).first
 
 This can be useful if you have a model that lives in a separate database and would like to add sharding or replication to it. For other use cases, you may be better off with <a href="https://github.com/thiagopradi/octopus/wiki/Slave-Groups">slave groups</a>.
 
+### octopus_disable!
+If you'd like to completely disable octopus for specific model you can use `octopus_disable!`:
+
+```ruby
+class ModelWithoutOctopus
+  octopus_disable!
+end
+```
+
+As a result any query will use Rails-managed connection pool
+
 ## Contributing with Octopus
 Contributors are welcome! To run the test suite, you need mysql, postgresql and sqlite3 installed. This is what you need to setup your Octopus development environment:
 

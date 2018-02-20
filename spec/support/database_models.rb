@@ -116,3 +116,7 @@ class Skill < ActiveRecord::Base
   validates_presence_of :mmorpg_player
   validates :name, :uniqueness => { :scope => :mmorpg_player_id }
 end
+
+class DisabledModel < ActiveRecord::Base
+  octopus_disable!
+end

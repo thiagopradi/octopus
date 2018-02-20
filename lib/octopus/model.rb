@@ -116,6 +116,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
         class << self
           attr_accessor :custom_octopus_table_name
+          attr_accessor :octopus_disabled
 
           alias_method :connection_without_octopus, :connection
           alias_method :connection, :connection_with_octopus
@@ -146,7 +147,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def should_use_normal_connection?
-        if !Octopus.enabled?
+        if !Octopus.enabled? || octopus_disabled
           true
         elsif custom_octopus_connection
           !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
@@ -215,6 +216,10 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       def octopus_set_table_name(value = nil)
         ActiveSupport::Deprecation.warn 'Calling `octopus_set_table_name` is deprecated and will be removed in Octopus 1.0.', caller
         set_table_name(value)
+      end
+
+      def octopus_disable!
+        self.octopus_disabled = true
       end
     end
   end

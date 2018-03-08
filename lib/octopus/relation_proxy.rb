@@ -22,7 +22,11 @@ module Octopus
 
     def method_missing(method, *args, &block)
       if block
-        @ar_relation.public_send(method, *args, &block)
+        if !::Object.method_defined?(method) && ::Enumerator.method_defined?(method)
+          run_on_shard { @ar_relation.public_send(method, *args, &block) }
+        else
+          @ar_relation.public_send(method, *args, &block)
+        end
       else
         run_on_shard do
           if method == :load_records

@@ -20,8 +20,14 @@ module Octopus
       method_missing(:respond_to?, *args)
     end
 
+    ENUM_METHODS = (::Enumerable.instance_methods - ::Object.instance_methods).reject do |m|
+      ::ActiveRecord::Relation.instance_method(m).source_location rescue nil
+    end + [:each, :map]
+
     def method_missing(method, *args, &block)
-      if block
+      if ENUM_METHODS.include? method
+        run_on_shard { @ar_relation.to_a }.public_send(method, *args, &block)
+      elsif block
         @ar_relation.public_send(method, *args, &block)
       else
         run_on_shard do

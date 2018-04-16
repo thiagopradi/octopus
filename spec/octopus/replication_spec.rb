@@ -99,7 +99,7 @@ describe 'when the database is replicated' do
 
           # Rails 5.1 count the cached queries as regular queries.
           # TODO: How we can verify if the queries are using cache on Rails 5.1? - @thiagopradi
-          expected_records = Octopus.rails51? ? 19 : 14
+          expected_records = Octopus.rails51? || Octopus.rails52? ? 19 : 14
 
           expect(counter.query_count).to eq(expected_records)
         end

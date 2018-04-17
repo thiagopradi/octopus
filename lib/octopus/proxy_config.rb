@@ -210,6 +210,10 @@ module Octopus
       @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end
 
+    def reinitialize_shards
+      initialize_shards(config)
+    end
+
     private
 
     def connection_pool_for(config, adapter)

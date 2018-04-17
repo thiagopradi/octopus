@@ -158,6 +158,13 @@ module Octopus
 
     def clear_all_connections!
       with_each_healthy_shard(&:disconnect!)
+
+      if Octopus.atleast_rails52?
+        # On Rails 5.2 it is no longer safe to re-use connection pools after they have been discarded
+        # This happens on webservers with forking, for example Phusion Passenger.
+        # Therefor after we clear all connections we reinitialize the shards to get fresh and not discarded ConnectionPool objects
+        proxy_config.reinitialize_shards
+      end
     end
 
     def connected?

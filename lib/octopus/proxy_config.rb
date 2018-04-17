@@ -132,7 +132,7 @@ module Octopus
     end
 
     def initialize_shards(config)
-      self.config = config
+      @original_config = config
 
       self.shards = HashWithIndifferentAccess.new
       self.shards_slave_groups = HashWithIndifferentAccess.new
@@ -211,7 +211,7 @@ module Octopus
     end
 
     def reinitialize_shards
-      initialize_shards(config)
+      initialize_shards(@original_config)
     end
 
     private

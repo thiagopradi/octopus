@@ -33,15 +33,25 @@ module Octopus
       :release_advisory_lock, :prepare_binds_for_database, :cacheable_query, :column_name_for_operation,
       :prepared_statements, :transaction_state, :create_table, to: :select_connection
 
+# connection_pool.connection.verify!
+
     def execute(sql, name = nil)
       conn = select_connection
       clean_connection_proxy if should_clean_connection_proxy?('execute')
+      conn.execute(sql, name)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      conn.verify!
       conn.execute(sql, name)
     end
 
     def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
       conn = select_connection
       clean_connection_proxy if should_clean_connection_proxy?('insert')
+      conn.insert(arel, name, pk, id_value, sequence_name, binds)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      conn.verify!
       conn.insert(arel, name, pk, id_value, sequence_name, binds)
     end
 
@@ -50,17 +60,33 @@ module Octopus
       # Call the legacy should_clean_connection_proxy? method here, emulating an insert.
       clean_connection_proxy if should_clean_connection_proxy?('insert')
       conn.update(arel, name, binds)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      conn.verify!
+      conn.update(arel, name, binds)
     end
 
     def delete(*args, &block)
+      legacy_method_missing_logic('delete', *args, &block)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      select_connection.verify!
       legacy_method_missing_logic('delete', *args, &block)
     end
 
     def select_all(*args, &block)
       legacy_method_missing_logic('select_all', *args, &block)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      select_connection.verify!
+      legacy_method_missing_logic('select_all', *args, &block)
     end
 
     def select_value(*args, &block)
+      legacy_method_missing_logic('select_value', *args, &block)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      select_connection.verify!
       legacy_method_missing_logic('select_value', *args, &block)
     end
 
@@ -128,6 +154,10 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
+      legacy_method_missing_logic(method, *args, &block)
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Octopus connection lost rescue: #{e.message}"
+      select_connection.verify!
       legacy_method_missing_logic(method, *args, &block)
     end
 

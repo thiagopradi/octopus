@@ -175,7 +175,7 @@ require 'octopus/result_patch'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
-require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails42? || Octopus.rails50? || Octopus.rails51?
+require 'octopus/has_and_belongs_to_many_association'
 require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'

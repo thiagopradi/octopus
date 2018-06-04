@@ -224,13 +224,8 @@ module Octopus
     end
 
     def resolve_string_connection(spec)
-      if Octopus.rails42? || Octopus.rails50? || Octopus.rails51?
-        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
-        HashWithIndifferentAccess.new(resolver.spec(spec).config)
-      else
-        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
-        HashWithIndifferentAccess.new(resolver.spec.config)
-      end
+      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
+      HashWithIndifferentAccess.new(resolver.spec(spec).config)
     end
 
     def structurally_slave?(config)

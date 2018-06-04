@@ -94,10 +94,6 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 4
   end
 
-  def self.rails41?
-    rails4? && ActiveRecord::VERSION::MINOR >= 1
-  end
-
   def self.rails42?
     rails4? && ActiveRecord::VERSION::MINOR == 2
   end
@@ -179,7 +175,7 @@ require 'octopus/result_patch'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
-require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41? || Octopus.rails50? || Octopus.rails51?
+require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails42? || Octopus.rails50? || Octopus.rails51?
 require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'

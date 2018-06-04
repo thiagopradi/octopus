@@ -35,7 +35,7 @@ module Octopus
       end
     end
 
-    def has_many(association_id, scope = nil, options = {}, &extension)
+    def has_many(name, scope = nil, **options, &extension)
       if options == {} && scope.is_a?(Hash)
         default_octopus_opts(scope)
       else

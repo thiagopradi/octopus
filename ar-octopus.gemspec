@@ -21,13 +21,13 @@ Gem::Specification.new do |s|
                            'Octopus now stores schema version information in each shard and migrations will not ' \
                            'work properly unless this task is invoked.'
 
-  s.required_ruby_version = '>= 2.1.0'
+  s.required_ruby_version = '>= 2.2.0'
 
-  s.add_dependency 'activerecord', '>= 4.0.0'
-  s.add_dependency 'activesupport', '>= 4.0.0'
+  s.add_dependency 'activerecord', '>= 4.2.0', "< 5.2.0"
+  s.add_dependency 'activesupport', '>= 4.2.0', "< 5.2.0"
 
   s.add_development_dependency 'appraisal', '>= 0.3.8'
-  s.add_development_dependency 'mysql2', '~> 0.3.18'
+  s.add_development_dependency 'mysql2', '>= 0.4', "< 0.5"
   s.add_development_dependency 'pg', '~> 0.18'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec', '>= 3'

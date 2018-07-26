@@ -139,15 +139,13 @@ module Octopus
       shards[current_shard]
     end
 
-    if Octopus.rails4?
-      def enable_query_cache!
-        clear_query_cache
-        with_each_healthy_shard { |v| v.connected? && safe_connection(v).enable_query_cache! }
-      end
+    def enable_query_cache!
+      clear_query_cache
+      with_each_healthy_shard { |v| v.connected? && safe_connection(v).enable_query_cache! }
+    end
 
-      def disable_query_cache!
-        with_each_healthy_shard { |v| v.connected? && safe_connection(v).disable_query_cache! }
-      end
+    def disable_query_cache!
+      with_each_healthy_shard { |v| v.connected? && safe_connection(v).disable_query_cache! }
     end
 
     def clear_query_cache

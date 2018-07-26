@@ -25,7 +25,7 @@ module Octopus
       ::ActiveRecord::Relation.instance_method(m).source_location rescue nil
     end + [:each, :map, :sum, :index_by]
     # `find { ... }` etc. should run_on_shard, `find(id)` should be sent to relation
-    ENUM_WITH_BLOCK_METHODS = [:find, :select, :none?, :any?, :one?, :many?]
+    ENUM_WITH_BLOCK_METHODS = [:find, :select]
 
     def method_missing(method, *args, &block)
       if ENUM_METHODS.include?(method) || block && ENUM_WITH_BLOCK_METHODS.include?(method)

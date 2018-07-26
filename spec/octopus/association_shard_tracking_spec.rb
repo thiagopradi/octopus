@@ -268,20 +268,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@permission_brazil_2.roles.where('1=1').select { |r| r.id == role.id }).to be_empty
       end
 
-      it 'where + any?' do
-        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.where('1=1').any?).to be true
-        @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.where('1=1').any?).to be false
-      end
-
-      it 'where + any? with block' do
-        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.where('1=1').any? { |r| r.id == role.id }).to be true
-        @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.where('1=1').any? { |r| r.id == role.id }).to be false
-      end
-
       it 'exists?' do
         role = @permission_brazil_2.roles.create(:name => 'Builded Role')
         expect(@permission_brazil_2.roles.exists?(role.id)).to be true
@@ -504,20 +490,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@new_brazil_programmer.projects.where('1=1').select { |r| r.id == role.id }).to eq([role])
         @new_brazil_programmer.projects.destroy_all
         expect(@new_brazil_programmer.projects.where('1=1').select { |r| r.id == role.id }).to be_empty
-      end
-
-      it 'where + any?' do
-        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.where('1=1').any?).to be true
-        @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.where('1=1').any?).to be false
-      end
-
-      it 'where + any? with block' do
-        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.where('1=1').any? { |r| r.id == role.id }).to be true
-        @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.where('1=1').any? { |r| r.id == role.id }).to be false
       end
 
       it 'exists?' do
@@ -775,18 +747,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.items.where('1=1').select { |i| i.id == @item_brazil.id }).to be_empty
       end
 
-      it 'where + any?' do
-        expect(@brazil_client.items.where('1=1').any?).to be true
-        @brazil_client.items.destroy_all
-        expect(@brazil_client.items.where('1=1').any?).to be false
-      end
-
-      it 'where + any? with block' do
-        expect(@brazil_client.items.where('1=1').any? { |i| i.id == @item_brazil.id }).to be true
-        @brazil_client.items.destroy_all
-        expect(@brazil_client.items.where('1=1').any? { |i| i.id == @item_brazil.id }).to be false
-      end
-
       it 'exists?' do
         expect(@brazil_client.items.exists?(@item_brazil.id)).to be true
         @brazil_client.items.destroy_all
@@ -995,18 +955,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.comments.where('1=1').select { |c| c.id == @comment_brazil.id }).to eq([@comment_brazil])
         @brazil_client.comments.destroy_all
         expect(@brazil_client.comments.where('1=1').select { |c| c.id == @comment_brazil.id }).to be_empty
-      end
-
-      it 'where + any?' do
-        expect(@brazil_client.comments.where('1=1').any?).to be true
-        @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.where('1=1').any?).to be false
-      end
-
-      it 'where + any? with block' do
-        expect(@brazil_client.comments.where('1=1').any? { |c| c.id == @comment_brazil.id }).to be true
-        @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.where('1=1').any? { |c| c.id == @comment_brazil.id }).to be false
       end
 
       it 'exists?' do

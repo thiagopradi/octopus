@@ -44,7 +44,7 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      result = run_on_shard { @klass.__send__(method, *args, &block) }
+      result = run_on_shard { @klass.send(method, *args, &block) }
       if result.respond_to?(:all)
         return ::Octopus::ScopeProxy.new(current_shard, result)
       end

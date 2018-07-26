@@ -73,25 +73,4 @@ describe Octopus::ScopeProxy do
       expect(cloned_object.object_id).not_to eq(user.object_id)
     end
   end
-
-  context 'When iterated with Enumerable methods' do
-    before(:each) do
-      User.using(:brazil).create!(:name => 'Evan', :number => 1)
-      User.using(:brazil).create!(:name => 'Evan', :number => 2)
-      User.using(:brazil).create!(:name => 'Evan', :number => 3)
-      @evans = User.using(:brazil).where(:name => 'Evan')
-    end
-
-    it 'allows each method' do
-      expect(@evans.each.count).to eq(3)
-    end
-
-    it 'allows each_with_index method' do
-      expect(@evans.each_with_index.to_a.flatten.count).to eq(6)
-    end
-
-    it 'allows map method' do
-      expect(@evans.map(&:number)).to eq([1, 2, 3])
-    end
-  end
 end

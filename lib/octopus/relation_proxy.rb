@@ -22,7 +22,7 @@ module Octopus
 
     ENUM_METHODS = (::Enumerable.instance_methods - ::Object.instance_methods).reject do |m|
       ::ActiveRecord::Relation.instance_method(m).source_location rescue nil
-    end + [:each, :map, :sum, :index_by] # redefined methods in ActiveRecord that should run_on_shard
+    end + [:each, :map]
 
     def method_missing(method, *args, &block)
       if ENUM_METHODS.include? method

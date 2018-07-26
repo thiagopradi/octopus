@@ -225,21 +225,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@permission_brazil_2.roles.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
       end
 
-      # sum & index_by is specialized in active_support/core_ext/enumerable.rb
-      it 'where + sum' do
-        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.where('1=1').sum(&:id)).to eq(role.id)
-        @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.where('1=1').sum(&:id)).to eq(0)
-      end
-
-      it 'where + index_by' do
-        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.where('1=1').index_by(&:id)).to eq(role.id => role)
-        @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.where('1=1').index_by(&:id)).to be_empty
-      end
-
       it 'exists?' do
         role = @permission_brazil_2.roles.create(:name => 'Builded Role')
         expect(@permission_brazil_2.roles.exists?(role.id)).to be true
@@ -420,20 +405,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@new_brazil_programmer.projects.where('1=1').each_with_index.map { |r, i| [r.id, i] }).to eq([[role.id, 0]])
         @new_brazil_programmer.projects.destroy_all
         expect(@new_brazil_programmer.projects.where('1=1').each_with_index.map { |r, i| [r.id, i] }).to be_empty
-      end
-
-      it 'where + sum' do
-        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.where('1=1').sum(&:id)).to eq(role.id)
-        @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.where('1=1').sum(&:id)).to eq(0)
-      end
-
-      it 'where + index_by' do
-        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.where('1=1').index_by(&:id)).to eq(role.id => role)
-        @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.where('1=1').index_by(&:id)).to be_empty
       end
 
       it 'exists?' do
@@ -655,18 +626,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.items.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
       end
 
-      it 'where + sum' do
-        expect(@brazil_client.items.where('1=1').sum(&:id)).to eq(@item_brazil.id)
-        @brazil_client.items.destroy_all
-        expect(@brazil_client.items.where('1=1').sum(&:id)).to eq(0)
-      end
-
-      it 'where + index_by' do
-        expect(@brazil_client.items.where('1=1').index_by(&:id)).to eq(@item_brazil.id => @item_brazil)
-        @brazil_client.items.destroy_all
-        expect(@brazil_client.items.where('1=1').index_by(&:id)).to be_empty
-      end
-
       it 'exists?' do
         expect(@brazil_client.items.exists?(@item_brazil.id)).to be true
         @brazil_client.items.destroy_all
@@ -839,18 +798,6 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.comments.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to eq([[@comment_brazil.id, 0]])
         @brazil_client.comments.destroy_all
         expect(@brazil_client.comments.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
-      end
-
-      it 'where + sum' do
-        expect(@brazil_client.comments.where('1=1').sum(&:id)).to eq(@comment_brazil.id)
-        @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.where('1=1').sum(&:id)).to eq(0)
-      end
-
-      it 'where + index_by' do
-        expect(@brazil_client.comments.where('1=1').index_by(&:id)).to eq(@comment_brazil.id => @comment_brazil)
-        @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.where('1=1').index_by(&:id)).to be_empty
       end
 
       it 'exists?' do

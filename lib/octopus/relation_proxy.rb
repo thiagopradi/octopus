@@ -25,8 +25,7 @@ module Octopus
     end + [:each, :map, :sum, :index_by] # redefined methods in ActiveRecord that should run_on_shard
 
     def method_missing(method, *args, &block)
-      # `find { ... }` should be sent to records on the shard, `find(id)` should be sent to relation
-      if ENUM_METHODS.include?(method) || block && method == :find
+      if ENUM_METHODS.include? method
         run_on_shard { @ar_relation.to_a }.public_send(method, *args, &block)
       elsif block
         @ar_relation.public_send(method, *args, &block)

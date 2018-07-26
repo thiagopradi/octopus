@@ -20,15 +20,13 @@ module Octopus
       method_missing(:respond_to?, *args)
     end
 
-    # methods redefined in ActiveRecord that should run_on_shard
     ENUM_METHODS = (::Enumerable.instance_methods - ::Object.instance_methods).reject do |m|
       ::ActiveRecord::Relation.instance_method(m).source_location rescue nil
-    end + [:each, :map, :sum, :index_by]
-    # `find { ... }` etc. should run_on_shard, `find(id)` should be sent to relation
-    ENUM_WITH_BLOCK_METHODS = [:find, :select]
+    end + [:each, :map, :sum, :index_by] # redefined methods in ActiveRecord that should run_on_shard
 
     def method_missing(method, *args, &block)
-      if ENUM_METHODS.include?(method) || block && ENUM_WITH_BLOCK_METHODS.include?(method)
+      # `find { ... }` should be sent to records on the shard, `find(id)` should be sent to relation
+      if ENUM_METHODS.include?(method) || block && method == :find
         run_on_shard { @ar_relation.to_a }.public_send(method, *args, &block)
       elsif block
         @ar_relation.public_send(method, *args, &block)

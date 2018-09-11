@@ -45,7 +45,7 @@ module Octopus
           conn.verify!
           retry if (retries += 1) < 3
         else
-          raise e.message
+          raise e
         end
       end
     end
@@ -62,7 +62,7 @@ module Octopus
           conn.verify!
           retry if (retries += 1) < 3
         else
-          raise e.message
+          raise e
         end
       end
     end
@@ -80,7 +80,7 @@ module Octopus
           conn.verify!
           retry if (retries += 1) < 3
         else
-          raise e.message
+          raise e
         end
       end
     end
@@ -166,7 +166,7 @@ module Octopus
           select_connection.verify!
           retry if (retries += 1) < 3
         else
-          raise e.message
+          raise e
         end
       end
     end
@@ -267,7 +267,7 @@ module Octopus
           select_connection.verify!
           retry if (retries += 1) < 3
         else
-          raise e.message
+          raise e
         end
       end
     end

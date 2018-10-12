@@ -306,8 +306,13 @@ describe Octopus::Model do
 
   describe 'using a postgresql shard' do
     it 'should update the Arel Engine' do
-      expect(User.using(:postgresql_shard).arel_engine.connection.adapter_name).to eq('PostgreSQL')
-      expect(User.using(:alone_shard).arel_engine.connection.adapter_name).to eq('Mysql2')
+      if Octopus.rails52?
+        expect(User.using(:postgresql_shard).connection.adapter_name).to eq('PostgreSQL')
+        expect(User.using(:alone_shard).connection.adapter_name).to eq('Mysql2')
+      else 
+        expect(User.using(:postgresql_shard).arel_engine.connection.adapter_name).to eq('PostgreSQL')
+        expect(User.using(:alone_shard).arel_engine.connection.adapter_name).to eq('Mysql2')
+      end
     end
 
     it 'should works with writes and reads' do

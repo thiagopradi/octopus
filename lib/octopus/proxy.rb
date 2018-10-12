@@ -26,7 +26,7 @@ module Octopus
       :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
       :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
       :table_exists?, :in_clause_length, :supports_ddl_transactions?,
-      :sanitize_limit, :prefetch_primary_key?, :current_database, :initialize_schema_migrations_table,
+      :sanitize_limit, :prefetch_primary_key?, :current_database,
       :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
       :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
       :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
@@ -191,6 +191,14 @@ module Octopus
 
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
+    end
+    
+    def initialize_schema_migrations_table
+      if Octopus.rails52?
+        select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
+      else 
+        select_connection.initialize_schema_migrations_table
+      end
     end
 
     protected

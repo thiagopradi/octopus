@@ -29,12 +29,21 @@ module OctopusHelper
 
   def self.migrating_to_version(version, &_block)
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
-
+    
     begin
-      ActiveRecord::Migrator.run(:up, migrations_root, version)
+      migrate_to_version(:up, migrations_root, version)
       yield
     ensure
-      ActiveRecord::Migrator.run(:down, migrations_root, version)
+      migrate_to_version(:down, migrations_root, version)
+    end
+  end
+  
+  def self.migrate_to_version(direction, root, version)
+    if Octopus.atleast_rails52?
+      migrations = ActiveRecord::MigrationContext.new(root).migrations.select {|mig| version == mig.version }
+      ActiveRecord::Migrator.new(direction, migrations, version).run
+    else 
+      ActiveRecord::Migrator.run(direction, root, version)
     end
   end
 

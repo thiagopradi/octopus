@@ -115,7 +115,7 @@ module Octopus
   end
 
   def self.atleast_rails52?
-    ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR >= 1)
+    ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR > 1)
   end
 
   def self.rails52?
@@ -184,7 +184,7 @@ require 'octopus/shard_tracking/dynamic'
 
 require 'octopus/model'
 require 'octopus/result_patch'
-require 'octopus/migration' unless Octopus.rails52?
+require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
 require 'octopus/association_shard_tracking'

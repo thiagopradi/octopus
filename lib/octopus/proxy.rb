@@ -200,6 +200,10 @@ module Octopus
         select_connection.initialize_schema_migrations_table
       end
     end
+    
+    def initialize_metadata_table
+      select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
+    end
 
     protected
 

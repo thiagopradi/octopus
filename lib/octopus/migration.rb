@@ -62,7 +62,7 @@ end
 module Octopus
   module Migrator
     def self.included(base)
-      unless Octopus.rails52?
+      unless Octopus.atleast_rails52?
         base.extend(ClassMethods)
 
         base.class_eval do
@@ -94,7 +94,7 @@ module Octopus
       base.send :alias_method, :migrations_without_octopus, :migrations
       base.send :alias_method, :migrations, :migrations_with_octopus
     end
-    if Octopus.rails52?
+    if Octopus.atleast_rails52?
       ### Post RAILS 5.2 Migration methods
       
       def run_with_octopus(&block)

@@ -194,7 +194,7 @@ module Octopus
     end
     
     def initialize_schema_migrations_table
-      if Octopus.rails52?
+      if Octopus.atleast_rails52?
         select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
       else 
         select_connection.initialize_schema_migrations_table

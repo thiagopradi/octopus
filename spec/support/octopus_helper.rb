@@ -13,7 +13,7 @@ module OctopusHelper
           BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{table}")
         end
       end
-      BlankModel.using(:master).connection.shards[shard_symbol].disconnect
+      BlankModel.using(:master).connection.shards[shard_symbol].disconnect if Octopus.atleast_rails50?
     end
   end
 

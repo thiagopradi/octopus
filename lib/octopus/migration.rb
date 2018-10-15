@@ -109,8 +109,8 @@ module Octopus
 
       def migrate_with_octopus(&block)
         return migrate_without_octopus(&block) unless connection.is_a?(Octopus::Proxy)
-
-        connection.send_queries_to_multiple_shards(connection.shard_names) do
+        shards = migrations.map(&:shards).flatten.map(&:to_s)
+        connection.send_queries_to_multiple_shards(shards) do
           migrate_without_octopus(&block)
         end
         rescue ActiveRecord::UnknownMigrationVersionError => e

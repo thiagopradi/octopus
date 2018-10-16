@@ -4,10 +4,9 @@ module Octopus
     module QueryCacheForShards
       %i(enable_query_cache! disable_query_cache!).each do |method|
         define_method(method) do
-          shards = ActiveRecord::Base.connection.shards
-          if shards["master"] == self
+          if(Octopus.enabled? && (shards = ActiveRecord::Base.connection.shards)['master'] == self)
             shards.each do |shard_name, v|
-              if shard_name == "master"
+              if shard_name == 'master'
                 super()
               else
                 v.public_send(method)

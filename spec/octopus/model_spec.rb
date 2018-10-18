@@ -517,7 +517,7 @@ describe Octopus::Model do
         @user3 = User.using(:brazil).create!(:name => 'User3')
       end
 
-      it "#find_each should work" do
+      it "#find_each should work with a block" do
         result_array = []
 
         User.using(:brazil).where("name is not NULL").find_each do |user|
@@ -527,10 +527,50 @@ describe Octopus::Model do
         expect(result_array).to eq([@user1, @user2, @user3])
       end
 
-      it "#find_in_batches, should work" do
+      it "#find_each should work as an enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each.each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_each should work as a lazy enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each.lazy.each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_in_batches should work with a block" do
         result_array = []
 
         User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1) do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+
+      it "#find_in_batches should work as an enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1).each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+
+      it "#find_in_batches should work as a lazy enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1).lazy.each do |user|
           result_array << user
         end
 

@@ -58,8 +58,16 @@ describe Octopus::RelationProxy do
       end
     end
 
-    it "can deliver methods in ActiveRecord::Batches correctly" do
+    it "can deliver methods in ActiveRecord::Batches correctly when given a block" do
       expect { @relation.find_each(&:inspect) }.not_to raise_error
+    end
+
+    it "can deliver methods in ActiveRecord::Batches correctly as an enumerator" do
+      expect { @relation.find_each.each(&:inspect) }.not_to raise_error
+    end
+
+    it "can deliver methods in ActiveRecord::Batches correctly as a lazy enumerator" do
+      expect { @relation.find_each.lazy.each(&:inspect) }.not_to raise_error
     end
 
     context 'under Rails 4' do

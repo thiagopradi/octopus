@@ -4,9 +4,9 @@ def get_all_versions
   if Octopus.atleast_rails52?
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     ActiveRecord::MigrationContext.new(migrations_root).get_all_versions
-  else 
+  else
     ActiveRecord::Migrator.get_all_versions
-  end 
+  end
 end
 
 describe Octopus::Migration do
@@ -43,9 +43,9 @@ describe Octopus::Migration do
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     if Octopus.atleast_rails52?
       OctopusHelper.migrate_to_version(:up, migrations_root, 4)
-    else 
+    else
       ActiveRecord::Migrator.run(:up, migrations_root, 4)
-    end 
+    end
 
     expect(User.using(:canada).find_by_name('Group')).not_to be_nil
     expect(User.using(:brazil).find_by_name('Group')).not_to be_nil
@@ -54,10 +54,10 @@ describe Octopus::Migration do
 
     Octopus.using(:canada) do
       if Octopus.atleast_rails52?
-        ActiveRecord::MigrationContext.new(migrations_root).rollback(4)
-      else 
+        OctopusHelper.migrate_to_version(:down, migrations_root, 4)
+      else
         ActiveRecord::Migrator.rollback(migrations_root, 4)
-      end 
+      end
     end
 
     expect(User.using(:canada).find_by_name('Group')).to be_nil

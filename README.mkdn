@@ -1,3 +1,8 @@
+# Important Notice:
+
+Octopus will enter into maintainance mode once Rails 6 is released - since Rails 6 will include all the features for Database Sharding / Replication into Rails Core.
+Once the first version of Rails 6 beta is released, there will be a migration guide to help users migrate from Octopus to Rails 6.
+
 # Octopus  - Easy Database Sharding for ActiveRecord
 
 [![Build Status](https://travis-ci.org/thiagopradi/octopus.svg)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)

@@ -94,18 +94,6 @@ module Octopus
     ActiveRecord::VERSION::MAJOR == 4
   end
 
-  def self.rails40?
-    rails4? && ActiveRecord::VERSION::MINOR == 0
-  end
-
-  def self.rails41_only?
-    rails4? && ActiveRecord::VERSION::MINOR == 1
-  end
-
-  def self.rails41?
-    rails4? && ActiveRecord::VERSION::MINOR >= 1
-  end
-
   def self.rails42?
     rails4? && ActiveRecord::VERSION::MINOR == 2
   end
@@ -113,13 +101,25 @@ module Octopus
   def self.rails50?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0
   end
+  
+  def self.atleast_rails50?
+    ActiveRecord::VERSION::MAJOR >= 5
+  end
 
   def self.rails51?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1
   end
 
+  def self.rails52?
+    ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2
+  end
+
   def self.atleast_rails51?
     ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR >= 1)
+  end
+
+  def self.atleast_rails52?
+    ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR > 1)
   end
 
   attr_writer :logger
@@ -187,7 +187,6 @@ require 'octopus/result_patch'
 require 'octopus/migration'
 require 'octopus/association'
 require 'octopus/collection_association'
-require 'octopus/has_and_belongs_to_many_association' unless Octopus.rails41? || Octopus.rails50? || Octopus.rails51?
 require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'

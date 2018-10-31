@@ -26,7 +26,7 @@ module Octopus
       :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
       :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
       :table_exists?, :in_clause_length, :supports_ddl_transactions?,
-      :sanitize_limit, :prefetch_primary_key?, :current_database, :initialize_schema_migrations_table,
+      :sanitize_limit, :prefetch_primary_key?, :current_database,
       :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
       :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
       :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
@@ -160,6 +160,13 @@ module Octopus
 
     def clear_all_connections!
       with_each_healthy_shard(&:disconnect!)
+
+      if Octopus.atleast_rails52?
+        # On Rails 5.2 it is no longer safe to re-use connection pools after they have been discarded
+        # This happens on webservers with forking, for example Phusion Passenger.
+        # Therefor after we clear all connections we reinitialize the shards to get fresh and not discarded ConnectionPool objects
+        proxy_config.reinitialize_shards
+      end
     end
 
     def connected?
@@ -184,6 +191,18 @@ module Octopus
 
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
+    end
+    
+    def initialize_schema_migrations_table
+      if Octopus.atleast_rails52?
+        select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
+      else 
+        select_connection.initialize_schema_migrations_table
+      end
+    end
+    
+    def initialize_metadata_table
+      select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end
 
     protected

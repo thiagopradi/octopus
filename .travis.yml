@@ -8,18 +8,11 @@ rvm:
   - 2.3.4
   - 2.4.1
 gemfile:
-  - gemfiles/rails4.gemfile
-  - gemfiles/rails41.gemfile
   - gemfiles/rails42.gemfile
   - gemfiles/rails5.gemfile
   - gemfiles/rails51.gemfile
+  - gemfiles/rails52.gemfile
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com
     - thiago.pradi@gmail.com
-matrix:
-  exclude:
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails4.gemfile
-    - rvm: 2.4.1
-      gemfile: gemfiles/rails41.gemfile

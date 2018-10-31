@@ -1,5 +1,14 @@
 require 'spec_helper'
 
+def get_all_versions
+  if Octopus.atleast_rails52?
+    migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
+    ActiveRecord::MigrationContext.new(migrations_root).get_all_versions
+  else
+    ActiveRecord::Migrator.get_all_versions
+  end
+end
+
 describe Octopus::Migration do
   it 'should run just in the master shard' do
     OctopusHelper.migrating_to_version 1 do
@@ -32,8 +41,11 @@ describe Octopus::Migration do
 
   it "should rollback correctly migrations" do
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
-
-    ActiveRecord::Migrator.run(:up, migrations_root, 4)
+    if Octopus.atleast_rails52?
+      OctopusHelper.migrate_to_version(:up, migrations_root, 4)
+    else
+      ActiveRecord::Migrator.run(:up, migrations_root, 4)
+    end
 
     expect(User.using(:canada).find_by_name('Group')).not_to be_nil
     expect(User.using(:brazil).find_by_name('Group')).not_to be_nil
@@ -41,7 +53,11 @@ describe Octopus::Migration do
 
 
     Octopus.using(:canada) do
-      ActiveRecord::Migrator.rollback(migrations_root, 4)
+      if Octopus.atleast_rails52?
+        OctopusHelper.migrate_to_version(:down, migrations_root, 4)
+      else
+        ActiveRecord::Migrator.rollback(migrations_root, 4)
+      end
     end
 
     expect(User.using(:canada).find_by_name('Group')).to be_nil
@@ -99,9 +115,9 @@ describe Octopus::Migration do
     class SchemaMigration < ActiveRecord::Base; end
 
     OctopusHelper.migrating_to_version 14 do
-      expect(Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }).to include(14)
-      expect(Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }).to include(14)
-      expect(Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }).to include(14)
+      expect(Octopus.using(:canada) { get_all_versions }).to include(14)
+      expect(Octopus.using(:brazil) { get_all_versions }).to include(14)
+      expect(Octopus.using(:russia) { get_all_versions }).to include(14)
     end
   end
 
@@ -112,9 +128,9 @@ describe Octopus::Migration do
     Octopus.using(:canada) { SchemaMigration.create(:version => 14) }
 
     OctopusHelper.migrating_to_version 14 do
-      expect(Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }).to include(14)
-      expect(Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }).to include(14)
-      expect(Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }).to include(14)
+      expect(Octopus.using(:canada) { get_all_versions }).to include(14)
+      expect(Octopus.using(:brazil) { get_all_versions }).to include(14)
+      expect(Octopus.using(:russia) { get_all_versions }).to include(14)
     end
   end
 
@@ -122,13 +138,12 @@ describe Octopus::Migration do
     it 'should run migrations on all shards in the default_migration_group' do
       OctopusHelper.using_environment :octopus_with_default_migration_group do
         OctopusHelper.migrating_to_version 15 do
-          expect(Octopus.using(:master) { ActiveRecord::Migrator.get_all_versions }).not_to include(15)
-          expect(Octopus.using(:canada) { ActiveRecord::Migrator.get_all_versions }).to include(15)
-          expect(Octopus.using(:brazil) { ActiveRecord::Migrator.get_all_versions }).to include(15)
-          expect(Octopus.using(:russia) { ActiveRecord::Migrator.get_all_versions }).to include(15)
+          expect(Octopus.using(:master) { get_all_versions }).not_to include(15)
+          expect(Octopus.using(:canada) { get_all_versions }).to include(15)
+          expect(Octopus.using(:brazil) { get_all_versions }).to include(15)
+          expect(Octopus.using(:russia) { get_all_versions }).to include(15)
         end
       end
     end
   end
-
 end

@@ -132,7 +132,7 @@ module Octopus
     end
 
     def initialize_shards(config)
-      self.config = config
+      @original_config = config
 
       self.shards = HashWithIndifferentAccess.new
       self.shards_slave_groups = HashWithIndifferentAccess.new
@@ -210,6 +210,10 @@ module Octopus
       @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
     end
 
+    def reinitialize_shards
+      initialize_shards(@original_config)
+    end
+
     private
 
     def connection_pool_for(config, adapter)
@@ -224,13 +228,8 @@ module Octopus
     end
 
     def resolve_string_connection(spec)
-      if Octopus.rails41? || Octopus.rails50? || Octopus.rails51?
-        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
-        HashWithIndifferentAccess.new(resolver.spec(spec).config)
-      else
-        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
-        HashWithIndifferentAccess.new(resolver.spec.config)
-      end
+      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
+      HashWithIndifferentAccess.new(resolver.spec(spec).config)
     end
 
     def structurally_slave?(config)

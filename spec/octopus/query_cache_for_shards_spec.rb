@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-unless Octopus.rails4?
+unless Octopus.rails4? || Octopus.rails50?
   describe Octopus::ConnectionPool::QueryCacheForShards do
     subject(:query_cache_on_shard) { ActiveRecord::Base.using(:brazil).connection.query_cache_enabled }
 

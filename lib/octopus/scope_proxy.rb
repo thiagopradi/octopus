@@ -28,7 +28,7 @@ module Octopus
 
     # Transaction Method send all queries to a specified shard.
     def transaction(options = {}, &block)
-      run_on_shard { @klass = klass.transaction(options, &block) }
+      run_on_shard { klass.transaction(options, &block) }
     end
 
     def connection

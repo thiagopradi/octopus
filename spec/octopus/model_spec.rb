@@ -532,6 +532,16 @@ describe Octopus::Model do
         expect(result_array).to eq([@user1, @user2, @user3])
       end
 
+      it "#find_each should work with a where.not(...)" do
+        result_array = []
+
+        User.using(:brazil).where.not(:name => 'User2').find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user3])
+      end
+
       it "#find_each should work as an enumerator" do
         result_array = []
 

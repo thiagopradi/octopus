@@ -27,6 +27,7 @@ module Octopus
     # `find { ... }` etc. should run_on_shard, `find(id)` should be sent to relation
     ENUM_WITH_BLOCK_METHODS = [:find, :select, :none?, :any?, :one?, :many?, :sum]
     BATCH_METHODS = [:find_each, :find_in_batches, :in_batches]
+    WHERE_CHAIN_METHODS = [:not]
 
     def method_missing(method, *args, &block)
       if !block && BATCH_METHODS.include?(method)
@@ -39,6 +40,8 @@ module Octopus
         end
       elsif ENUM_METHODS.include?(method) || block && ENUM_WITH_BLOCK_METHODS.include?(method)
         run_on_shard { @ar_relation.to_a }.public_send(method, *args, &block)
+      elsif WHERE_CHAIN_METHODS.include?(method)
+        ::Octopus::ScopeProxy.new(@current_shard, run_on_shard { @ar_relation.public_send(method, *args) } )
       elsif block
         @ar_relation.public_send(method, *args, &block)
       else

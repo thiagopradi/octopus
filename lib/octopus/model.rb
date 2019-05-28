@@ -52,7 +52,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         current_shard_value = coder['attributes']['current_shard'].value if coder['attributes']['current_shard'].present? && coder['attributes']['current_shard'].value.present?
 
         coder['attributes'].send(:attributes).send(:values).delete('current_shard')
-        coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard')
+        coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard') if coder['attributes'].send(:attributes).respond_to?(:delegate_hash)
 
         obj.current_shard = current_shard_value if current_shard_value.present?
         obj

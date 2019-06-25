@@ -19,9 +19,12 @@ done
 >&2 echo "MySQL is ready"
 
 set -x
+bundle install
 bundle exec rake db:prepare
 bundle exec rake appraisal:install
 bundle exec rake spec
+#Not working yet
+#./sample_app/script/ci_build
 set +x
-echo Octopus is ready for you.  Run "docker exec octopus /bin/bash"
+echo Octopus is ready for you.  Run \"docker-compose exec octopus /bin/bash\"
 /bin/sleep infinity

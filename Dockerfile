@@ -15,7 +15,7 @@ RUN gem install --no-document bundler -v 1.16.6
 COPY Gemfile ar-octopus.gemspec /usr/src/app/
 COPY lib/octopus/version.rb /usr/src/app/lib/octopus/version.rb
 
-RUN bundle install
+RUN bundle install --path=.bundle
 
 # Uncomment if you want to copy the octopus repo
 # into the Docker image itself.  docker-compose is

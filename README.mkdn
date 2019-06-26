@@ -20,10 +20,10 @@ Octopus supports:
 - Tools to manage database configurations. (soon)
 
 ### Replication
-When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="http://wiki.github.com/thiagopradi/octopus/replication"> Wiki</a>
+When using replication, all writes queries will be sent to master, and read queries to slaves. More info could be found at: <a href="https://github.com/thiagopradi/octopus/wiki/Replication"> Wiki</a>
 
 ### Sharding
- When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="http://wiki.github.com/thiagopradi/octopus/sharding"> Wiki</a>
+ When using sharding, you need to specify which shard to send the query. Octopus supports selecting the shard inside a controller, or manually in each object. More could be found at <a href="https://github.com/thiagopradi/octopus/wiki/Sharding"> Wiki</a>
 
 ### Replication + Sharding
  When using replication and sharding concurrently, you must specify a shard, and can optionally specify a <a href="https://github.com/thiagopradi/octopus/wiki/Slave-Groups">slave group</a>.
@@ -60,7 +60,7 @@ going forward.
 
 ## How to use Octopus?
 
-First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="http://wiki.github.com/thiagopradi/octopus/config-file">this page on wiki</a>.
+First, you need to create a config file, shards.yml, inside your config/ directory. to see the syntax and how this file should look, please checkout <a href="https://github.com/thiagopradi/octopus/wiki/Config-File">this page on wiki</a>.
 
 ### Syntax
 
@@ -177,7 +177,7 @@ class ApplicationController < ActionController::Base
 end
 ```
 
- To see the complete list of features and syntax, please check out our <a href="http://wiki.github.com/thiagopradi/octopus/"> Wiki</a>
+ To see the complete list of features and syntax, please check out our <a href="https://github.com/thiagopradi/octopus/wiki"> Wiki</a>
 Want to see sample rails applications using octopus features? please check it out: <a href="http://github.com/thiagopradi/octopus_sharding_example">Sharding Example</a> and <a href="http://github.com/thiagopradi/octopus_replication_example">Replication Example</a>. Also, we have an example that shows how to use Octopus without Rails: <a href="http://github.com/thiagopradi/octopus_sinatra"> Octopus + Sinatra Example</a>.
 
 ## Mixing Octopus with the Rails multiple database model

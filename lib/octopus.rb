@@ -191,6 +191,7 @@ require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
+require 'octopus/adapter_patches'
 require 'octopus/singular_association'
 require 'octopus/finder_methods'
 require 'octopus/query_cache_for_shards' unless Octopus.rails4?

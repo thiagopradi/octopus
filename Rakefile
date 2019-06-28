@@ -3,6 +3,7 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'appraisal'
 
+$stdout.sync = true
 RSpec::Core::RakeTask.new
 RuboCop::RakeTask.new
 
@@ -27,11 +28,22 @@ namespace :db do
       :encoding => 'utf8',
     }
 
+    db2_spec = {
+      :adapter  => 'ibm_db',
+      :host     => (ENV['DB2_HOST'] || 'db2'),
+      :username => (ENV['DB2_USER'] || 'db2inst1'),
+      :password => (ENV['DB2_PASSWORD'] || ''),
+      :port     => (ENV['DB2_PORT'] || '50000'),
+      :schema   => (ENV['DB2_SCHEMA'] || 'db2inst1'),
+      :database => 'octopus6',
+      :encoding => 'utf8',
+    }
     ` rm -f /tmp/database.sqlite3 `
 
     require 'active_record'
 
     # Connects to PostgreSQL
+    puts "Connecting to PostgreSQL"
     ActiveRecord::Base.establish_connection(pg_spec.merge('database' => 'postgres', 'schema_search_path' => 'public'))
     (1..2).map do |i|
       # drop the old database (if it exists)
@@ -41,6 +53,7 @@ namespace :db do
     end
 
     # Connect to MYSQL
+    puts "Connecting to MySQL"
     ActiveRecord::Base.establish_connection(mysql_spec)
     (1..5).map do |i|
       # drop the old database (if it exists)
@@ -48,6 +61,9 @@ namespace :db do
       # create new database
       ActiveRecord::Base.connection.create_database("octopus_shard_#{i}")
     end
+
+    puts "Connecting to DB2"
+    ActiveRecord::Base.establish_connection(db2_spec)
   end
 
   desc 'Create tables on tests databases'

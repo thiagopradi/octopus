@@ -13,6 +13,11 @@ RUN wget http://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/od
   && mkdir -p /opt/ibm \
   && tar -C /opt/ibm -xzvf /tmp/linuxx64_odbc_cli.tar.gz 
 
+# Set up DB2 libraries and catalogs
+COPY docker/db2-ld.conf /etc/ld.so.conf.d/
+COPY docker/db2dsdriver.cfg /opt/ibm/clidriver/cfg/
+RUN ldconfig
+
 WORKDIR /usr/src/app
 
 # Pull in a full profile for gem/bundler

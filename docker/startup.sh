@@ -18,7 +18,18 @@ done
 
 >&2 echo "MySQL is ready"
 
+until ! /opt/ibm/clidriver/bin/db2cli validate -database $DB2_DATABASE:$DB2_HOST:$DB2_PORT -connect -user $DB2_USERNAME -passwd $DB2_PASSWORD | grep -q FAILED ; do
+  >&2 echo "DB2 is unavailable - sleeping"
+  sleep 10  
+done
+
+>&2 echo "DB2 is ready"
+
 set -x
+cd /usr/src/ibm_db/IBM_DB_Adapter/ibm_db/ext
+ruby extconf.rb
+make
+cd /usr/src/app
 bundle install
 bundle exec rake db:prepare
 bundle exec rake appraisal:install

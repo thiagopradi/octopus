@@ -34,10 +34,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rubocop'
   s.add_development_dependency 'sqlite3', '~> 1.3.6'
   s.add_development_dependency 'pry-byebug'
-  # ibm_db <=4.0.0 breaks on arel version 9.0.  Rails 5.0 uses arel 8.0
-  #s.add_development_dependency 'activerecord', '>= 4.2.0', '<= 5.0.7.2'
-  #s.add_development_dependency 'activesupport', '>= 4.2.0', '<= 5.0.7.2'
-  s.add_development_dependency 'ibm_db', '4.0.0'
 
   s.license = 'MIT'
 end

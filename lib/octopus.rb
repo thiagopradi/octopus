@@ -5,6 +5,13 @@ require 'active_support/core_ext/class'
 require 'yaml'
 require 'erb'
 
+# Optionally load the ibm_db gem
+begin
+  require 'ibm_db'
+  require 'active_record/connection_adapters/ibm_db_adapter'
+rescue LoadError
+end
+
 module Octopus
   def self.env
     @env ||= 'octopus'

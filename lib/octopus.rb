@@ -122,6 +122,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR > 1)
   end
 
+  def self.ibm_db_support?
+    defined?(IBM_DB) && defined?(ActiveRecord::ConnectionAdapters::IBM_DBAdapter)
+  end
+
   attr_writer :logger
 
   def self.logger

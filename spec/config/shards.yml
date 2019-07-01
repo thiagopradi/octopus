@@ -28,6 +28,7 @@ octopus: &octopus
       adapter: sqlite3
       database: /tmp/database.sqlite3
 
+    <% if Octopus.ibm_db_support? %>
     db2_shard:
       adapter: ibm_db
       username: <%= ENV['DB2_USER'] || 'db2inst1' %>
@@ -36,6 +37,7 @@ octopus: &octopus
       port: <%= ENV['DB2_PORT'] || '50000' %>
       database: octopus6
       schema: <%= ENV['DB2_SCHEMA'] || 'db2inst1' %>
+    <% end %>
 
     history_shards:
       aug2009:

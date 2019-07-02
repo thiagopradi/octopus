@@ -1,5 +1,8 @@
 appraise "rails42" do
   gem "activerecord", "~> 4.2.0"
+  #Causes issue https://github.com/ibmdb/ruby-ibmdb/issues/31
+  #  Wait for this PR to be accepted or pull in a local gem for yourself:
+  #  https://github.com/ibmdb/ruby-ibmdb/pull/38/files
   gem "ibm_db", "~> 3.0.5"
 end
 

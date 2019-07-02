@@ -65,7 +65,7 @@ namespace :db do
 
     shard_symbols = [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
     if Octopus.ibm_db_support?
-      shard_symbols += [:db2_shard]
+      shard_symbols += [:db2_1, :db2_2, :db2_3, :db2_4] 
     end
 
     shard_symbols << :protocol_shard
@@ -80,11 +80,14 @@ namespace :db do
 
       # Since it's too slow to drop/create DB2 databases,
       # drop all the tables instead
-      if shard_symbol == :db2_shard
+      if BlankModel.using(shard_symbol).connection.adapter_name == "IBM_DB"
         [:users,:clients,:cats,:items,:computers,:keyboards, :roles, 
          :permissions, :permissions_roles, :assignments, :programmers, 
          :projects, :comments, :parts, :yummy, :adverts, :custom].each do |table|
-          BlankModel.using(shard_symbol).connection.drop_table(table)
+          begin
+            BlankModel.using(shard_symbol).connection.drop_table(table)
+          rescue ActiveRecord::StatementInvalid 
+          end
         end
       end
 

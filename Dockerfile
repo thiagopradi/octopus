@@ -25,11 +25,11 @@ SHELL ["/bin/bash", "-l", "-c"]
 
 RUN gem install --no-document bundler -v 1.16.6
 
+# Uncomment if you don't want to use Appraisal
 # Copy only what's needed for bundler
-COPY Gemfile ar-octopus.gemspec /usr/src/app/
-COPY lib/octopus/version.rb /usr/src/app/lib/octopus/version.rb
-
-RUN bundle install --path=.bundle
+#COPY Gemfile ar-octopus.gemspec /usr/src/app/
+#COPY lib/octopus/version.rb /usr/src/app/lib/octopus/version.rb
+#RUN bundle install --path=.bundle
 
 # Uncomment if you want to copy the octopus repo
 # into the Docker image itself.  docker-compose is

@@ -1,5 +1,7 @@
 FROM ibmcom/db2express-c:latest
 
+RUN yum makecache fast && yum install -y expect
+
 SHELL ["/bin/bash", "-l", "-c"]
 COPY create_databases.sh /
 # Bake the Octopus databases into the DB2 image,

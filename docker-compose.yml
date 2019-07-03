@@ -16,6 +16,8 @@ services:
       DB2_HOST: db2
       DB2_USER: db2inst1
       DB2_PASSWORD: testpassword
+      DB2_PORT: 50000
+      DB2_DATABASE: octopus6
     depends_on:
       - mysql
       - postgres

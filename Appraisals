@@ -12,13 +12,12 @@ end
 
 appraise "rails50_db2" do
   gem "activerecord", "~> 5.0.0"
+  # For now, ibm_db only works on rails 5.0
+  gem "ibm_db", "~> 4.0.0"
 end
 
 appraise "rails50" do
   gem "activerecord", "~> 5.0.0"
-  # For now, ibm_db only works on rails 5.0
-  #gem "ibm_db", "~> 4.0.0"
-  gem "ibm_db", path: "/usr/src/ruby-ibmdb/IBM_DB_Adapter/ibm_db"
 end
 
 appraise "rails51" do

@@ -373,14 +373,27 @@ describe Octopus::Model do
       u = User.using(:brazil).find_by_name('Teste')
       u.toggle(:admin)
       u.save
-      expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      # DB2 doesn't have a native boolean type, so this is 1 
+      # instead of true. (ibm_db hijacks all of ActiveRecord)
+      if Octopus.ibm_db_support?
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be 1
+      else
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      end
     end
 
     it 'toggle!' do
       _ = User.using(:brazil).create!(:name => 'Teste', :admin => false)
       u = User.using(:brazil).find_by_name('Teste')
       u.toggle!(:admin)
-      expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      # DB2 doesn't have a native boolean type, so this is 1 
+      # instead of true (ibm_db hijacks all of ActiveRecord)
+      if Octopus.ibm_db_support?
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be 1
+      else
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      end
+
     end
 
     it 'count' do

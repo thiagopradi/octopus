@@ -5,6 +5,13 @@ require 'active_support/core_ext/class'
 require 'yaml'
 require 'erb'
 
+# Optionally load the ibm_db gem
+begin
+  require 'ibm_db'
+  require 'active_record/connection_adapters/ibm_db_adapter'
+rescue LoadError
+end
+
 module Octopus
   def self.env
     @env ||= 'octopus'
@@ -122,6 +129,10 @@ module Octopus
     ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR > 1)
   end
 
+  def self.ibm_db_support?
+    defined?(IBM_DB) && defined?(ActiveRecord::ConnectionAdapters::IBM_DBAdapter)
+  end
+
   attr_writer :logger
 
   def self.logger
@@ -191,6 +202,7 @@ require 'octopus/association_shard_tracking'
 require 'octopus/persistence'
 require 'octopus/log_subscriber'
 require 'octopus/abstract_adapter'
+require 'octopus/adapter_patches'
 require 'octopus/singular_association'
 require 'octopus/finder_methods'
 require 'octopus/query_cache_for_shards' unless Octopus.rails4?

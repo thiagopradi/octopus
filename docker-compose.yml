@@ -13,9 +13,15 @@ services:
       MYSQL_HOST: mysql 
       MYSQL_USER: root
       MYSQL_PASSWORD: testpassword
+      DB2_HOST: db2
+      DB2_USER: db2inst1
+      DB2_PASSWORD: testpassword
+      DB2_PORT: 50000
+      DB2_DATABASE: octopus6
     depends_on:
       - mysql
       - postgres
+      - db2
     # Wait for databases to start up, run test suite
     command: ./docker/startup.sh
   mysql:
@@ -39,3 +45,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  db2:
+    build: docker/db2
+    restart: always
+    environment:
+      DB2INST1_PASSWORD: testpassword
+      LICENSE: accept
+    command: db2start && sleep infinity

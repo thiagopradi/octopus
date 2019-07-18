@@ -18,13 +18,28 @@ done
 
 >&2 echo "MySQL is ready"
 
+echo /opt/ibm/clidriver/bin/db2cli validate -database $DB2_DATABASE:$DB2_HOST:$DB2_PORT -connect -user $DB2_USER -passwd $DB2_PASSWORD
+
+until ! /opt/ibm/clidriver/bin/db2cli validate -database $DB2_DATABASE:$DB2_HOST:$DB2_PORT -connect -user $DB2_USER -passwd $DB2_PASSWORD | grep -q FAILED ; do
+  >&2 echo "DB2 is unavailable - sleeping"
+  sleep 10  
+done
+
+>&2 echo "DB2 is ready"
+
 set -x
-bundle install
-bundle exec rake db:prepare
-bundle exec rake appraisal:install
-bundle exec rake spec
-#Not working yet
-#./sample_app/script/ci_build
+cd /usr/src/app
+bundle install --path=.bundle
+bundle exec appraisal install
+
+# The db migration only works on rails 5.0.  
+# See bug https://github.com/ibmdb/ruby-ibmdb/issues/31
+bundle exec appraisal rails50_db2 rake db:prepare
+
+# Run the full spec across all rails versions.
+# (This takes a while)
+bundle exec rake appraisal spec
+
 set +x
 echo Octopus is ready for you.  Run \"docker-compose exec octopus /bin/bash\"
 /bin/sleep infinity

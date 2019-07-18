@@ -3,6 +3,7 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'appraisal'
 
+$stdout.sync = true
 RSpec::Core::RakeTask.new
 RuboCop::RakeTask.new
 
@@ -32,6 +33,7 @@ namespace :db do
     require 'active_record'
 
     # Connects to PostgreSQL
+    puts "Connecting to PostgreSQL"
     ActiveRecord::Base.establish_connection(pg_spec.merge('database' => 'postgres', 'schema_search_path' => 'public'))
     (1..2).map do |i|
       # drop the old database (if it exists)
@@ -41,6 +43,7 @@ namespace :db do
     end
 
     # Connect to MYSQL
+    puts "Connecting to MySQL"
     ActiveRecord::Base.establish_connection(mysql_spec)
     (1..5).map do |i|
       # drop the old database (if it exists)
@@ -48,6 +51,7 @@ namespace :db do
       # create new database
       ActiveRecord::Base.connection.create_database("octopus_shard_#{i}")
     end
+
   end
 
   desc 'Create tables on tests databases'
@@ -60,6 +64,10 @@ namespace :db do
     require "#{File.dirname(__FILE__)}/spec/support/database_connection"
 
     shard_symbols = [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
+    if Octopus.ibm_db_support?
+      shard_symbols += [:db2_1, :db2_2, :db2_3, :db2_4] 
+    end
+
     shard_symbols << :protocol_shard
     shard_symbols.each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires
@@ -69,6 +77,19 @@ namespace :db do
       puts "Preparing shard #{shard_symbol}"
       BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table
       BlankModel.using(shard_symbol).connection.initialize_metadata_table if Octopus.atleast_rails50? 
+
+      # Since it's too slow to drop/create DB2 databases,
+      # drop all the tables instead
+      if BlankModel.using(shard_symbol).connection.adapter_name == "IBM_DB"
+        [:users,:clients,:cats,:items,:computers,:keyboards, :roles, 
+         :permissions, :permissions_roles, :assignments, :programmers, 
+         :projects, :comments, :parts, :yummy, :adverts, :custom].each do |table|
+          begin
+            BlankModel.using(shard_symbol).connection.drop_table(table)
+          rescue ActiveRecord::StatementInvalid 
+          end
+        end
+      end
 
       BlankModel.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name

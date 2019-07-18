@@ -2,7 +2,21 @@ FROM ruby:2.5
 
 RUN apt-get update && apt-get install -y \
   mysql-client \
-  postgresql
+  postgresql \
+  vim
+
+# Install the IBM DB2 CLI driver.  The ibm_db gem install
+# will also do this, but it has no status output and takes 
+# several minutes.
+ENV IBM_DB_HOME=/opt/ibm/clidriver
+RUN wget http://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/linuxx64_odbc_cli.tar.gz -O /tmp/linuxx64_odbc_cli.tar.gz \
+  && mkdir -p /opt/ibm \
+  && tar -C /opt/ibm -xzvf /tmp/linuxx64_odbc_cli.tar.gz 
+
+# Set up DB2 libraries and catalogs
+COPY docker/db2-ld.conf /etc/ld.so.conf.d/
+COPY docker/db2dsdriver.cfg /opt/ibm/clidriver/cfg/
+RUN ldconfig
 
 WORKDIR /usr/src/app
 
@@ -11,11 +25,11 @@ SHELL ["/bin/bash", "-l", "-c"]
 
 RUN gem install --no-document bundler -v 1.16.6
 
+# Uncomment if you don't want to use Appraisal
 # Copy only what's needed for bundler
-COPY Gemfile ar-octopus.gemspec /usr/src/app/
-COPY lib/octopus/version.rb /usr/src/app/lib/octopus/version.rb
-
-RUN bundle install --path=.bundle
+#COPY Gemfile ar-octopus.gemspec /usr/src/app/
+#COPY lib/octopus/version.rb /usr/src/app/lib/octopus/version.rb
+#RUN bundle install --path=.bundle
 
 # Uncomment if you want to copy the octopus repo
 # into the Docker image itself.  docker-compose is

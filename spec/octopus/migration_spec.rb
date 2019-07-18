@@ -10,6 +10,18 @@ def get_all_versions
 end
 
 describe Octopus::Migration do
+  before(:each) do
+    # Strange bug with ibm_db adapter.  Listing tables randomly raises
+    # this exception:
+    #
+    # An unexpected error occurred during retrieval of table metadata: uncaught throw :"Fetch Failure: <error message could not be retrieved>"
+    # ruby-ibmdb/IBM_DB_Adapter/ibm_db/lib/active_record/connection_adapters/ibm_db_adapter.rb:1858:in `rescue in tables'
+    #
+    # See the full stack trace in git commit.
+    skip "DB2 bug with migrations (see comments)" if Octopus.ibm_db_support?
+  end
+
+
   it 'should run just in the master shard' do
     OctopusHelper.migrating_to_version 1 do
       expect(User.using(:master).find_by_name('Master')).not_to be_nil

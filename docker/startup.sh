@@ -34,7 +34,7 @@ bundle exec appraisal install
 
 # The db migration only works on rails 5.0.  
 # See bug https://github.com/ibmdb/ruby-ibmdb/issues/31
-bundle exec appraisal rails5 rake db:prepare
+bundle exec appraisal rails50_db2 rake db:prepare
 
 # Run the full spec across all rails versions.
 # (This takes a while)

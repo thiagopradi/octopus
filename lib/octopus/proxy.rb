@@ -160,7 +160,7 @@ module Octopus
 
     def clear_all_connections!
       # Don't disconnect on DB2, the client is buggy and hangs sometimes
-      with_each_healthy_shard { |v| v.disconnect! if v.connection.config["adapter"] != "ibm_db" }
+      with_each_healthy_shard { |v| v.disconnect! if v.spec.config["adapter"] != "ibm_db" }
 
       # If we're running on Passenger or > Rails 5.2, reconnect
       if Octopus.passenger? || Octopus.atleast_rails52?

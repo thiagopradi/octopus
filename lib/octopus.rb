@@ -133,6 +133,11 @@ module Octopus
     defined?(IBM_DB) && defined?(ActiveRecord::ConnectionAdapters::IBM_DBAdapter)
   end
 
+  # Are we running any version of Phusion Passenger?
+  def self.passenger?
+    defined?(PhusionPassenger)
+  end
+
   attr_writer :logger
 
   def self.logger

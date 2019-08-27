@@ -5,9 +5,6 @@ module Octopus
       base.sharded_methods :any?, :build, :count, :create, :create!, :concat, :delete, :delete_all,
                            :destroy, :destroy_all, :empty?, :find, :first, :include?, :last, :length,
                            :many?, :pluck, :replace, :select, :size, :sum, :to_a, :uniq
-      if Octopus.rails3?
-        base.sharded_methods :scoped
-      end
     end
 
     def current_shard

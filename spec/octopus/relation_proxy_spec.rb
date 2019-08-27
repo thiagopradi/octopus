@@ -12,10 +12,39 @@ describe Octopus::RelationProxy do
       expect(@relation.current_shard).to eq(:canada)
     end
 
-    unless Octopus.rails3?
-      it 'can define collection association with the same name as ancestor private method' do
-        @client.comments << Comment.using(:canada).create!(open: true)
-        expect(@client.comments.open).to be_a_kind_of(ActiveRecord::Relation)
+    it 'can define collection association with the same name as ancestor private method' do
+      @client.comments << Comment.using(:canada).create!(open: true)
+      expect(@client.comments.open).to be_a_kind_of(ActiveRecord::Relation)
+    end
+
+    it 'can be dumped and loaded' do
+      expect(Marshal.load(Marshal.dump(@relation))).to eq @relation
+    end
+
+    it 'maintains the current shard when using where.not(...)' do
+      where_chain = @relation.where
+      expect(where_chain.current_shard).to eq(@relation.current_shard)
+      not_relation = where_chain.not("1=0")
+      expect(not_relation.current_shard).to eq(@relation.current_shard)
+    end
+
+    context 'when a new relation is constructed from the original relation' do
+      context 'and a where(...) is used' do
+        it 'does not tamper with the original relation' do
+          relation = Item.using(:canada).where(id: 1)
+          original_sql = relation.to_sql
+          new_relation = relation.where(id: 2)
+          expect(relation.to_sql).to eq(original_sql)
+        end
+      end
+
+      context 'and a where.not(...) is used' do
+        it 'does not tamper with the original relation' do
+          relation = Item.using(:canada).where(id: 1)
+          original_sql = relation.to_sql
+          new_relation = relation.where.not(id: 2)
+          expect(relation.to_sql).to eq(original_sql)
+        end
       end
     end
 
@@ -29,26 +58,36 @@ describe Octopus::RelationProxy do
       end
     end
 
-    if Octopus.rails4?
-      context 'under Rails 4' do
-        it 'is an Octopus::RelationProxy' do
-          expect{@relation.ar_relation}.not_to raise_error
-        end
+    it "can deliver methods in ActiveRecord::Batches correctly when given a block" do
+      expect { @relation.find_each(&:inspect) }.not_to raise_error
+    end
 
-        it 'should be able to return its ActiveRecord::Relation' do
-          expect(@relation.ar_relation.is_a?(ActiveRecord::Relation)).to be true
-        end
+    it "can deliver methods in ActiveRecord::Batches correctly as an enumerator" do
+      expect { @relation.find_each.each(&:inspect) }.not_to raise_error
+    end
 
-        it 'is equal to an identically-defined, but different, RelationProxy' do
-          i = @client.items
-          expect(@relation).to eq(i)
-          expect(@relation.__id__).not_to eq(i.__id__)
-        end
+    it "can deliver methods in ActiveRecord::Batches correctly as a lazy enumerator" do
+      expect { @relation.find_each.lazy.each(&:inspect) }.not_to raise_error
+    end
 
-        it 'is equal to its own underlying ActiveRecord::Relation' do
-          expect(@relation).to eq(@relation.ar_relation)
-          expect(@relation.ar_relation).to eq(@relation)
-        end
+    context 'under Rails 4' do
+      it 'is an Octopus::RelationProxy' do
+        expect{@relation.ar_relation}.not_to raise_error
+      end
+
+      it 'should be able to return its ActiveRecord::Relation' do
+        expect(@relation.ar_relation.is_a?(ActiveRecord::Relation)).to be true
+      end
+
+      it 'is equal to an identically-defined, but different, RelationProxy' do
+        i = @client.items
+        expect(@relation).to eq(i)
+        expect(@relation.__id__).not_to eq(i.__id__)
+      end
+
+      it 'is equal to its own underlying ActiveRecord::Relation' do
+        expect(@relation).to eq(@relation.ar_relation)
+        expect(@relation.ar_relation).to eq(@relation)
       end
     end
 

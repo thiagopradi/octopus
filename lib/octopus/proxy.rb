@@ -4,216 +4,64 @@ require 'octopus/load_balancing/round_robin'
 
 module Octopus
   class Proxy
-    attr_accessor :config, :sharded
+    attr_accessor :proxy_config
 
-    CURRENT_MODEL_KEY = 'octopus.current_model'.freeze
-    CURRENT_SHARD_KEY = 'octopus.current_shard'.freeze
-    CURRENT_GROUP_KEY = 'octopus.current_group'.freeze
-    CURRENT_SLAVE_GROUP_KEY = 'octopus.current_slave_group'.freeze
-    CURRENT_LOAD_BALANCE_OPTIONS_KEY = 'octopus.current_load_balance_options'.freeze
-    BLOCK_KEY = 'octopus.block'.freeze
-    LAST_CURRENT_SHARD_KEY = 'octopus.last_current_shard'.freeze
-    FULLY_REPLICATED_KEY = 'octopus.fully_replicated'.freeze
+    delegate :current_model, :current_model=,
+             :current_shard, :current_shard=,
+             :current_group, :current_group=,
+             :current_slave_group, :current_slave_group=,
+             :current_load_balance_options, :current_load_balance_options=,
+             :block, :block=, :fully_replicated?, :has_group?,
+             :shard_names, :shards_for_group, :shards, :sharded, :slaves_list,
+             :shards_slave_groups, :slave_groups, :replicated, :slaves_load_balancer,
+             :config, :initialize_shards, :shard_name, to: :proxy_config, prefix: false
 
     def initialize(config = Octopus.config)
-      initialize_shards(config)
-      initialize_replication(config) if !config.nil? && config['replicated']
+      self.proxy_config = Octopus::ProxyConfig.new(config)
     end
 
-    def initialize_shards(config)
-      @shards = HashWithIndifferentAccess.new
-      @shards_slave_groups = HashWithIndifferentAccess.new
-      @slave_groups = HashWithIndifferentAccess.new
-      @groups = {}
-      @adapters = Set.new
-      @config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
+    # Rails Connection Methods - Those methods are overriden to add custom behavior that helps
+    # Octopus introduce Sharding / Replication.
+    delegate :adapter_name, :add_transaction_record, :case_sensitive_modifier,
+      :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
+      :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
+      :table_exists?, :in_clause_length, :supports_ddl_transactions?,
+      :sanitize_limit, :prefetch_primary_key?, :current_database,
+      :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
+      :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
+      :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
+      :release_advisory_lock, :prepare_binds_for_database, :cacheable_query, :column_name_for_operation,
+      :prepared_statements, :transaction_state, :create_table, to: :select_connection
 
-      unless config.nil?
-        @entire_sharded = config['entire_sharded']
-        @shards_config = config[Octopus.rails_env]
-      end
-
-      @shards_config ||= []
-
-      @shards_config.each do |key, value|
-        if value.is_a?(String)
-          value = resolve_string_connection(value).merge(:octopus_shard => key)
-          initialize_adapter(value['adapter'])
-          @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
-        elsif value.is_a?(Hash) && value.key?('adapter')
-          value.merge!(:octopus_shard => key)
-          initialize_adapter(value['adapter'])
-          @shards[key.to_sym] = connection_pool_for(value, "#{value['adapter']}_connection")
-
-          slave_group_configs = value.select do |_k, v|
-            structurally_slave_group? v
-          end
-
-          if slave_group_configs.present?
-            slave_groups = HashWithIndifferentAccess.new
-            slave_group_configs.each do |slave_group_name, slave_configs|
-              slaves = HashWithIndifferentAccess.new
-              slave_configs.each do |slave_name, slave_config|
-                @shards[slave_name.to_sym] = connection_pool_for(slave_config, "#{value['adapter']}_connection")
-                slaves[slave_name.to_sym] = slave_name.to_sym
-              end
-              slave_groups[slave_group_name.to_sym] = Octopus::SlaveGroup.new(slaves)
-            end
-            @shards_slave_groups[key.to_sym] = slave_groups
-            @sharded = true
-          end
-        elsif value.is_a?(Hash)
-          @groups[key.to_s] = []
-
-          value.each do |k, v|
-            fail 'You have duplicated shard names!' if @shards.key?(k.to_sym)
-
-            initialize_adapter(v['adapter'])
-            config_with_octopus_shard = v.merge(:octopus_shard => k)
-
-            @shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
-            @groups[key.to_s] << k.to_sym
-          end
-
-          if structurally_slave_group? value
-            slaves = Hash[@groups[key.to_s].map { |v| [v, v] }]
-            @slave_groups[key.to_sym] = Octopus::SlaveGroup.new(slaves)
-          end
-        end
-      end
-
-      @shards[:master] ||= ActiveRecord::Base.connection_pool_without_octopus if Octopus.master_shard == :master
+    def execute(sql, name = nil)
+      conn = select_connection
+      clean_connection_proxy if should_clean_connection_proxy?('execute')
+      conn.execute(sql, name)
     end
 
-    def initialize_replication(config)
-      @replicated = true
-      if config.key?('fully_replicated')
-        @fully_replicated = config['fully_replicated']
-      else
-        @fully_replicated = true
-      end
-
-      @slaves_list = @shards.keys.map(&:to_s).sort
-      @slaves_list.delete('master')
-      @slaves_load_balancer = Octopus.load_balancer.new(@slaves_list)
+    def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
+      conn = select_connection
+      clean_connection_proxy if should_clean_connection_proxy?('insert')
+      conn.insert(arel, name, pk, id_value, sequence_name, binds)
     end
 
-    def current_model
-      Thread.current[CURRENT_MODEL_KEY]
+    def update(arel, name = nil, binds = [])
+      conn = select_connection
+      # Call the legacy should_clean_connection_proxy? method here, emulating an insert.
+      clean_connection_proxy if should_clean_connection_proxy?('insert')
+      conn.update(arel, name, binds)
     end
 
-    def current_model=(model)
-      Thread.current[CURRENT_MODEL_KEY] = model.is_a?(ActiveRecord::Base) ? model.class : model
+    def delete(*args, &block)
+      legacy_method_missing_logic('delete', *args, &block)
     end
 
-    def current_shard
-      Thread.current[CURRENT_SHARD_KEY] ||= Octopus.master_shard
+    def select_all(*args, &block)
+      legacy_method_missing_logic('select_all', *args, &block)
     end
 
-    def current_shard=(shard_symbol)
-      if shard_symbol.is_a?(Array)
-        self.current_slave_group = nil
-        shard_symbol.each { |symbol| fail "Nonexistent Shard Name: #{symbol}" if @shards[symbol].nil? }
-      elsif shard_symbol.is_a?(Hash)
-        hash = shard_symbol
-        shard_symbol = hash[:shard]
-        slave_group_symbol = hash[:slave_group]
-        load_balance_options = hash[:load_balance_options]
-
-        if shard_symbol.nil? && slave_group_symbol.nil?
-          fail 'Neither shard or slave group must be specified'
-        end
-
-        if shard_symbol.present?
-          fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
-        end
-
-        if slave_group_symbol.present?
-          if (@shards_slave_groups.try(:[], shard_symbol).present? && @shards_slave_groups[shard_symbol][slave_group_symbol].nil?) ||
-              (@shards_slave_groups.try(:[], shard_symbol).nil? && @slave_groups[slave_group_symbol].nil?)
-            fail "Nonexistent Slave Group Name: #{slave_group_symbol} in shards config: #{@shards_config.inspect}"
-          end
-        end
-        self.current_slave_group = slave_group_symbol
-        self.current_load_balance_options = load_balance_options
-      else
-        fail "Nonexistent Shard Name: #{shard_symbol}" if @shards[shard_symbol].nil?
-      end
-
-      Thread.current[CURRENT_SHARD_KEY] = shard_symbol
-    end
-
-    def current_group
-      Thread.current[CURRENT_GROUP_KEY]
-    end
-
-    def current_group=(group_symbol)
-      # TODO: Error message should include all groups if given more than one bad name.
-      [group_symbol].flatten.compact.each do |group|
-        fail "Nonexistent Group Name: #{group}" unless has_group?(group)
-      end
-
-      Thread.current[CURRENT_GROUP_KEY] = group_symbol
-    end
-
-    def current_slave_group
-      Thread.current[CURRENT_SLAVE_GROUP_KEY]
-    end
-
-    def current_slave_group=(slave_group_symbol)
-      Thread.current[CURRENT_SLAVE_GROUP_KEY] = slave_group_symbol
-      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY] = nil if slave_group_symbol.nil?
-    end
-
-    def current_load_balance_options
-      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY]
-    end
-
-    def current_load_balance_options=(options)
-      Thread.current[CURRENT_LOAD_BALANCE_OPTIONS_KEY] = options
-    end
-
-    def block
-      Thread.current[BLOCK_KEY]
-    end
-
-    def block=(block)
-      Thread.current[BLOCK_KEY] = block
-    end
-
-    def last_current_shard
-      Thread.current[LAST_CURRENT_SHARD_KEY]
-    end
-
-    def last_current_shard=(last_current_shard)
-      Thread.current[LAST_CURRENT_SHARD_KEY] = last_current_shard
-    end
-
-    def fully_replicated?
-      @fully_replicated || Thread.current[FULLY_REPLICATED_KEY]
-    end
-
-    # Public: Whether or not a group exists with the given name converted to a
-    # string.
-    #
-    # Returns a boolean.
-    def has_group?(group)
-      @groups.key?(group.to_s)
-    end
-
-    # Public: Retrieves names of all loaded shards.
-    #
-    # Returns an array of shard names as symbols
-    def shard_names
-      @shards.keys
-    end
-
-    # Public: Retrieves the defined shards for a given group.
-    #
-    # Returns an array of shard names as symbols or nil if the group is not
-    # defined.
-    def shards_for_group(group)
-      @groups.fetch(group.to_s, nil)
+    def select_value(*args, &block)
+      legacy_method_missing_logic('select_value', *args, &block)
     end
 
     # Rails 3.1 sets automatic_reconnect to false when it removes
@@ -222,22 +70,14 @@ module Octopus
     # reconnect, but in Rails 3.1 the flag prevents this.
     def safe_connection(connection_pool)
       connection_pool.automatic_reconnect ||= true
-      if !connection_pool.connected? && @shards[Octopus.master_shard].connection.query_cache_enabled
+      if !connection_pool.connected? && shards[Octopus.master_shard].connection.query_cache_enabled
         connection_pool.connection.enable_query_cache!
       end
       connection_pool.connection
     end
 
     def select_connection
-      safe_connection(@shards[shard_name])
-    end
-
-    def shard_name
-      current_shard.is_a?(Array) ? current_shard.first : current_shard
-    end
-
-    def should_clean_table_name?
-      @adapters.size > 1
+      safe_connection(shards[shard_name])
     end
 
     def run_queries_on_shard(shard, &_block)
@@ -261,7 +101,7 @@ module Octopus
     end
 
     def send_queries_to_all_shards(&block)
-      send_queries_to_multiple_shards(shard_names.uniq { |shard_name| @shards[shard_name] }, &block)
+      send_queries_to_multiple_shards(shard_names.uniq { |shard_name| shards[shard_name] }, &block)
     end
 
     def clean_connection_proxy
@@ -288,20 +128,7 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      if should_clean_connection_proxy?(method)
-        conn = select_connection
-        self.last_current_shard = current_shard
-        clean_connection_proxy
-        conn.send(method, *args, &block)
-      elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
-      elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
-      elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
-      else
-        select_connection.send(method, *args, &block)
-      end
+      legacy_method_missing_logic(method, *args, &block)
     end
 
     def respond_to?(method, include_private = false)
@@ -309,16 +136,18 @@ module Octopus
     end
 
     def connection_pool
-      @shards[current_shard]
+      shards[current_shard]
     end
 
-    def enable_query_cache!
-      clear_query_cache
-      with_each_healthy_shard { |v| v.connected? && safe_connection(v).enable_query_cache! }
-    end
+    if Octopus.rails4?
+      def enable_query_cache!
+        clear_query_cache
+        with_each_healthy_shard { |v| v.connected? && safe_connection(v).enable_query_cache! }
+      end
 
-    def disable_query_cache!
-      with_each_healthy_shard { |v| v.connected? && safe_connection(v).disable_query_cache! }
+      def disable_query_cache!
+        with_each_healthy_shard { |v| v.connected? && safe_connection(v).disable_query_cache! }
+      end
     end
 
     def clear_query_cache
@@ -331,33 +160,81 @@ module Octopus
 
     def clear_all_connections!
       with_each_healthy_shard(&:disconnect!)
+
+      if Octopus.atleast_rails52?
+        # On Rails 5.2 it is no longer safe to re-use connection pools after they have been discarded
+        # This happens on webservers with forking, for example Phusion Passenger.
+        # Therefor after we clear all connections we reinitialize the shards to get fresh and not discarded ConnectionPool objects
+        proxy_config.reinitialize_shards
+      end
     end
 
     def connected?
-      @shards.any? { |_k, v| v.connected? }
+      shards.any? { |_k, v| v.connected? }
     end
 
     def should_send_queries_to_shard_slave_group?(method)
-      should_use_slaves_for_method?(method) && @shards_slave_groups.try(:[], current_shard).try(:[], current_slave_group).present?
+      should_use_slaves_for_method?(method) && shards_slave_groups.try(:[], current_shard).try(:[], current_slave_group).present?
     end
 
     def send_queries_to_shard_slave_group(method, *args, &block)
-      send_queries_to_balancer(@shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
+      send_queries_to_balancer(shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
     end
 
     def should_send_queries_to_slave_group?(method)
-      should_use_slaves_for_method?(method) && @slave_groups.try(:[], current_slave_group).present?
+      should_use_slaves_for_method?(method) && slave_groups.try(:[], current_slave_group).present?
     end
 
     def send_queries_to_slave_group(method, *args, &block)
-      send_queries_to_balancer(@slave_groups[current_slave_group], method, *args, &block)
+      send_queries_to_balancer(slave_groups[current_slave_group], method, *args, &block)
+    end
+
+    def current_model_replicated?
+      replicated && (current_model.try(:replicated) || fully_replicated?)
+    end
+    
+    def initialize_schema_migrations_table
+      if Octopus.atleast_rails52?
+        select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
+      else 
+        select_connection.initialize_schema_migrations_table
+      end
+    end
+    
+    def initialize_metadata_table
+      select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end
 
     protected
 
+    # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
+    # and will be removed when Octopus 1.0 will be released.
+    # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
+    def legacy_method_missing_logic(method, *args, &block)
+      if should_clean_connection_proxy?(method)
+        conn = select_connection
+        clean_connection_proxy
+        conn.send(method, *args, &block)
+      elsif should_send_queries_to_shard_slave_group?(method)
+        send_queries_to_shard_slave_group(method, *args, &block)
+      elsif should_send_queries_to_slave_group?(method)
+        send_queries_to_slave_group(method, *args, &block)
+      elsif should_send_queries_to_replicated_databases?(method)
+        send_queries_to_selected_slave(method, *args, &block)
+      else
+        val = select_connection.send(method, *args, &block)
+
+        if val.instance_of? ActiveRecord::Result
+          val.current_shard = shard_name
+        end
+
+        val
+      end
+    end
+
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard
-      @shards.each do |shard_name, v|
+      shards.each do |shard_name, v|
         begin
           yield(v)
         rescue => e
@@ -369,17 +246,10 @@ module Octopus
         end
       end
 
-      conn_handler = ActiveRecord::Base.connection_handler
-      if conn_handler.respond_to?(:connection_pool_list)
-        # Rails 4+
-        ar_pools = conn_handler.connection_pool_list
-      else
-        # Rails 3.2
-        ar_pools = conn_handler.connection_pools.values
-      end
+      ar_pools = ActiveRecord::Base.connection_handler.connection_pool_list
 
       ar_pools.each do |pool|
-        next if pool == @shards[:master] # Already handled this
+        next if pool == shards[:master] # Already handled this
 
         begin
           yield(pool)
@@ -393,55 +263,18 @@ module Octopus
       end
     end
 
-    def connection_pool_for(adapter, config)
-      if Octopus.rails4?
-        arg = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(adapter.dup, config)
-      else
-        arg = ActiveRecord::Base::ConnectionSpecification.new(adapter.dup, config)
-      end
-
-      ActiveRecord::ConnectionAdapters::ConnectionPool.new(arg)
-    end
-
-    def initialize_adapter(adapter)
-      @adapters << adapter
-      begin
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
-      end
-    end
-
-    def resolve_string_connection(spec)
-      if Octopus.rails41?
-        resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
-        HashWithIndifferentAccess.new(resolver.spec(spec).config)
-      else
-        if Octopus.rails4?
-          resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new(spec, {})
-        else
-          resolver = ActiveRecord::Base::ConnectionSpecification::Resolver.new(spec, {})
-        end
-        HashWithIndifferentAccess.new(resolver.spec.config)
-      end
-    end
-
     def should_clean_connection_proxy?(method)
       method.to_s =~ /insert|select|execute/ && !current_model_replicated? && (!block || block != current_shard)
     end
 
     # Try to use slaves if and only if `replicated: true` is specified in `shards.yml` and no slaves groups are defined
     def should_send_queries_to_replicated_databases?(method)
-      @replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
-    end
-
-    def current_model_replicated?
-      @replicated && (current_model.try(:replicated) || fully_replicated?)
+      replicated && method.to_s =~ /select/ && !block && !slaves_grouped?
     end
 
     def send_queries_to_selected_slave(method, *args, &block)
       if current_model.replicated || fully_replicated?
-        selected_slave = @slaves_load_balancer.next current_load_balance_options
+        selected_slave = slaves_load_balancer.next current_load_balance_options
       else
         selected_slave = Octopus.master_shard
       end
@@ -463,7 +296,7 @@ module Octopus
     end
 
     def slaves_grouped?
-      @slave_groups.present?
+      slave_groups.present?
     end
 
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
@@ -476,7 +309,11 @@ module Octopus
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
       using_shard(slave) do
-        select_connection.send(method, *args, &block)
+        val = select_connection.send(method, *args, &block)
+        if val.instance_of? ActiveRecord::Result
+          val.current_shard = slave
+        end
+        val
       end
     end
 
@@ -501,7 +338,6 @@ module Octopus
       older_slave_group = current_slave_group
       older_load_balance_options = current_load_balance_options
 
-
       begin
         unless current_model && !current_model.allowed_shard?(shard)
           self.current_shard = shard
@@ -524,14 +360,6 @@ module Octopus
       ensure
         self.current_group = older_group
       end
-    end
-
-    def structurally_slave?(config)
-      config.is_a?(Hash) && config.key?('adapter')
-    end
-
-    def structurally_slave_group?(config)
-      config.is_a?(Hash) && config.values.any? { |v| structurally_slave? v }
     end
   end
 end

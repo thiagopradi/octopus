@@ -63,6 +63,28 @@ describe Octopus::Model do
       expect(User.all).to eq([u1])
     end
 
+    it "should allow the #select method to fetch the correct data when using a block" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using('canada') do
+        @all_canadian_user_ids = User.select('id').to_a
+      end
+
+      expect(@all_canadian_user_ids).to eq([canadian_user])
+    end
+
+    it "should allow objects to be fetch using different blocks - GH #306" do
+      canadian_user = User.using(:canada).create!(:name => 'Rafael Pilha')
+
+      Octopus.using(:canada) { @users = User.where('id is not null') }
+      Octopus.using(:canada) { @user = @users.first }
+
+      Octopus.using(:canada) { @user2 = User.where('id is not null').first }
+
+      expect(@user).to eq(canadian_user)
+      expect(@user2).to eq(canadian_user)
+    end
+
     describe 'multiple calls to the same scope' do
       it 'works with nil response' do
         scope = User.using(:canada)
@@ -90,7 +112,7 @@ describe Octopus::Model do
         Octopus.using(:canada) do
           fail 'Some Exception'
         end
-      end.to raise_error
+      end.to raise_error(RuntimeError)
 
       expect(ActiveRecord::Base.connection.current_shard).to eq(:master)
     end
@@ -103,7 +125,7 @@ describe Octopus::Model do
           Octopus.using(:canada) do
             fail 'Some Exception'
           end
-        end.to raise_error
+        end.to raise_error(RuntimeError)
 
         expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
         Octopus.config[:master_shard] = nil
@@ -284,15 +306,19 @@ describe Octopus::Model do
 
   describe 'using a postgresql shard' do
     it 'should update the Arel Engine' do
-      expect(User.using(:postgresql_shard).arel_engine.connection.adapter_name).to eq('PostgreSQL')
-      expect(User.using(:alone_shard).arel_engine.connection.adapter_name).to eq('Mysql2')
+      if Octopus.atleast_rails52?
+        expect(User.using(:postgresql_shard).connection.adapter_name).to eq('PostgreSQL')
+        expect(User.using(:alone_shard).connection.adapter_name).to eq('Mysql2')
+      else 
+        expect(User.using(:postgresql_shard).arel_engine.connection.adapter_name).to eq('PostgreSQL')
+        expect(User.using(:alone_shard).arel_engine.connection.adapter_name).to eq('Mysql2')
+      end
     end
 
     it 'should works with writes and reads' do
       u = User.using(:postgresql_shard).create!(:name => 'PostgreSQL User')
       expect(User.using(:postgresql_shard).all).to eq([u])
       expect(User.using(:alone_shard).all).to eq([])
-      User.connection_handler.connection_pools['ActiveRecord::Base'] = User.connection.instance_variable_get(:@shards)[:master]
     end
   end
 
@@ -370,6 +396,18 @@ describe Octopus::Model do
 
       expect(User.using(:brazil).maximum(:number)).to eq(11)
       expect(User.using(:master).maximum(:number)).to eq(12)
+    end
+
+    it 'sum' do
+      u = User.using(:brazil).create!(:name => 'Teste', :number => 11)
+      v = User.using(:master).create!(:name => 'Teste', :number => 12)
+
+      expect(User.using(:master).sum(:number)).to eq(12)
+      expect(User.using(:brazil).sum(:number)).to eq(11)
+
+      expect(User.where(id: v.id).sum(:number)).to eq(12)
+      expect(User.using(:brazil).where(id: u.id).sum(:number)).to eq(11)
+      expect(User.using(:master).where(id: v.id).sum(:number)).to eq(12)
     end
 
     describe 'any?' do
@@ -462,19 +500,113 @@ describe Octopus::Model do
       expect(user.as_json(:except => [:created_at, :updated_at, :id])).to eq('admin' => nil, 'name' => 'User1', 'number' => nil)
     end
 
-    it 'transaction' do
-      _u = User.create!(:name => 'Thiago')
+    describe 'transaction' do
+      context 'without assigning a database' do
+        it 'works as expected' do
+          _u = User.create!(:name => 'Thiago')
 
-      expect(User.using(:brazil).count).to eq(0)
-      expect(User.using(:master).count).to eq(1)
+          expect(User.using(:brazil).count).to eq(0)
+          expect(User.using(:master).count).to eq(1)
 
-      User.using(:brazil).transaction do
-        expect(User.find_by_name('Thiago')).to be_nil
-        User.create!(:name => 'Brazil')
+          User.using(:brazil).transaction do
+            expect(User.find_by_name('Thiago')).to be_nil
+            User.create!(:name => 'Brazil')
+          end
+
+          expect(User.using(:brazil).count).to eq(1)
+          expect(User.using(:master).count).to eq(1)
+        end
       end
 
-      expect(User.using(:brazil).count).to eq(1)
-      expect(User.using(:master).count).to eq(1)
+      context 'when assigning a database' do
+        it 'works as expected' do
+          klass = User.using(:brazil)
+
+          klass.transaction do
+            klass.create!(:name => 'Brazil')
+          end
+
+          expect(klass.find_by_name('Brazil')).to be_present
+        end
+      end
+    end
+
+    describe "#finder methods" do
+      before(:each) do
+        @user1 = User.using(:brazil).create!(:name => 'User1')
+        @user2 = User.using(:brazil).create!(:name => 'User2')
+        @user3 = User.using(:brazil).create!(:name => 'User3')
+      end
+
+      it "#find_each should work with a block" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_each should work with a where.not(...)" do
+        result_array = []
+
+        User.using(:brazil).where.not(:name => 'User2').find_each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user3])
+      end
+
+      it "#find_each should work as an enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each.each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_each should work as a lazy enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_each.lazy.each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([@user1, @user2, @user3])
+      end
+
+      it "#find_in_batches should work with a block" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1) do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+
+      it "#find_in_batches should work as an enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1).each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
+
+      it "#find_in_batches should work as a lazy enumerator" do
+        result_array = []
+
+        User.using(:brazil).where("name is not NULL").find_in_batches(batch_size: 1).lazy.each do |user|
+          result_array << user
+        end
+
+        expect(result_array).to eq([[@user1], [@user2], [@user3]])
+      end
     end
 
     describe 'deleting a record' do
@@ -666,20 +798,21 @@ describe Octopus::Model do
     it 'should work correctly when using validations' do
       @key = Keyboard.create!(:name => 'Key')
       expect { Keyboard.using(:brazil).create!(:name => 'Key') }.not_to raise_error
-      expect { Keyboard.create!(:name => 'Key') }.to raise_error
+      expect { Keyboard.create!(:name => 'Key') }.to raise_error(ActiveRecord::RecordInvalid)
     end
 
     it 'should work correctly when using validations with using syntax' do
       @key = Keyboard.using(:brazil).create!(:name => 'Key')
       expect { Keyboard.create!(:name => 'Key') }.not_to raise_error
-      expect { Keyboard.using(:brazil).create!(:name => 'Key') }.to raise_error
+      expect { Keyboard.using(:brazil).create!(:name => 'Key') }
+        .to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 
   describe '#replicated_model method' do
     it 'should be replicated' do
       OctopusHelper.using_environment :production_replicated do
-        expect(ActiveRecord::Base.connection_proxy.instance_variable_get(:@replicated)).to be true
+        expect(ActiveRecord::Base.connection_proxy.replicated).to be true
       end
     end
 
@@ -687,6 +820,17 @@ describe Octopus::Model do
       OctopusHelper.using_environment :production_replicated do
         expect(User.replicated).to be_falsey
         expect(Cat.replicated).to be true
+      end
+    end
+
+    it "should work on a fully replicated environment" do
+      OctopusHelper.using_environment :production_fully_replicated do
+        User.using(:slave1).create!(name: 'Thiago')
+        User.using(:slave2).create!(name: 'Thiago')
+
+        replicated_cat = User.find_by_name 'Thiago'
+
+        expect(replicated_cat.current_shard.to_s).to match(/master/)
       end
     end
   end

@@ -1,4 +1,4 @@
-class CreateUsersOnMaster < ActiveRecord::Migration
+class CreateUsersOnMaster < BaseOctopusMigrationClass
   def self.up
     User.create!(:name => 'Master')
   end

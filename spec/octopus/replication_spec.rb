@@ -1,6 +1,22 @@
 require 'spec_helper'
 
 describe 'when the database is replicated' do
+  let(:slave_pool) do
+    ActiveRecord::Base.connection_proxy.shards['slave1']
+  end
+
+  let(:slave_connection) do
+    slave_pool.connection
+  end
+
+  let(:master_pool) do
+    ActiveRecord::Base.connection_proxy.shards['master']
+  end
+
+  let(:master_connection) do
+    master_pool.connection
+  end
+
   it 'should send all writes/reads queries to master when you have a non replicated model' do
     OctopusHelper.using_environment :production_replicated do
       u = User.create!(:name => 'Replicated')
@@ -26,10 +42,49 @@ describe 'when the database is replicated' do
     end
   end
 
+  context 'when updating model' do
+    it 'should send writes to master' do
+      OctopusHelper.using_environment :replicated_with_one_slave do
+        Cat.using(:slave1).create!(:name => 'Cat')
+        cat = Cat.find_by_name('Cat')
+        cat.name = 'New name'
+
+        expect(master_connection).to receive(:update).and_call_original
+
+        cat.save!
+      end
+    end
+  end
+
+  context 'when querying' do
+    it 'Reads from slave' do
+      OctopusHelper.using_environment :replicated_with_one_slave do
+        expect(master_connection).not_to receive(:select)
+
+        Cat.where(:name => 'Catman2').first
+      end
+    end
+  end
+
+  context 'When record is read from slave' do
+    it 'Should write associations to master' do
+      OctopusHelper.using_environment :replicated_with_one_slave do
+        client = Client.using(:slave1).create!(:name => 'Client')
+
+        client = Client.find(client.id)
+
+        expect(master_connection).to receive(:insert).and_call_original
+
+        client.items.create!(:name => 'Item')
+      end
+    end
+  end
+
+
   describe 'When enabling the query cache' do
     include_context 'with query cache enabled' do
       it 'should do the queries with cache' do
-        OctopusHelper.using_environment :replicated_with_one_slave  do
+        OctopusHelper.using_environment :replicated_with_one_slave do
           cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
           _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
           expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
@@ -42,7 +97,11 @@ describe 'when the database is replicated' do
           expect(Cat.find(cat3.id).id).to eq(cat3.id)
           expect(Cat.find(cat3.id).id).to eq(cat3.id)
 
-          expect(counter.query_count).to eq(14)
+          # Rails 5.1 count the cached queries as regular queries.
+          # TODO: How we can verify if the queries are using cache on Rails 5.1? - @thiagopradi
+          expected_records = Octopus.rails51? || Octopus.rails52? ? 19 : 14
+
+          expect(counter.query_count).to eq(expected_records)
         end
       end
     end

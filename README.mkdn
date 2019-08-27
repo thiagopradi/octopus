@@ -1,11 +1,16 @@
+# Important Notice:
+
+Octopus will enter into maintainance mode once Rails 6 is released - since Rails 6 will include all the features for Database Sharding / Replication into Rails Core (PR: https://github.com/rails/rails/pull/34052).
+Once the first version of Rails 6 beta is released, there will be a migration guide to help users migrate from Octopus to Rails 6.
+
 # Octopus  - Easy Database Sharding for ActiveRecord
 
-<a href='http://www.pledgie.com/campaigns/20950'><img alt='Click here to lend your support to: Octopus and make a donation at www.pledgie.com !' src='http://www.pledgie.com/campaigns/20950.png?skin_name=chrome' border='0' /></a> [![Build Status](https://travis-ci.org/thiagopradi/octopus.png)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)
+[![Build Status](https://travis-ci.org/thiagopradi/octopus.svg)](https://travis-ci.org/thiagopradi/octopus) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/thiagopradi/octopus)
 
 Octopus is a better way to do Database Sharding in ActiveRecord. Sharding allows multiple databases in the same rails application. While there are several projects that implement Sharding (e.g. DbCharmer, DataFabric, MultiDb), each project has its own limitations. The main goal of octopus project is to provide a better way of doing Database Sharding.
 
 ## Feature list:
-The api is designed to be simple as possible. Octopus focuses on the end user, giving the power of multiple databases but with reliable code and flexibility. Octopus is compatible with Rails 3.2 and Rails 4.
+The api is designed to be simple as possible. Octopus focuses on the end user, giving the power of multiple databases but with reliable code and flexibility. Octopus is compatible with Rails 4 and Rails 5.
 
 Octopus supports:
 
@@ -62,14 +67,14 @@ First, you need to create a config file, shards.yml, inside your config/ directo
 Octopus adds a method to each AR Class and object: the using method is used to select the shard like this:
 
 ```ruby
-User.where(:name => "Thiago").limit(3).using(:slave_one)
+User.where(:name => "Boba").limit(3).using(:read_replica_one)
 ```
 
 Octopus also supports queries within a block. When you pass a block to the using method, all queries inside the block will be sent to the specified shard.
 
 ```ruby
-Octopus.using(:slave_two) do
-  User.create(:name => "Mike")
+Octopus.using(:read_replica_two) do
+  User.create(:name => "Thiago")
 end
 ```
 

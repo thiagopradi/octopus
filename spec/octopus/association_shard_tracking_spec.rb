@@ -73,6 +73,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@brazil_role.permissions).to eq([@permission_brazil])
 
       expect(@brazil_role.permissions.first).to eq(@permission_brazil)
+      expect(@brazil_role.permissions.first!).to eq(@permission_brazil)
       expect(@brazil_role.permissions.last).to eq(@permission_brazil)
     end
 
@@ -81,6 +82,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@permission_brazil.roles).to eq([@brazil_role])
 
       expect(@permission_brazil.roles.first).to eq(@brazil_role)
+      expect(@permission_brazil.roles.first!).to eq(@brazil_role)
       expect(@permission_brazil.roles.last).to eq(@brazil_role)
     end
 
@@ -94,7 +96,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@permission_brazil.roles).to eq([new_brazil_role])
     end
 
-    it 'should works for build method' do
+    it 'should work for build method' do
       new_brazil_role = Role.using(:brazil).create!(:name => 'Brazil Role')
       c = new_brazil_role.permissions.create(:name => 'new Permission')
       c.save
@@ -103,7 +105,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(new_brazil_role.permissions).to eq([c])
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @permission_brazil_2 = Permission.using(:brazil).create!(:name => 'Brazil Item 2')
         @role = Role.using(:brazil).create!(:name => 'testes')
@@ -194,11 +196,97 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@permission_brazil_2.roles.first).to be_nil
       end
 
+      it 'where' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1')).to eq([role])
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1')).to be_empty
+      end
+
+      it 'map' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.map(&:id)).to eq([role.id])
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.map(&:id)).to be_empty
+      end
+
+      it 'where + map' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').map(&:id)).to eq([role.id])
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').map(&:id)).to be_empty
+      end
+
+      # each_with_index is not listed in active_record/relation/delegation.rb
+      it 'where + each_with_index + map (enum method chain)' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to eq([[role.id, 0]])
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
+      end
+
+      # sum & index_by is specialized in active_support/core_ext/enumerable.rb
+      it 'where + sum' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').sum(&:id)).to eq(role.id)
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').sum(&:id)).to eq(0)
+      end
+
+      it 'where + index_by' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').index_by(&:id)).to eq(role.id => role)
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').index_by(&:id)).to be_empty
+      end
+
+      it 'where + find' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').find([role.id])).to eq([role])
+        @permission_brazil_2.roles.destroy_all
+        expect { @permission_brazil_2.roles.where('1=1').find([role.id]) }.to raise_error ActiveRecord::RecordNotFound
+      end
+
+      it 'where + find with block' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').find { |r| r.id == role.id }).to eq(role)
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').find { |r| r.id == role.id }).to be_nil
+      end
+
+      it 'where + select' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').select(:name).first.name).to eq(role.name)
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').select(:name)).to be_empty
+      end
+
+      it 'where + select with block' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').select { |r| r.id == role.id }).to eq([role])
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').select { |r| r.id == role.id }).to be_empty
+      end
+
+      it 'where + any?' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').any?).to be true
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').any?).to be false
+      end
+
+      it 'where + any? with block' do
+        role = @permission_brazil_2.roles.create(:name => 'Builded Role')
+        expect(@permission_brazil_2.roles.where('1=1').any? { |r| r.id == role.id }).to be true
+        @permission_brazil_2.roles.destroy_all
+        expect(@permission_brazil_2.roles.where('1=1').any? { |r| r.id == role.id }).to be false
+      end
+
       it 'exists?' do
         role = @permission_brazil_2.roles.create(:name => 'Builded Role')
-        expect(@permission_brazil_2.roles.exists?(role)).to be true
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be true
         @permission_brazil_2.roles.destroy_all
-        expect(@permission_brazil_2.roles.exists?(role)).to be false
+        expect(@permission_brazil_2.roles.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -248,7 +336,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@project.programmers).to eq([new_brazil_programmer])
     end
 
-    it 'should works for create method' do
+    it 'should work for create method' do
       new_brazil_programmer = Programmer.using(:brazil).create!(:name => 'Joao')
       c = new_brazil_programmer.projects.create(:name => 'new Project')
       c.save
@@ -257,7 +345,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(new_brazil_programmer.projects).to eq([c])
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @new_brazil_programmer = Programmer.using(:brazil).create!(:name => 'Jose')
         @project = Project.using(:brazil).create!(:name => 'VB Application :-(')
@@ -348,11 +436,95 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@new_brazil_programmer.projects.first).to be_nil
       end
 
+      it 'where' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1')).to eq([role])
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1')).to be_empty
+      end
+
+      it 'map' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.map(&:id)).to eq([role.id])
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.map(&:id)).to be_empty
+      end
+
+      it 'where + map' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').map(&:id)).to eq([role.id])
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').map(&:id)).to be_empty
+      end
+
+      it 'where + each_with_index + map (enum method chain)' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').each_with_index.map { |r, i| [r.id, i] }).to eq([[role.id, 0]])
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').each_with_index.map { |r, i| [r.id, i] }).to be_empty
+      end
+
+      it 'where + sum' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').sum(&:id)).to eq(role.id)
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').sum(&:id)).to eq(0)
+      end
+
+      it 'where + index_by' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').index_by(&:id)).to eq(role.id => role)
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').index_by(&:id)).to be_empty
+      end
+
+      it 'where + find' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').find(role.id)).to eq(role)
+        @new_brazil_programmer.projects.destroy_all
+        expect { @new_brazil_programmer.projects.where('1=1').find(role.id) }.to raise_error ActiveRecord::RecordNotFound
+      end
+
+      it 'where + find with block' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').find { |r| r.id == role.id }).to eq(role)
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').find { |r| r.id == role.id }).to be_nil
+      end
+
+      it 'where + select' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').select(:name).first.name).to eq(role.name)
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').select(:name)).to be_empty
+      end
+
+      it 'where + select with block' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').select { |r| r.id == role.id }).to eq([role])
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').select { |r| r.id == role.id }).to be_empty
+      end
+
+      it 'where + any?' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').any?).to be true
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').any?).to be false
+      end
+
+      it 'where + any? with block' do
+        role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
+        expect(@new_brazil_programmer.projects.where('1=1').any? { |r| r.id == role.id }).to be true
+        @new_brazil_programmer.projects.destroy_all
+        expect(@new_brazil_programmer.projects.where('1=1').any? { |r| r.id == role.id }).to be false
+      end
+
       it 'exists?' do
         role = @new_brazil_programmer.projects.create(:name => 'New VB App :-/')
-        expect(@new_brazil_programmer.projects.exists?(role)).to be true
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be true
         @new_brazil_programmer.projects.destroy_all
-        expect(@new_brazil_programmer.projects.exists?(role)).to be false
+        expect(@new_brazil_programmer.projects.exists?(role.id)).to be false
       end
 
       it 'clear' do
@@ -399,7 +571,13 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
     it 'should raise error if you try to add a record from a different shard' do
       expect do
         @brazil_client.items << Item.using(:canada).create!(:name => 'New User')
-      end.to raise_error('Association Error: Records are from different shards')
+      end.to raise_error(Octopus::AssociationShardTracking::MismatchedShards)
+    end
+
+    it 'should make difference if the shard is a symbol or a string for raising Octopus::AssociationShardTracking::MismatchedShards' do
+      expect do
+        @brazil_client.items << Item.using('brazil').create!(:name => 'New Brazil Item')
+      end.not_to raise_error
     end
 
     it 'should make difference if the shard is a symbol or a string for raising Octopus::AssociationShardTracking::MismatchedShards' do
@@ -418,7 +596,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@item_brazil.client).to eq(new_brazil_client)
     end
 
-    it 'should works for build method' do
+    it 'should work for build method' do
       item2 = Item.using(:brazil).create!(:name => 'Brazil Item')
       c = item2.create_client(:name => 'new Client')
       c.save
@@ -446,7 +624,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       end
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @item_brazil_2 = Item.using(:brazil).create!(:name => 'Brazil Item 2')
         expect(@brazil_client.items.to_set).to eq([@item_brazil].to_set)
@@ -543,10 +721,82 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.items.first).to be_nil
       end
 
-      it 'exists?' do
-        expect(@brazil_client.items.exists?(@item_brazil)).to be true
+      it 'where' do
+        expect(@brazil_client.items.where('1=1')).to eq([@item_brazil])
         @brazil_client.items.destroy_all
-        expect(@brazil_client.items.exists?(@item_brazil)).to be false
+        expect(@brazil_client.items.where('1=1')).to be_empty
+      end
+
+      it 'map' do
+        expect(@brazil_client.items.map(&:id)).to eq([@item_brazil.id])
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.map(&:id)).to be_empty
+      end
+
+      it 'where + map' do
+        expect(@brazil_client.items.where('1=1').map(&:id)).to eq([@item_brazil.id])
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').map(&:id)).to be_empty
+      end
+
+      it 'where + each_with_index + map (enum method chain)' do
+        expect(@brazil_client.items.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to eq([[@item_brazil.id, 0]])
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
+      end
+
+      it 'where + sum' do
+        expect(@brazil_client.items.where('1=1').sum(&:id)).to eq(@item_brazil.id)
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').sum(&:id)).to eq(0)
+      end
+
+      it 'where + index_by' do
+        expect(@brazil_client.items.where('1=1').index_by(&:id)).to eq(@item_brazil.id => @item_brazil)
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').index_by(&:id)).to be_empty
+      end
+
+      it 'where + find' do
+        expect(@brazil_client.items.where('1=1').find(@item_brazil.id)).to eq(@item_brazil)
+        @brazil_client.items.destroy_all
+        expect { @brazil_client.items.where('1=1').find(@item_brazil.id) }.to raise_error ActiveRecord::RecordNotFound
+      end
+
+      it 'where + find with block' do
+        expect(@brazil_client.items.where('1=1').find { |i| i.id == @item_brazil.id }).to eq(@item_brazil)
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').find { |i| i.id == @item_brazil.id }).to be_nil
+      end
+
+      it 'where + select' do
+        expect(@brazil_client.items.where('1=1').select(:name).first.name).to eq(@item_brazil.name)
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').select(:name)).to be_empty
+      end
+
+      it 'where + select with block' do
+        expect(@brazil_client.items.where('1=1').select { |i| i.id == @item_brazil.id }).to eq([@item_brazil])
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').select { |i| i.id == @item_brazil.id }).to be_empty
+      end
+
+      it 'where + any?' do
+        expect(@brazil_client.items.where('1=1').any?).to be true
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').any?).to be false
+      end
+
+      it 'where + any? with block' do
+        expect(@brazil_client.items.where('1=1').any? { |i| i.id == @item_brazil.id }).to be true
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.where('1=1').any? { |i| i.id == @item_brazil.id }).to be false
+      end
+
+      it 'exists?' do
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be true
+        @brazil_client.items.destroy_all
+        expect(@brazil_client.items.exists?(@item_brazil.id)).to be false
       end
 
       it 'uniq' do
@@ -590,7 +840,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       expect(@comment_brazil.commentable).to eq(new_brazil_client)
     end
 
-    describe 'it should works when using' do
+    describe 'it should work when using' do
       before(:each) do
         @comment_brazil_2 = Comment.using(:brazil).create!(:name => 'Brazil Comment 2')
         expect(@brazil_client.comments.to_set).to eq([@comment_brazil].to_set)
@@ -693,10 +943,82 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
         expect(@brazil_client.comments.first).to be_nil
       end
 
-      it 'exists?' do
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be true
+      it 'where' do
+        expect(@brazil_client.comments.where('1=1')).to eq([@comment_brazil])
         @brazil_client.comments.destroy_all
-        expect(@brazil_client.comments.exists?(@comment_brazil)).to be false
+        expect(@brazil_client.comments.where('1=1')).to be_empty
+      end
+
+      it 'map' do
+        expect(@brazil_client.comments.map(&:id)).to eq([@comment_brazil.id])
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.map(&:id)).to be_empty
+      end
+
+      it 'where + map' do
+        expect(@brazil_client.comments.where('1=1').map(&:id)).to eq([@comment_brazil.id])
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').map(&:id)).to be_empty
+      end
+
+      it 'where + each_with_index + map (enum method chain)' do
+        expect(@brazil_client.comments.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to eq([[@comment_brazil.id, 0]])
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').each_with_index.map { |r, i| [r.id, i]}).to be_empty
+      end
+
+      it 'where + sum' do
+        expect(@brazil_client.comments.where('1=1').sum(&:id)).to eq(@comment_brazil.id)
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').sum(&:id)).to eq(0)
+      end
+
+      it 'where + index_by' do
+        expect(@brazil_client.comments.where('1=1').index_by(&:id)).to eq(@comment_brazil.id => @comment_brazil)
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').index_by(&:id)).to be_empty
+      end
+
+      it 'where + find' do
+        expect(@brazil_client.comments.where('1=1').find(@comment_brazil.id)).to eq(@comment_brazil)
+        @brazil_client.comments.destroy_all
+        expect { @brazil_client.comments.where('1=1').find(@comment_brazil.id) }.to raise_error ActiveRecord::RecordNotFound
+      end
+
+      it 'where + find with block' do
+        expect(@brazil_client.comments.where('1=1').find { |c| c.id == @comment_brazil.id }).to eq(@comment_brazil)
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').find { |c| c.id == @comment_brazil.id }).to be_nil
+      end
+
+      it 'where + select' do
+        expect(@brazil_client.comments.where('1=1').select(:name).first.name).to eq(@comment_brazil.name)
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').select(:name)).to be_empty
+      end
+
+      it 'where + select with block' do
+        expect(@brazil_client.comments.where('1=1').select { |c| c.id == @comment_brazil.id }).to eq([@comment_brazil])
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').select { |c| c.id == @comment_brazil.id }).to be_empty
+      end
+
+      it 'where + any?' do
+        expect(@brazil_client.comments.where('1=1').any?).to be true
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').any?).to be false
+      end
+
+      it 'where + any? with block' do
+        expect(@brazil_client.comments.where('1=1').any? { |c| c.id == @comment_brazil.id }).to be true
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.where('1=1').any? { |c| c.id == @comment_brazil.id }).to be false
+      end
+
+      it 'exists?' do
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be true
+        @brazil_client.comments.destroy_all
+        expect(@brazil_client.comments.exists?(@comment_brazil.id)).to be false
       end
 
       it 'uniq' do

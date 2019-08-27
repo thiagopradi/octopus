@@ -11,20 +11,24 @@ module Octopus
 
     attr_accessor :klass
 
+    # Dup and clone should be delegated to the class.
+    # We want to dup the query, not the scope proxy.
+    delegate :dup, :clone, to: :klass
+
     def initialize(shard, klass)
       @current_shard = shard
       @klass = klass
     end
 
     def using(shard)
-      fail "Nonexistent Shard Name: #{shard}" if @klass.connection.instance_variable_get(:@shards)[shard].nil?
+      fail "Nonexistent Shard Name: #{shard}" if @klass.connection.shards[shard].nil?
       @current_shard = shard
       self
     end
 
     # Transaction Method send all queries to a specified shard.
     def transaction(options = {}, &block)
-      run_on_shard { @klass = klass.transaction(options, &block) }
+      run_on_shard { klass.transaction(options, &block) }
     end
 
     def connection
@@ -40,10 +44,13 @@ module Octopus
     end
 
     def method_missing(method, *args, &block)
-      result = run_on_shard { @klass.send(method, *args, &block) }
+      result = run_on_shard { @klass.__send__(method, *args, &block) }
       if result.respond_to?(:all)
-        @klass = result
-        return self
+        return ::Octopus::ScopeProxy.new(current_shard, result)
+      end
+
+      if result.respond_to?(:current_shard)
+        result.current_shard = current_shard
       end
 
       result

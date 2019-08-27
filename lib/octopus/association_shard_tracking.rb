@@ -1,5 +1,23 @@
 module Octopus
   module AssociationShardTracking
+    class MismatchedShards < StandardError
+      attr_reader :record, :current_shard
+
+      def initialize(record, current_shard)
+        @record = record
+        @current_shard = current_shard
+      end
+
+      def message
+        [
+          "Association Error: Records are from different shards",
+          "Record: #{record.inspect}",
+          "Current Shard: #{current_shard.inspect}",
+          "Current Record Shard: #{record.current_shard.inspect}",
+        ].join(" ")
+      end
+    end
+
     def self.extended(base)
       base.send(:include, InstanceMethods)
     end
@@ -16,40 +34,38 @@ module Octopus
       end
     end
 
-    if Octopus.rails4?
-      def has_many(association_id, scope = nil, options = {}, &extension)
-        if options == {} && scope.is_a?(Hash)
-          default_octopus_opts(scope)
-        else
-          default_octopus_opts(options)
-        end
-        super
-      end
-
-      def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
-        if options == {} && scope.is_a?(Hash)
-          default_octopus_opts(scope)
-        else
-          default_octopus_opts(options)
-        end
-        super
-      end
-
-    else
-      def has_many(association_id, options = {}, &extension)
+    def has_many(name, scope = nil, **options, &extension)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
         default_octopus_opts(options)
-        super
       end
+      super
+    end
 
-      def has_and_belongs_to_many(association_id, options = {}, &extension)
-        default_octopus_opts(options)
-        super
-      end
+    def has_and_belongs_to_many(association_id, scope = nil, options = {}, &extension)
+      assign_octopus_opts(scope, options)
+      super
     end
 
     def default_octopus_opts(options)
       options[:before_add] = [ :connection_on_association=, options[:before_add] ].compact.flatten
       options[:before_remove] = [ :connection_on_association=, options[:before_remove] ].compact.flatten
+    end
+
+    def assign_octopus_opts(scope, options)
+      if options == {} && scope.is_a?(Hash)
+        default_octopus_opts(scope)
+      else
+        default_octopus_opts(options)
+      end
+    end
+
+    if Octopus.atleast_rails51?
+      def has_and_belongs_to_many(association_id, scope = nil, **options, &extension)
+        assign_octopus_opts(scope, options)
+        super
+      end
     end
   end
 end

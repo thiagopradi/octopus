@@ -44,7 +44,15 @@ module Octopus
   end
 
   def self.master_shard
-    ((config && ( config[rails_env][:master_shard] || config[:master_shard] )) || :master).to_sym
+    shard = :master
+    return shard unless config
+
+    if config[:master_shards] && config[:master_shards][rails_env]
+      shard = config[:master_shards][rails_env].to_sym
+    elsif config[:master_shard]
+      shard = config[:master_shard].to_sym
+    end
+    shard
   end
 
   # Public: Whether or not Octopus is configured and should hook into the

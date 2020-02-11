@@ -10,6 +10,7 @@ module Octopus
              :current_shard, :current_shard=,
              :current_group, :current_group=,
              :current_slave_group, :current_slave_group=,
+             :default_slave_group, :default_slave_group=,
              :current_load_balance_options, :current_load_balance_options=,
              :block, :block=, :fully_replicated?, :has_group?,
              :shard_names, :shards_for_group, :shards, :sharded, :slaves_list,

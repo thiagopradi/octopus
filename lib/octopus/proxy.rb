@@ -171,6 +171,10 @@ module Octopus
 
     def connected?
       shards.any? { |_k, v| v.connected? }
+      rescue NoMethodError
+        proxy_config.reinitialize_shards
+        retry
+      end
     end
 
     def should_send_queries_to_shard_slave_group?(method)
@@ -192,15 +196,15 @@ module Octopus
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
     end
-    
+
     def initialize_schema_migrations_table
       if Octopus.atleast_rails52?
         select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
-      else 
+      else
         select_connection.initialize_schema_migrations_table
       end
     end
-    
+
     def initialize_metadata_table
       select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end

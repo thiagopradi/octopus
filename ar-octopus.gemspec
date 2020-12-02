@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
                            'Octopus now stores schema version information in each shard and migrations will not ' \
                            'work properly unless this task is invoked.'
 
-  s.required_ruby_version = '>= 2.2.0'
+  s.required_ruby_version = '>= 2.5.0'
 
   s.add_dependency 'activerecord', '>= 4.2.0'
   s.add_dependency 'activesupport', '>= 4.2.0'

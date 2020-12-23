@@ -1,0 +1,14 @@
+#!/bin/bash
+dir=`readlink -f $0`
+dir="`dirname $dir`/.."
+RAILS_ROOT=`readlink -f $dir`
+cd $RAILS_ROOT
+
+bundle install --path=$RAILS_ROOT/.bundle
+
+for stage in test development production; do
+  PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -c "create database octopus_sample_app_$stage"
+done
+
+# Not working...
+bundle exec cucumber

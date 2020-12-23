@@ -3,6 +3,5 @@
 source "https://rubygems.org"
 
 gem "activerecord", "~> 5.0.0"
-gem "ibm_db", path: "/usr/src/ruby-ibmdb/IBM_DB_Adapter/ibm_db"
 
 gemspec path: "../"

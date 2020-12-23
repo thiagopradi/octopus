@@ -224,7 +224,11 @@ module Octopus
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
       end
 
-      ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+      pool = ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+      if patched_adapter?(config)
+        pool.connection.config = config.dup
+      end
+      pool
     end
 
     def resolve_string_connection(spec)
@@ -238,6 +242,11 @@ module Octopus
 
     def structurally_slave_group?(config)
       config.is_a?(Hash) && config.values.any? { |v| structurally_slave? v }
+    end
+
+    def patched_adapter?(config)
+      # Test and add more adapters here?
+      ["ibm_db"].member?(config && config['adapter'])
     end
 
     def initialize_adapter(adapter)

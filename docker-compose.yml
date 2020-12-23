@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  octopus:
+    build: .
+    # Your local clone binds to /usr/src/app
+    volumes: 
+      - .:/usr/src/app
+    environment:
+      POSTGRES_HOST: postgres  # image name below
+      POSTGRES_USER: postgres  
+      POSTGRES_PASSWORD: testpassword  # password below
+      MYSQL_HOST: mysql 
+      MYSQL_USER: root
+      MYSQL_PASSWORD: testpassword
+      DB2_HOST: db2
+      DB2_USER: db2inst1
+      DB2_PASSWORD: testpassword
+      DB2_PORT: 50000
+      DB2_DATABASE: octopus6
+    depends_on:
+      - mysql
+      - postgres
+      - db2
+    # Wait for databases to start up, run test suite
+    command: ./docker/startup.sh
+  mysql:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: testpassword
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+  postgres:
+    image: postgres:11
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: testpassword
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  db2:
+    build: docker/db2
+    restart: always
+    environment:
+      DB2INST1_PASSWORD: testpassword
+      LICENSE: accept
+    command: db2start && sleep infinity

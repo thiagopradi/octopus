@@ -13,15 +13,17 @@ namespace :db do
   task :build_databases do
     pg_spec = {
       :adapter  => 'postgresql',
-      :host     => 'localhost',
+      :host     => (ENV['POSTGRES_HOST'] || ''),
       :username => (ENV['POSTGRES_USER'] || 'postgres'),
+      :password => (ENV['POSTGRES_PASSWORD'] || ''),
       :encoding => 'utf8',
     }
 
     mysql_spec = {
       :adapter  => 'mysql2',
-      :host     => 'localhost',
+      :host     => (ENV['MYSQL_HOST'] || ''),
       :username => (ENV['MYSQL_USER'] || 'root'),
+      :password => (ENV['MYSQL_PASSWORD'] || ''),
       :encoding => 'utf8',
     }
 
@@ -64,6 +66,7 @@ namespace :db do
       # the model be a descendent of ActiveRecord::Base.
       class BlankModel < ActiveRecord::Base; end
 
+      puts "Preparing shard #{shard_symbol}"
       BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table
       BlankModel.using(shard_symbol).connection.initialize_metadata_table if Octopus.atleast_rails50? 
 

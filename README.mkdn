@@ -237,6 +237,47 @@ bundle install
 cucumber
 ```
 
+### Using Docker Compose
+
+For a more consistent build/test/development environment, use [Docker Compose](https://docs.docker.com/compose/install/).
+
+```bash
+[me@host octopus]$ docker-compose -f docker-compose.yml up
+Creating network "octopus_default" with the default driver
+Creating octopus_postgres_1 ... 
+Creating octopus_mysql_1 ... 
+Creating octopus_postgres_1
+. . . 
+octopus_1   | mysqld is alive
+octopus_1   | MySQL is ready
+octopus_1   | + bundle exec rake db:prepare
+. . . 
+octopus_1   | + bundle exec rake spec
+. . . 
+octopus_1   | Finished in 7 minutes 44 seconds (files took 0.71416 seconds to load)
+octopus_1   | 359 examples, 0 failures, 2 pending
+
+(Ctrl+C to shut down the stack)
+```
+
+Your workstation's octopus clone is mounted inside the docker container, so
+you may still use your favorite development tools.  The `octopus_1` container 
+is available for re-running the test suite.  To start a new shell in another
+terminal, run:
+
+```bash
+[me@host octopus]$ docker-compose exec octopus /bin/bash
+root@f6ae68df6fc8:/usr/src/app#
+  # run bundle exec rake spec again
+```
+
+To completely destory the stack and start over:
+
+```bash
+[me@host octopus]$ docker-compose -f docker-compose.yml down
+[me@host octopus]$ docker-compose -f docker-compose.yml up
+```
+
 If you are having issues running the octopus spec suite, verify your database users and passwords match those inside the config files and your permissions are correct.
 
 ## Contributors:

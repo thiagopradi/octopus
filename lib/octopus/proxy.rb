@@ -159,9 +159,11 @@ module Octopus
     end
 
     def clear_all_connections!
-      with_each_healthy_shard(&:disconnect!)
+      # Don't disconnect on DB2, the client is buggy and hangs sometimes
+      with_each_healthy_shard { |v| v.disconnect! if v.spec.config["adapter"] != "ibm_db" }
 
-      if Octopus.atleast_rails52?
+      # If we're running on Passenger or > Rails 5.2, reconnect
+      if Octopus.passenger? || Octopus.atleast_rails52?
         # On Rails 5.2 it is no longer safe to re-use connection pools after they have been discarded
         # This happens on webservers with forking, for example Phusion Passenger.
         # Therefor after we clear all connections we reinitialize the shards to get fresh and not discarded ConnectionPool objects

@@ -1,13 +1,25 @@
 mysql: &mysql
   adapter: mysql2
   username: <%= ENV['MYSQL_USER'] || 'root' %>
-  host: localhost
+  password: <%= ENV['MYSQL_PASSWORD'] || '' %>
+  host: <%= ENV['MYSQL_HOST'] || 'localhost' %>
 
 mysql_unavailable: &mysql_unavailable
   adapter: mysql2
   username: <%= ENV['MYSQL_USER'] || 'root' %>
   host: 192.0.2.1
   connect_timeout: 3
+
+<% if Octopus.ibm_db_support? %>
+db2: &db2
+  adapter: ibm_db
+  username: <%= ENV['DB2_USER'] || 'db2inst1' %>
+  password: <%= ENV['DB2_PASSWORD'] || '' %>
+  host: <%= ENV['DB2_HOST'] || 'db2' %>
+  port: <%= ENV['DB2_PORT'] || '50000' %>
+  schema: <%= ENV['DB2_SCHEMA'] || 'db2inst1' %>
+  database: octopus6
+<% end %>
 
 octopus: &octopus
   shards:
@@ -18,14 +30,29 @@ octopus: &octopus
     postgresql_shard:
       adapter: postgresql
       username: <%= ENV['POSTGRES_USER'] || 'postgres' %>
-      password:
+      password: <%= ENV['POSTGRES_PASSWORD'] || '' %>
       database: octopus_shard_1
       encoding: unicode
-      host: localhost
+      host: <%= ENV['POSTGRES_HOST'] || 'localhost' %>
 
     sqlite_shard:
       adapter: sqlite3
       database: /tmp/database.sqlite3
+  
+    <% if Octopus.ibm_db_support? %>
+    db2_1:
+      <<: *db2
+      database: octopus6
+    db2_2:
+      <<: *db2
+      database: octopus7
+    db2_3:
+      <<: *db2
+      database: octopus8
+    db2_4:
+      <<: *db2
+      database: octopus9
+    <% end %>
 
     history_shards:
       aug2009:
@@ -49,7 +76,7 @@ octopus: &octopus
         database: octopus_shard_4
         <<: *mysql
 
-    protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>@localhost:5432/octopus_shard_2
+    protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>:<%= ENV['POSTGRES_PASSWORD'] || '' %>@<%= ENV['POSTGRES_HOST'] || 'localhost' %>:5432/octopus_shard_2
 
 octopus_with_default_migration_group:
    <<: *octopus
@@ -227,3 +254,39 @@ modify_config:
       adapter: modify_config
       database: octopus_shard_1
       host: localhost
+
+<% if Octopus.ibm_db_support? %>
+db2_case1:
+  replicated: true
+  fully_replicated: false
+  shards:
+    narnia:
+      <<: *db2
+      database: octopus6
+      slaves:
+        archenland:
+          <<: *db2
+          database: octopus6
+        calormen:
+          <<: *db2
+          database: octopus7
+
+db2_case2:
+  replicated: true
+  fully_replicated: false
+  # Removes the name `master` in the shard list
+  master_shard: narnia
+  shards:
+    narnia:
+      <<: *db2
+      database: octopus6
+    archenland:
+      <<: *db2
+      database: octopus7
+    calormen:
+      <<: *db2
+      database: octopus8
+    telmar:
+      <<: *db2
+      database: octopus9
+<% end %>     

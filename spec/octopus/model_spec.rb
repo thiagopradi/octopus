@@ -373,14 +373,27 @@ describe Octopus::Model do
       u = User.using(:brazil).find_by_name('Teste')
       u.toggle(:admin)
       u.save
-      expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      # For some reason, boolean coersion works in rails 4.2
+      # with DB2, but not rails 5.0
+      if Octopus.ibm_db_support? && Octopus.rails50?
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be 1
+      else
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      end
     end
 
     it 'toggle!' do
       _ = User.using(:brazil).create!(:name => 'Teste', :admin => false)
       u = User.using(:brazil).find_by_name('Teste')
       u.toggle!(:admin)
-      expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      # For some reason, boolean coersion works in rails 4.2
+      # with DB2, but not rails 5.0
+      if Octopus.ibm_db_support? && Octopus.rails50?
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be 1
+      else
+        expect(User.using(:brazil).find_by_name('Teste').admin).to be true
+      end
+
     end
 
     it 'count' do

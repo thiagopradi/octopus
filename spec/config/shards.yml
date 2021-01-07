@@ -1,7 +1,8 @@
 mysql: &mysql
   adapter: mysql2
   username: <%= ENV['MYSQL_USER'] || 'root' %>
-  host: localhost
+  password: <%= ENV['MYSQL_PASSWORD'] || '' %>
+  host: <%= ENV['MYSQL_HOST'] || 'localhost' %>
 
 mysql_unavailable: &mysql_unavailable
   adapter: mysql2
@@ -18,10 +19,10 @@ octopus: &octopus
     postgresql_shard:
       adapter: postgresql
       username: <%= ENV['POSTGRES_USER'] || 'postgres' %>
-      password:
+      password: <%= ENV['POSTGRES_PASSWORD'] || '' %>
       database: octopus_shard_1
       encoding: unicode
-      host: localhost
+      host: <%= ENV['POSTGRES_HOST'] || 'localhost' %>
 
     sqlite_shard:
       adapter: sqlite3
@@ -49,7 +50,7 @@ octopus: &octopus
         database: octopus_shard_4
         <<: *mysql
 
-    protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>@localhost:5432/octopus_shard_2
+    protocol_shard: postgres://<%= ENV['POSTGRES_USER'] || 'postgres' %>:<%= ENV['POSTGRES_PASSWORD'] || '' %>@<%= ENV['POSTGRES_HOST'] || 'localhost' %>:5432/octopus_shard_2
 
 octopus_with_default_migration_group:
    <<: *octopus

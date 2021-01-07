@@ -168,6 +168,18 @@ Then you can use the `SHARD` environment variable to override the `master_shard`
 SHARD=shard1 rake db:setup && SHARD=shard2 rake db:setup
 ```
 
+For creating specific shard DB use:
+
+```bash
+SHARD=shard1 rake db:shards:create
+```
+
+For droping specific shard DB use:
+
+```bash
+SHARD=shard1 rake db:shards:drop
+```
+
 ### Rails Controllers
 
 If you want to send a specified action, or all actions from a controller, to a specific shard, use this syntax:

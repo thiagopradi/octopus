@@ -78,7 +78,7 @@ module Octopus
       connection_pool.connection
     end
 
-    def select_connection(conection = nil)
+    def select_connection(connection = nil)
       safe_connection(connection || shards[shard_name])
     end
 

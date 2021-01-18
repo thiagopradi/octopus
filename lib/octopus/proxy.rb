@@ -14,7 +14,9 @@ module Octopus
              :block, :block=, :fully_replicated?, :has_group?,
              :shard_names, :shards_for_group, :shards, :sharded, :slaves_list,
              :shards_slave_groups, :slave_groups, :replicated, :slaves_load_balancer,
-             :config, :initialize_shards, :shard_name, to: :proxy_config, prefix: false
+             :config, :initialize_shards, :shard_name,
+             :default_shard, :default_slave_groups,
+             :current_slave, :current_slave=, to: :proxy_config, prefix: false
 
     def initialize(config = Octopus.config)
       self.proxy_config = Octopus::ProxyConfig.new(config)
@@ -70,14 +72,14 @@ module Octopus
     # reconnect, but in Rails 3.1 the flag prevents this.
     def safe_connection(connection_pool)
       connection_pool.automatic_reconnect ||= true
-      if !connection_pool.connected? && shards[Octopus.master_shard].connection.query_cache_enabled
+      if !connection_pool.connected? && shards[self.default_shard].connection.query_cache_enabled
         connection_pool.connection.enable_query_cache!
       end
       connection_pool.connection
     end
 
-    def select_connection
-      safe_connection(shards[shard_name])
+    def select_connection(conection = nil)
+      safe_connection(connection || shards[shard_name])
     end
 
     def run_queries_on_shard(shard, &_block)
@@ -105,7 +107,7 @@ module Octopus
     end
 
     def clean_connection_proxy
-      self.current_shard = Octopus.master_shard
+      self.current_shard = self.default_shard
       self.current_model = nil
       self.current_group = nil
       self.block = nil
@@ -119,7 +121,7 @@ module Octopus
 
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
-        run_queries_on_shard(Octopus.master_shard) do
+        run_queries_on_shard(self.default_shard) do
           select_connection.transaction(options, &block)
         end
       else
@@ -178,7 +180,11 @@ module Octopus
     end
 
     def send_queries_to_shard_slave_group(method, *args, &block)
-      send_queries_to_balancer(shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
+      if current_slave_group == :master
+        send_queries_to_slave(shards[current_shard], method, *args, &block)
+      else
+        send_queries_to_balancer(shards_slave_groups[current_shard][current_slave_group], method, *args, &block)
+      end
     end
 
     def should_send_queries_to_slave_group?(method)
@@ -218,8 +224,10 @@ module Octopus
       elsif should_send_queries_to_shard_slave_group?(method)
         send_queries_to_shard_slave_group(method, *args, &block)
       elsif should_send_queries_to_slave_group?(method)
+        raise NotImplementedError.new
         send_queries_to_slave_group(method, *args, &block)
       elsif should_send_queries_to_replicated_databases?(method)
+        raise NotImplementedError.new
         send_queries_to_selected_slave(method, *args, &block)
       else
         val = select_connection.send(method, *args, &block)
@@ -232,14 +240,19 @@ module Octopus
       end
     end
 
+
+    def shard_servers
+      shard_servers[current_shard]
+    end
+
     # Ensure that a single failing slave doesn't take down the entire application
     def with_each_healthy_shard
-      shards.each do |shard_name, v|
+      shard_servers.each do |v|
         begin
           yield(v)
         rescue => e
           if Octopus.robust_environment?
-            Octopus.logger.error "Error on shard #{shard_name}: #{e.message}"
+            Octopus.logger.error "Error on shard #{v.spec.config['host']}, database #{v.spec.config['database']}: #{e.message}"
           else
             raise
           end
@@ -249,7 +262,7 @@ module Octopus
       ar_pools = ActiveRecord::Base.connection_handler.connection_pool_list
 
       ar_pools.each do |pool|
-        next if pool == shards[:master] # Already handled this
+        next if pool == shards[self.default_shard] # Already handled this
 
         begin
           yield(pool)
@@ -276,7 +289,7 @@ module Octopus
       if current_model.replicated || fully_replicated?
         selected_slave = slaves_load_balancer.next current_load_balance_options
       else
-        selected_slave = Octopus.master_shard
+        selected_slave = self.default_shard
       end
 
       send_queries_to_slave(selected_slave, method, *args, &block)
@@ -302,19 +315,17 @@ module Octopus
     # Temporarily switch `current_shard` to the next slave in a slave group and send queries to it
     # while preserving `current_shard`
     def send_queries_to_balancer(balancer, method, *args, &block)
-      send_queries_to_slave(balancer.next(current_load_balance_options), method, *args, &block)
+      send_queries_to_slave(balancer.next(current_slave), method, *args, &block)
     end
 
     # Temporarily switch `current_shard` to the specified slave and send queries to it
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
-      using_shard(slave) do
-        val = select_connection.send(method, *args, &block)
-        if val.instance_of? ActiveRecord::Result
-          val.current_shard = slave
-        end
-        val
+      val = select_connection(slave).send(method, *args, &block)
+      if val.instance_of? ActiveRecord::Result
+        val.current_shard = slave
       end
+      val
     end
 
     # Temporarily block cleaning connection proxy and run the block

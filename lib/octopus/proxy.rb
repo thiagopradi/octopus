@@ -198,15 +198,15 @@ module Octopus
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
     end
-    
+
     def initialize_schema_migrations_table
       if Octopus.atleast_rails52?
         select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
-      else 
+      else
         select_connection.initialize_schema_migrations_table
       end
     end
-    
+
     def initialize_metadata_table
       select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end
@@ -242,7 +242,7 @@ module Octopus
 
 
     def shard_servers
-      shard_servers[current_shard]
+      self.proxy_config.shard_servers[current_shard]
     end
 
     # Ensure that a single failing slave doesn't take down the entire application

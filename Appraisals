@@ -20,5 +20,7 @@ end
 
 appraise "rails61" do
   gem "activerecord", "~> 6.1.0"
+  gem "pg", "~> 1.1"
+  gem "mysql2", "~> 0.5"
 end
 # vim: ft=ruby

@@ -98,6 +98,10 @@ module Octopus
     rails4? && ActiveRecord::VERSION::MINOR == 2
   end
 
+  def self.rails5?
+    ActiveRecord::VERSION::MAJOR == 5
+  end
+
   def self.rails50?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0
   end
@@ -120,6 +124,22 @@ module Octopus
 
   def self.atleast_rails52?
     ActiveRecord::VERSION::MAJOR > 5 || (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR > 1)
+  end
+
+  def self.rails6?
+    ActiveRecord::VERSION::MAJOR == 6
+  end
+
+  def self.rails60?
+    rails6? && ActiveRecord::VERSION::MINOR == 0
+  end
+
+  def self.rails61?
+    rails6? && ActiveRecord::VERSION::MINOR == 1
+  end
+
+  def self.atleast_rails6?
+    ActiveRecord::VERSION::MAJOR >= 6
   end
 
   attr_writer :logger

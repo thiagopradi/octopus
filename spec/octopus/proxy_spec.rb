@@ -6,7 +6,7 @@ describe Octopus::Proxy do
   describe 'creating a new instance', :shards => [] do
     it 'should initialize all shards and groups' do
       # FIXME: Don't test implementation details
-      expect(proxy.shards).to include('canada', 'brazil', 'master', 'sqlite_shard', 'russia', 'alone_shard',
+      expect(proxy.shards).to include('canada', 'brazil', 'master_shard', 'sqlite_shard', 'russia', 'alone_shard',
                                                                'aug2009', 'postgresql_shard', 'aug2010', 'aug2011')
 
       expect(proxy.shards).to include('protocol_shard')
@@ -67,17 +67,13 @@ describe Octopus::Proxy do
       end
     end
 
-    describe "should initialize just the master when you don't have a shards.yml file" do
+    describe "should not initialize when you don't have a shards.yml file" do
       before(:each) do
         OctopusHelper.octopus_env = 'crazy_environment'
       end
 
-      it 'should initialize just the master shard' do
-        expect(proxy.shards.keys).to eq(['master'])
-      end
-
-      it 'should not initialize replication' do
-        expect(proxy.replicated).to be_nil
+      it 'should not initialize without config' do
+        expect { proxy.shards.keys }.to raise_error(RuntimeError)
       end
     end
   end
@@ -92,7 +88,7 @@ describe Octopus::Proxy do
     end
 
     it 'should initialize the list of shards' do
-      expect(proxy.slaves_list).to eq(%w(slave1 slave2 slave3 slave4))
+      expect(proxy.slaves_list).to eq(%w(master_shard slave1 slave2 slave3 slave4))
     end
   end
 
@@ -125,7 +121,7 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave1 slave2 master)))
+      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave1 slave2 master_shard)))
     end
 
     it 'should initialize correctly the shard octopus_shard value for logging' do
@@ -143,10 +139,10 @@ describe Octopus::Proxy do
       Octopus.instance_variable_set(:@environments, nil)
       Octopus.config
 
-      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave3 slave4 master)))
+      expect(proxy.shards.keys.to_set).to eq(Set.new(%w(slave3 slave4 master_shard)))
     end
 
-    describe 'using the master connection', :shards => [:russia, :master]  do
+    describe 'using the master connection', :shards => [:russia, :master_shard]  do
       before(:each) do
         allow(Rails).to receive(:env).and_return('development')
       end
@@ -188,14 +184,13 @@ describe Octopus::Proxy do
   describe 'returning the correct connection' do
     describe 'should return the shard name' do
       it 'when current_shard is empty' do
-        expect(proxy.shard_name).to eq(:master)
+        expect(proxy.shard_name).to eq(proxy.default_shard)
       end
 
       it 'when current_shard is empty with custom master' do
         OctopusHelper.using_environment :octopus do
-          Octopus.config[:master_shard] = :brazil
+          proxy.proxy_config.default_shard = :brazil
           expect(proxy.shard_name).to eq(:brazil)
-          Octopus.config[:master_shard] = nil
         end
       end
 
@@ -212,7 +207,7 @@ describe Octopus::Proxy do
 
     describe 'should return the connection based on shard_name' do
       it 'when current_shard is empty' do
-        expect(proxy.select_connection).to eq(proxy.shards[:master].connection)
+        expect(proxy.select_connection).to eq(proxy.shards[proxy.default_shard].connection)
       end
 
       it 'when current_shard is a single shard' do

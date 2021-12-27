@@ -12,14 +12,14 @@ end
 describe Octopus::Migration do
   it 'should run just in the master shard' do
     OctopusHelper.migrating_to_version 1 do
-      expect(User.using(:master).find_by_name('Master')).not_to be_nil
+      expect(User.using(User.connection.default_shard).find_by_name('Master')).not_to be_nil
       expect(User.using(:canada).find_by_name('Master')).to be_nil
     end
   end
 
   it 'should run on specific shard' do
     OctopusHelper.migrating_to_version 2 do
-      expect(User.using(:master).find_by_name('Sharding')).to be_nil
+      expect(User.using(User.connection.default_shard).find_by_name('Sharding')).to be_nil
       expect(User.using(:canada).find_by_name('Sharding')).not_to be_nil
     end
   end
@@ -124,7 +124,7 @@ describe Octopus::Migration do
   it 'should run the migrations on shards that are missing them' do
     class SchemaMigration < ActiveRecord::Base; end
 
-    Octopus.using(:master) { SchemaMigration.create(:version => 14) }
+    Octopus.using(ActiveRecord::Base.connection.default_shard) { SchemaMigration.create(:version => 14) }
     Octopus.using(:canada) { SchemaMigration.create(:version => 14) }
 
     OctopusHelper.migrating_to_version 14 do
@@ -138,7 +138,7 @@ describe Octopus::Migration do
     it 'should run migrations on all shards in the default_migration_group' do
       OctopusHelper.using_environment :octopus_with_default_migration_group do
         OctopusHelper.migrating_to_version 15 do
-          expect(Octopus.using(:master) { get_all_versions }).not_to include(15)
+          expect(Octopus.using(ActiveRecord::Base.connection.default_shard) { get_all_versions }).not_to include(15)
           expect(Octopus.using(:canada) { get_all_versions }).to include(15)
           expect(Octopus.using(:brazil) { get_all_versions }).to include(15)
           expect(Octopus.using(:russia) { get_all_versions }).to include(15)

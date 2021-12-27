@@ -7,11 +7,16 @@ rvm:
   - 2.2.7
   - 2.3.4
   - 2.4.1
+  - 2.5.8
+  - 2.6.6
+  - 2.7.2
 gemfile:
   - gemfiles/rails42.gemfile
   - gemfiles/rails5.gemfile
   - gemfiles/rails51.gemfile
   - gemfiles/rails52.gemfile
+  - gemfiles/rails6.gemfile
+  - gemfiles/rails61.gemfile
 notifications:
   recipients:
     - gabriel.sobrinho@gmail.com

@@ -3,15 +3,15 @@ require 'spec_helper'
 describe Octopus::Model do
   describe '#using method' do
     it 'raise when Model#using receives a block' do
-      expect { User.using(:master) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
+      expect { User.using(ActiveRecord::Base.connection.default_shard) { true } }.to raise_error(Octopus::Exception, /User\.using is not allowed to receive a block/)
     end
 
     it 'should allow to send a block to the master shard' do
-      Octopus.using(:master) do
+      Octopus.using(ActiveRecord::Base.connection.default_shard) do
         User.create!(:name => 'Block test')
       end
 
-      expect(User.using(:master).find_by_name('Block test')).not_to be_nil
+      expect(User.using(ActiveRecord::Base.connection.default_shard).find_by_name('Block test')).not_to be_nil
     end
 
     it 'should allow to pass a string as the shard name to a AR subclass' do
@@ -107,19 +107,19 @@ describe Octopus::Model do
     end
 
     it 'should ensure that the connection will be cleaned' do
-      expect(ActiveRecord::Base.connection.current_shard).to eq(:master)
+      expect(ActiveRecord::Base.connection.current_shard).to eq(ActiveRecord::Base.connection.default_shard)
       expect do
         Octopus.using(:canada) do
           fail 'Some Exception'
         end
       end.to raise_error(RuntimeError)
 
-      expect(ActiveRecord::Base.connection.current_shard).to eq(:master)
+      expect(ActiveRecord::Base.connection.current_shard).to eq(ActiveRecord::Base.connection.default_shard)
     end
 
     it 'should ensure that the connection will be cleaned with custom master' do
       OctopusHelper.using_environment :octopus do
-        Octopus.config[:master_shard] = :brazil
+        ActiveRecord::Base.connection.default_shard = :brazil
         expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
         expect do
           Octopus.using(:canada) do
@@ -128,7 +128,6 @@ describe Octopus::Model do
         end.to raise_error(RuntimeError)
 
         expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
-        Octopus.config[:master_shard] = nil
       end
     end
 
@@ -137,7 +136,7 @@ describe Octopus::Model do
       User.create!(:name => 'Thiago')
       expect(User.using(:canada).find_by_name('America User 1')).not_to be_nil
       expect(User.using(:canada).find_by_name('America User 2')).not_to be_nil
-      expect(User.using(:master).find_by_name('Thiago')).not_to be_nil
+      expect(User.using(User.connection.default_shard).find_by_name('Thiago')).not_to be_nil
     end
 
     it 'should work when you have a SQLite3 shard' do
@@ -147,22 +146,21 @@ describe Octopus::Model do
 
     it 'should clean #current_shard from proxy when using execute' do
       User.using(:canada).connection.execute('select * from users limit 1;')
-      expect(User.connection.current_shard).to eq(:master)
+      expect(User.connection.current_shard).to eq(User.connection.default_shard)
     end
 
     it 'should clean #current_shard from proxy when using execute' do
       OctopusHelper.using_environment :octopus do
-        Octopus.config[:master_shard] = :brazil
+        User.connection.default_shard = :brazil
         User.using(:canada).connection.execute('select * from users limit 1;')
         expect(User.connection.current_shard).to eq(:brazil)
-        Octopus.config[:master_shard] = nil
       end
     end
 
     it 'should allow scoping dynamically' do
-      User.using(:canada).using(:master).using(:canada).create!(:name => 'oi')
-      expect(User.using(:canada).using(:master).count).to eq(0)
-      expect(User.using(:master).using(:canada).count).to eq(1)
+      User.using(:canada).using(User.connection.default_shard).using(:canada).create!(:name => 'oi')
+      expect(User.using(:canada).using(User.connection.default_shard).count).to eq(0)
+      expect(User.using(User.connection.default_shard).using(:canada).count).to eq(1)
     end
 
     it 'should allow find inside blocks' do
@@ -218,10 +216,10 @@ describe Octopus::Model do
 
       it 'should works when you find, and after that, alter that object' do
         alone_user = User.using(:alone_shard).create!(:name => 'Alone')
-        _mstr_user = User.using(:master).create!(:name => 'Master')
+        _mstr_user = User.using(User.connection.default_shard).create!(:name => 'Master')
         alone_user.name = 'teste'
         alone_user.save
-        expect(User.using(:master).first.name).to eq('Master')
+        expect(User.using(User.connection.default_shard).first.name).to eq('Master')
         expect(User.using(:alone_shard).first.name).to eq('teste')
       end
 
@@ -247,7 +245,7 @@ describe Octopus::Model do
         end
 
         expect(User.using(:canada).count).to eq(1)
-        expect(User.using(:master).count).to eq(0)
+        expect(User.using(User.connection.default_shard).count).to eq(0)
         expect(User.count).to eq(0)
       end
 
@@ -392,22 +390,22 @@ describe Octopus::Model do
 
     it 'maximum' do
       _u = User.using(:brazil).create!(:name => 'Teste', :number => 11)
-      _v = User.using(:master).create!(:name => 'Teste', :number => 12)
+      _v = User.using(User.connection.default_shard).create!(:name => 'Teste', :number => 12)
 
       expect(User.using(:brazil).maximum(:number)).to eq(11)
-      expect(User.using(:master).maximum(:number)).to eq(12)
+      expect(User.using(User.connection.default_shard).maximum(:number)).to eq(12)
     end
 
     it 'sum' do
       u = User.using(:brazil).create!(:name => 'Teste', :number => 11)
-      v = User.using(:master).create!(:name => 'Teste', :number => 12)
+      v = User.using(User.connection.default_shard).create!(:name => 'Teste', :number => 12)
 
-      expect(User.using(:master).sum(:number)).to eq(12)
+      expect(User.using(User.connection.default_shard).sum(:number)).to eq(12)
       expect(User.using(:brazil).sum(:number)).to eq(11)
 
       expect(User.where(id: v.id).sum(:number)).to eq(12)
       expect(User.using(:brazil).where(id: u.id).sum(:number)).to eq(11)
-      expect(User.using(:master).where(id: v.id).sum(:number)).to eq(12)
+      expect(User.using(User.connection.default_shard).where(id: v.id).sum(:number)).to eq(12)
     end
 
     describe 'any?' do
@@ -453,7 +451,7 @@ describe Octopus::Model do
       it 'should works from scope proxy' do
         names = User.using(:brazil).pluck(:name)
         expect(names).to eq(['User1'])
-        expect(User.using(:master).pluck(:name)).to eq([])
+        expect(User.using(User.connection.default_shard).pluck(:name)).to eq([])
       end
     end
 
@@ -506,7 +504,7 @@ describe Octopus::Model do
           _u = User.create!(:name => 'Thiago')
 
           expect(User.using(:brazil).count).to eq(0)
-          expect(User.using(:master).count).to eq(1)
+          expect(User.using(User.connection.default_shard).count).to eq(1)
 
           User.using(:brazil).transaction do
             expect(User.find_by_name('Thiago')).to be_nil
@@ -514,7 +512,7 @@ describe Octopus::Model do
           end
 
           expect(User.using(:brazil).count).to eq(1)
-          expect(User.using(:master).count).to eq(1)
+          expect(User.using(User.connection.default_shard).count).to eq(1)
         end
       end
 
@@ -720,7 +718,7 @@ describe Octopus::Model do
       it 'should clean up correctly even inside block' do
         User.create!(:name => 'CleanUser')
 
-        Octopus.using(:master) do
+        Octopus.using(User.connection.default_shard) do
           CustomConnection.using(:postgresql_shard).connection.execute('select count(*) from users')
           expect(User.first).not_to be_nil
         end
@@ -760,7 +758,7 @@ describe Octopus::Model do
     it 'should not clean the table name' do
       OctopusHelper.using_environment :production_fully_replicated do
         expect(Keyboard).not_to receive(:reset_table_name)
-        Keyboard.using(:master).create!(:name => 'Master Cat')
+        Keyboard.using(Keyboard.connection.default_shard).create!(:name => 'Master Cat')
       end
     end
   end

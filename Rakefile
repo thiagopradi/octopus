@@ -15,6 +15,7 @@ namespace :db do
       :adapter  => 'postgresql',
       :host     => 'localhost',
       :username => (ENV['POSTGRES_USER'] || 'postgres'),
+      :password => ENV['POSTGRES_PASS'],
       :encoding => 'utf8',
     }
 
@@ -22,6 +23,7 @@ namespace :db do
       :adapter  => 'mysql2',
       :host     => 'localhost',
       :username => (ENV['MYSQL_USER'] || 'root'),
+      :password => ENV['MYSQL_PASS'],
       :encoding => 'utf8',
     }
 
@@ -31,6 +33,8 @@ namespace :db do
 
     # Connects to PostgreSQL
     ActiveRecord::Base.establish_connection(pg_spec.merge('database' => 'postgres', 'schema_search_path' => 'public'))
+    ActiveRecord::Base.connection.drop_database("octopus_master")
+    ActiveRecord::Base.connection.create_database("octopus_master")
     (1..2).map do |i|
       # drop the old database (if it exists)
       ActiveRecord::Base.connection.drop_database("octopus_shard_#{i}")
@@ -40,6 +44,8 @@ namespace :db do
 
     # Connect to MYSQL
     ActiveRecord::Base.establish_connection(mysql_spec)
+    ActiveRecord::Base.connection.drop_database("octopus_master")
+    ActiveRecord::Base.connection.create_database("octopus_master")
     (1..5).map do |i|
       # drop the old database (if it exists)
       ActiveRecord::Base.connection.drop_database("octopus_shard_#{i}")
@@ -55,9 +61,9 @@ namespace :db do
     Octopus.instance_variable_set(:@directory, "#{File.dirname(__FILE__)}/spec/")
 
     # Require the database connection
-    require "#{File.dirname(__FILE__)}/spec/support/database_connection"
+    require "#{File.dirname(__FILE__)}/spec/support/daabase_connection"
 
-    shard_symbols = [:master, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
+    shard_symbols = [:master_shard, :brazil, :canada, :russia, :alone_shard, :postgresql_shard, :sqlite_shard]
     shard_symbols << :protocol_shard
     shard_symbols.each do |shard_symbol|
       # Rails 3.1 needs to do some introspection around the base class, which requires

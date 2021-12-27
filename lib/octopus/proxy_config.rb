@@ -161,10 +161,14 @@ module Octopus
       self.slave_groups = HashWithIndifferentAccess.new
       self.shard_servers = HashWithIndifferentAccess.new
       self.groups = {}
-      self.config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
+      self.config = if Octopus.rails61?
+                      ActiveRecord::Base.connection_pool_without_octopus.pool_config
+                    else
+                      ActiveRecord::Base.connection_pool_without_octopus.spec.config
+                    end
 
       self.default_shard = config['defaults'].try(:[], 'shard')
-      fail 'default shard shoule be set' if self.default_shard.blank?
+      fail 'default shard should be set' if self.default_shard.blank?
 
       unless config.nil?
         self.entire_sharded = config['entire_sharded']
@@ -211,6 +215,7 @@ module Octopus
           end
         elsif value.is_a?(Hash)
           @groups[key.to_s] = []
+          shard_servers[key.to_s] = []
 
           value.each do |k, v|
             fail 'You have duplicated shard names!' if shards.key?(k.to_sym)
@@ -220,6 +225,7 @@ module Octopus
 
             shards[k.to_sym] = connection_pool_for(config_with_octopus_shard, "#{v['adapter']}_connection")
             @groups[key.to_s] << k.to_sym
+            shard_servers[k.to_sym] = [shards[k.to_sym]]
           end
 
           if structurally_slave_group? value
@@ -253,9 +259,12 @@ module Octopus
     def connection_pool_for(config, adapter)
       if Octopus.rails4?
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config.dup, adapter )
-      else
+      elsif Octopus.rails5? || Octopus.rails60?
         name = adapter["octopus_shard"]
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
+      elsif Octopus.rails61?
+        name = adapter["octopus_shard"]
+        spec = ActiveRecord::ConnectionAdapters::PoolConfig.new(name, config.dup)
       end
 
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)

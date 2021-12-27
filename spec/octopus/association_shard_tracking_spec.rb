@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canada] do
+describe Octopus::AssociationShardTracking, :shards => [:brazil, :master_shard, :canada] do
   describe 'when you have a 1 x 1 relationship' do
     before(:each) do
       @computer_brazil = Computer.using(:brazil).create!(:name => 'Computer Brazil')
@@ -62,10 +62,10 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       @brazil_role = Role.using(:brazil).create!(:name => 'Brazil Role')
       @master_role = Role.create!(:name => 'Master Role')
       @permission_brazil = Permission.using(:brazil).create!(:name => 'Brazil Permission')
-      @permission_master = Permission.using(:master).create!(:name => 'Master Permission')
+      @permission_master = Permission.using(Permission.connection.default_shard).create!(:name => 'Master Permission')
       @brazil_role.permissions << @permission_brazil
       @brazil_role.save
-      Client.using(:master).create!(:name => 'teste')
+      Client.using(Client.connection.default_shard).create!(:name => 'teste')
     end
 
     it 'should find all models in the specified shard' do
@@ -315,7 +315,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       @project2 = Project.using(:brazil).create!(:name => 'Cobol Application')
       @programmer.projects << @project
       @programmer.save
-      Project.using(:master).create!(:name => 'Project Master')
+      Project.using(Project.connection.default_shard).create!(:name => 'Project Master')
     end
 
     it 'should find all models in the specified shard' do
@@ -553,7 +553,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       @item_brazil = Item.using(:brazil).create!(:name => 'Brazil Item', :client => @brazil_client)
       @item_master = Item.create!(:name => 'Master Item', :client => @master_client)
       @brazil_client = Client.using(:brazil).find_by_name('Brazil Client')
-      Client.using(:master).create!(:name => 'teste')
+      Client.using(Client.connection.default_shard).create!(:name => 'teste')
     end
 
     it 'should find all models in the specified shard' do
@@ -812,7 +812,7 @@ describe Octopus::AssociationShardTracking, :shards => [:brazil, :master, :canad
       @comment_brazil = Comment.using(:brazil).create!(:name => 'Brazil Comment', :commentable => @brazil_client)
       @comment_master = Comment.create!(:name => 'Master Comment', :commentable => @master_client)
       @brazil_client = Client.using(:brazil).find_by_name('Brazil Client')
-      Client.using(:master).create!(:name => 'teste')
+      Client.using(Client.connection.default_shard).create!(:name => 'teste')
     end
 
     it 'should find all models in the specified shard' do

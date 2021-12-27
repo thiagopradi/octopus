@@ -28,7 +28,7 @@ end
 # This class sets its own connection
 class CustomConnection < ActiveRecord::Base
   self.table_name = 'custom'
-  octopus_establish_connection(:adapter => 'mysql2', :database => 'octopus_shard_2', :username => "#{ENV['MYSQL_USER'] || 'root'}", :password => '')
+  octopus_establish_connection(:adapter => 'mysql2', :database => 'octopus_shard_2', :username => "#{ENV['MYSQL_USER'] || 'root'}", :password => "#{ENV['MYSQL_PASS'] || ''}")
 end
 
 # This items belongs to a client
@@ -93,7 +93,7 @@ end
 
 # This class sets its own connection
 class Advert < ActiveRecord::Base
-  establish_connection(:adapter => 'postgresql', :database => 'octopus_shard_1', :username => ENV['POSTGRES_USER'] || 'postgres', :password => '')
+  establish_connection(:adapter => 'postgresql', :database => 'octopus_shard_1', :username => ENV['POSTGRES_USER'] || 'postgres', :password => ENV['POSTGRES_PASS'] || '')
 end
 
 class MmorpgPlayer < ActiveRecord::Base

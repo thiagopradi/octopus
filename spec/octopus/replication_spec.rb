@@ -85,11 +85,11 @@ describe 'when the database is replicated' do
     include_context 'with query cache enabled' do
       it 'should do the queries with cache' do
         OctopusHelper.using_environment :replicated_with_one_slave do
-          cat1 = Cat.using(:master).create!(:name => 'Master Cat 1')
-          _ct2 = Cat.using(:master).create!(:name => 'Master Cat 2')
-          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
-          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
-          expect(Cat.using(:master).find(cat1.id)).to eq(cat1)
+          cat1 = Cat.using(Cat.connection.default_shard).create!(:name => 'Master Cat 1')
+          _ct2 = Cat.using(Cat.connection.default_shard).create!(:name => 'Master Cat 2')
+          expect(Cat.using(Cat.connection.default_shard).find(cat1.id)).to eq(cat1)
+          expect(Cat.using(Cat.connection.default_shard).find(cat1.id)).to eq(cat1)
+          expect(Cat.using(Cat.connection.default_shard).find(cat1.id)).to eq(cat1)
 
           cat3 = Cat.using(:slave1).create!(:name => 'Slave Cat 3')
           _ct4 = Cat.using(:slave1).create!(:name => 'Slave Cat 4')
@@ -121,7 +121,7 @@ describe 'when the database is replicated' do
     Cat.create!(:name => 'Master Cat')
 
     OctopusHelper.using_environment :production_fully_replicated do
-      expect(Cat.using(:master).find_by_name('Master Cat')).not_to be_nil
+      expect(Cat.using(Cat.connection.default_shard).find_by_name('Master Cat')).not_to be_nil
     end
   end
 
@@ -177,20 +177,19 @@ describe 'when the database is replicated and the entire application is replicat
   it 'should reset current shard if slave throws an exception' do
     OctopusHelper.using_environment :production_fully_replicated do
       Cat.create!(:name => 'Slave Cat')
-      expect(Cat.connection.current_shard).to eql(:master)
+      expect(Cat.connection.current_shard).to eql(Cat.connection.default_shard)
       Cat.where(:rubbish => true)
-      expect(Cat.connection.current_shard).to eql(:master)
+      expect(Cat.connection.current_shard).to eql(Cat.connection.default_shard)
     end
   end
 
   it 'should reset current shard if slave throws an exception with custom master' do
     OctopusHelper.using_environment :production_fully_replicated do
-      Octopus.config[:master_shard] = :slave2
+      Cat.connection.default_shard = :slave2
       Cat.create!(:name => 'Slave Cat')
       expect(Cat.connection.current_shard).to eql(:slave2)
       Cat.where(:rubbish => true)
       expect(Cat.connection.current_shard).to eql(:slave2)
-      Octopus.config[:master_shard] = nil
     end
   end
 end

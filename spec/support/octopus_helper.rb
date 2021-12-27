@@ -1,7 +1,9 @@
 module OctopusHelper
   def self.clean_all_shards(shards)
+    default_shard = BlankModel.connection.default_shard
+
     if shards.nil?
-      shards = BlankModel.using(:master).connection.shards.keys
+      shards = BlankModel.using(default_shard).connection.shards.keys
     end
 
     shards.each do |shard_symbol|
@@ -13,7 +15,7 @@ module OctopusHelper
           BlankModel.using(shard_symbol).connection.execute("DELETE FROM #{table}")
         end
       end
-      BlankModel.using(:master).connection.shards[shard_symbol].disconnect if Octopus.atleast_rails50?
+      BlankModel.using(default_shard).connection.shards[shard_symbol].disconnect if Octopus.atleast_rails50?
     end
   end
 
@@ -21,6 +23,7 @@ module OctopusHelper
     Thread.current['octopus.current_model'] = nil
     Thread.current['octopus.current_shard'] = nil
     Thread.current['octopus.current_group'] = nil
+    Thread.current['octopus.current_slave'] = nil
     Thread.current['octopus.current_slave_group'] = nil
     Thread.current['octopus.block'] = nil
 

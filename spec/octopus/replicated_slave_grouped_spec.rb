@@ -18,7 +18,7 @@ describe 'when the database is replicated and has slave groups' do
       # When a select-count query is sent to `octopus_shard_2`, it should return 0.
 
       # The query goes to `octopus_shard_1`
-      expect(Cat.using(:master).count).to eq(2)
+      expect(Cat.using(Cat.connection.default_shard).count).to eq(2)
       # The query goes to `octopus_shard_1`
       expect(Cat.count).to eq(2)
       # The query goes to `octopus_shard_2`

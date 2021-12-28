@@ -53,7 +53,7 @@ module Octopus
           shards.merge(Array.wrap(shard))
         end
 
-        shards.to_a.presence || [Octopus.master_shard]
+        shards.to_a.presence || [connection.default_shard]
       end
     end
   end

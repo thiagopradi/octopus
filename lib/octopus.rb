@@ -157,6 +157,11 @@ module Octopus
     ActiveRecord::Base.connection.initialize_shards(@config)
   end
 
+  def self.defaults=(defaults)
+    config[:defaults] = HashWithIndifferentAccess.new(defaults)
+    ActiveRecord::Base.connection.initialize_shards(@config)
+  end
+
   def self.using(shard, &block)
     conn = ActiveRecord::Base.connection
 

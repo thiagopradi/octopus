@@ -119,7 +119,7 @@ describe Octopus::Model do
 
     it 'should ensure that the connection will be cleaned with custom master' do
       OctopusHelper.using_environment :octopus do
-        ActiveRecord::Base.connection.default_shard = :brazil
+        ActiveRecord::Base.connection.proxy_config.default_shard = :brazil
         expect(ActiveRecord::Base.connection.current_shard).to eq(:brazil)
         expect do
           Octopus.using(:canada) do
@@ -151,7 +151,7 @@ describe Octopus::Model do
 
     it 'should clean #current_shard from proxy when using execute' do
       OctopusHelper.using_environment :octopus do
-        User.connection.default_shard = :brazil
+        User.connection.proxy_config.default_shard = :brazil
         User.using(:canada).connection.execute('select * from users limit 1;')
         expect(User.connection.current_shard).to eq(:brazil)
       end
@@ -469,6 +469,13 @@ describe Octopus::Model do
       expect(User.using(:brazil).find_by_name('Joaquim')).not_to be_nil
     end
 
+    it 'update' do
+      @user = User.using(:brazil).create!(:name => 'User1')
+      @user2 = User.using(:brazil).find(@user.id)
+      @user2.update(:name => 'Joaquim')
+      expect(User.using(:brazil).find_by_name('Joaquim')).not_to be_nil
+    end
+
     it 'using update_attributes inside a block' do
       Octopus.using(:brazil) do
         @user = User.create!(:name => 'User1')
@@ -495,7 +502,7 @@ describe Octopus::Model do
       end
 
       user = User.using(:brazil).where(:name => 'User1').first
-      expect(user.as_json(:except => [:created_at, :updated_at, :id])).to eq('admin' => nil, 'name' => 'User1', 'number' => nil)
+      expect(user.as_json(:except => [:created_at, :updated_at, :id, :type])).to eq('admin' => nil, 'name' => 'User1', 'number' => nil)
     end
 
     describe 'transaction' do

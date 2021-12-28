@@ -30,19 +30,24 @@ module OctopusHelper
     ActiveRecord::Base.class_variable_set(:@@connection_proxy, nil)
   end
 
-  def self.migrating_to_version(version, &_block)
+  def self.migrating_to_version(version, schema_migration = nil, &_block)
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
     
     begin
-      migrate_to_version(:up, migrations_root, version)
+      migrate_to_version(:up, migrations_root, version, schema_migration)
       yield
     ensure
-      migrate_to_version(:down, migrations_root, version)
+      migrate_to_version(:down, migrations_root, version, schema_migration)
     end
   end
   
-  def self.migrate_to_version(direction, root, version)
-    if Octopus.atleast_rails52?
+  def self.migrate_to_version(direction, root, version, schema_migration = nil)
+    if Octopus.atleast_rails6?
+      schema_migration ||= ActiveRecord::SchemaMigration
+      migration_context = ActiveRecord::MigrationContext.new(root, schema_migration)
+      migrations = migration_context.migrations.select {|mig| version == mig.version }
+      ActiveRecord::Migrator.new(direction, migrations, schema_migration, version).run
+    elsif Octopus.atleast_rails52?
       migrations = ActiveRecord::MigrationContext.new(root).migrations.select {|mig| version == mig.version }
       ActiveRecord::Migrator.new(direction, migrations, version).run
     else 

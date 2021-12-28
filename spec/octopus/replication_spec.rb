@@ -10,7 +10,7 @@ describe 'when the database is replicated' do
   end
 
   let(:master_pool) do
-    ActiveRecord::Base.connection_proxy.shards['master']
+    ActiveRecord::Base.connection_proxy.shards[ActiveRecord::Base.connection_proxy.default_shard]
   end
 
   let(:master_connection) do
@@ -185,7 +185,7 @@ describe 'when the database is replicated and the entire application is replicat
 
   it 'should reset current shard if slave throws an exception with custom master' do
     OctopusHelper.using_environment :production_fully_replicated do
-      Cat.connection.default_shard = :slave2
+      Cat.connection.proxy_config.default_shard = :slave2
       Cat.create!(:name => 'Slave Cat')
       expect(Cat.connection.current_shard).to eql(:slave2)
       Cat.where(:rubbish => true)

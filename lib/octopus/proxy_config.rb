@@ -14,8 +14,10 @@ module Octopus
                   :default_shard, :default_slave_groups, :shard_servers
 
     def initialize(config)
+      raise 'Config should be not nil' if config.nil?
+
       initialize_shards(config)
-      initialize_replication(config) if !config.nil? && config['replicated']
+      initialize_replication(config) if config['replicated']
     end
 
     def current_model
@@ -264,15 +266,21 @@ module Octopus
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
       elsif Octopus.rails61?
         name = adapter["octopus_shard"]
-        spec = ActiveRecord::ConnectionAdapters::PoolConfig.new(name, config.dup)
+        db_config = ActiveRecord::DatabaseConfigurations::HashConfig.new(Octopus.rails_env, name, config.dup)
+        spec = ActiveRecord::ConnectionAdapters::PoolConfig.new(name, db_config)
       end
 
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def resolve_string_connection(spec)
-      resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
-      HashWithIndifferentAccess.new(resolver.spec(spec).config)
+      config = if Octopus.rails61?
+                 ActiveRecord::DatabaseConfigurations::ConnectionUrlResolver.new(spec).to_hash
+               else
+                 resolver = ActiveRecord::ConnectionAdapters::ConnectionSpecification::Resolver.new({})
+                 resolver.spec(spec).config
+               end
+      HashWithIndifferentAccess.new(config)
     end
 
     def structurally_slave?(config)

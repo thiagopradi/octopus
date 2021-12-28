@@ -33,7 +33,7 @@ describe Octopus::Proxy do
       expect(config[:username]).to eq("#{ENV['MYSQL_USER'] || 'root'}")
     end
 
-    unless Octopus.rails50? || Octopus.rails51?|| Octopus.rails52?
+    unless Octopus.rails50? || Octopus.rails51?|| Octopus.rails52? || Octopus.rails6?
       it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do
         expect(proxy.respond_to?(:pk_and_sequence_for)).to be true
       end
@@ -73,7 +73,7 @@ describe Octopus::Proxy do
       end
 
       it 'should not initialize without config' do
-        expect { proxy.shards.keys }.to raise_error(RuntimeError)
+        expect { proxy.shards.keys }.to raise_error(Exception)
       end
     end
   end

@@ -43,19 +43,29 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         self.current_shard = shard if self.class.allowed_shard?(shard)
       end
 
-      def init_with(coder)
+      def init_with_attributes(attributes, new_record = false)
         obj = super
 
         return obj unless Octopus.enabled?
         return obj if obj.class.connection_proxy.current_model_replicated?
 
-        current_shard_value = coder['attributes']['current_shard'].value if coder['attributes']['current_shard'].present? && coder['attributes']['current_shard'].value.present?
+        current_shard_value = attributes['current_shard'].value if attributes['current_shard'].present? && attributes['current_shard'].value.present?
 
-        coder['attributes'].send(:attributes).send(:values).delete('current_shard')
-        coder['attributes'].send(:attributes).send(:delegate_hash).delete('current_shard')
+        attributes.send(:attributes).send(:values).delete('current_shard')
+        attributes.send(:attributes).send(:delegate_hash).delete('current_shard')
 
         obj.current_shard = current_shard_value if current_shard_value.present?
         obj
+      end
+
+      def init_with(coder)
+        obj = super
+        fix_attributes(obj, coder['attributes'])
+      end
+
+      def fix_attributes(obj, attributes)
+        obj = super
+        fix_attributes(obj, attributes)
       end
 
       def should_set_current_shard?

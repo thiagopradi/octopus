@@ -66,13 +66,13 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         equality_without_octopus(comparison_object) && comparison_object.current_shard.to_s == current_shard.to_s
       end
 
-      def perform_validations_with_octopus(*args)
+      def perform_validations_with_octopus(...)
         if Octopus.enabled? && should_set_current_shard?
           Octopus.using(current_shard) do
-            perform_validations_without_octopus(*args)
+            perform_validations_without_octopus(...)
           end
         else
-          perform_validations_without_octopus(*args)
+          perform_validations_without_octopus(...)
         end
       end
     end

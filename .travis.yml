@@ -4,9 +4,7 @@ env:
 before_script:
   - "bundle exec rake db:prepare"
 rvm:
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
+  - 2.7.6
 gemfile:
   - gemfiles/rails42.gemfile
   - gemfiles/rails5.gemfile

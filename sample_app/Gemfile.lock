@@ -134,7 +134,7 @@ GEM
     treetop (1.4.14)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.37)
+    tzinfo (0.3.61)
     xpath (2.0.0)
       nokogiri (~> 1.3)
 

@@ -120,10 +120,10 @@ module Octopus
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
         run_queries_on_shard(Octopus.master_shard) do
-          select_connection.transaction(options, &block)
+          select_connection.transaction(**options, &block)
         end
       else
-        select_connection.transaction(options, &block)
+        select_connection.transaction(**options, &block)
       end
     end
 
@@ -210,19 +210,19 @@ module Octopus
     # @thiagopradi - This legacy method missing logic will be keep for a while for compatibility
     # and will be removed when Octopus 1.0 will be released.
     # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
-    def legacy_method_missing_logic(method, *args, &block)
+    def legacy_method_missing_logic(method, *args, **kwargs, &block)
       if should_clean_connection_proxy?(method)
         conn = select_connection
         clean_connection_proxy
-        conn.send(method, *args, &block)
+        conn.send(method, *args, **kwargs, &block)
       elsif should_send_queries_to_shard_slave_group?(method)
-        send_queries_to_shard_slave_group(method, *args, &block)
+        send_queries_to_shard_slave_group(method, *args, **kwargs, &block)
       elsif should_send_queries_to_slave_group?(method)
-        send_queries_to_slave_group(method, *args, &block)
+        send_queries_to_slave_group(method, *args, **kwargs, &block)
       elsif should_send_queries_to_replicated_databases?(method)
-        send_queries_to_selected_slave(method, *args, &block)
+        send_queries_to_selected_slave(method, *args, **kwargs, &block)
       else
-        val = select_connection.send(method, *args, &block)
+        val = select_connection.send(method, *args, **kwargs, &block)
 
         if val.instance_of? ActiveRecord::Result
           val.current_shard = shard_name

@@ -29,7 +29,7 @@ module Octopus
     BATCH_METHODS = [:find_each, :find_in_batches, :in_batches]
     WHERE_CHAIN_METHODS = [:not]
 
-    def method_missing(method, *args, &block)
+    def method_missing(method, *args, **kwargs, &block)
       if !block && BATCH_METHODS.include?(method)
         ::Enumerator.new do |yielder|
           run_on_shard do
@@ -47,9 +47,9 @@ module Octopus
       else
         run_on_shard do
           if method == :load_records
-            @ar_relation.send(method, *args)
+            @ar_relation.send(method, *args, **kwargs)
           else
-            @ar_relation.public_send(method, *args)
+            @ar_relation.public_send(method, *args, **kwargs)
           end
         end
       end

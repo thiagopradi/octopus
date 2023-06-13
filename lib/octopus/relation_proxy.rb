@@ -33,7 +33,9 @@ module Octopus
       if !block && BATCH_METHODS.include?(method)
         ::Enumerator.new do |yielder|
           run_on_shard do
-            @ar_relation.public_send(method, *args) do |batch_item|
+            parsed_args = args.empty? ? {} : args.first
+
+            @ar_relation.public_send(method, **parsed_args) do |batch_item|
               yielder << batch_item
             end
           end
@@ -43,7 +45,9 @@ module Octopus
       elsif WHERE_CHAIN_METHODS.include?(method)
         ::Octopus::ScopeProxy.new(@current_shard, run_on_shard { @ar_relation.public_send(method, *args) } )
       elsif block
-        @ar_relation.public_send(method, *args, &block)
+        parsed_args = args.empty? ? {} : args.first
+
+        @ar_relation.public_send(method, **parsed_args, &block)
       else
         run_on_shard do
           if method == :load_records

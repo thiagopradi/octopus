@@ -120,10 +120,10 @@ module Octopus
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
         run_queries_on_shard(Octopus.master_shard) do
-          select_connection.transaction(options, &block)
+          select_connection.transaction(**options, &block)
         end
       else
-        select_connection.transaction(options, &block)
+        select_connection.transaction(**options, &block)
       end
     end
 
@@ -192,15 +192,15 @@ module Octopus
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
     end
-    
+
     def initialize_schema_migrations_table
       if Octopus.atleast_rails52?
         select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
-      else 
+      else
         select_connection.initialize_schema_migrations_table
       end
     end
-    
+
     def initialize_metadata_table
       select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end
@@ -212,9 +212,12 @@ module Octopus
     # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
     def legacy_method_missing_logic(method, *args, &block)
       if should_clean_connection_proxy?(method)
-        conn = select_connection
         clean_connection_proxy
-        conn.send(method, *args, &block)
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ?
+          select_connection.send(method, *args, &block) :
+          select_connection.send(method, *args, **preparable, &block)
       elsif should_send_queries_to_shard_slave_group?(method)
         send_queries_to_shard_slave_group(method, *args, &block)
       elsif should_send_queries_to_slave_group?(method)
@@ -222,7 +225,11 @@ module Octopus
       elsif should_send_queries_to_replicated_databases?(method)
         send_queries_to_selected_slave(method, *args, &block)
       else
-        val = select_connection.send(method, *args, &block)
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ?
+          select_connection.send(method, *args, &block) :
+          select_connection.send(method, *args, **preparable, &block)
 
         if val.instance_of? ActiveRecord::Result
           val.current_shard = shard_name
@@ -309,7 +316,12 @@ module Octopus
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
       using_shard(slave) do
-        val = select_connection.send(method, *args, &block)
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ?
+          select_connection.send(method, *args, &block) :
+          select_connection.send(method, *args, **preparable, &block)
+
         if val.instance_of? ActiveRecord::Result
           val.current_shard = slave
         end
@@ -360,6 +372,18 @@ module Octopus
       ensure
         self.current_group = older_group
       end
+    end
+
+    private
+
+    def handle_args(args)
+      return [[], nil] if args.empty?
+
+      preparable_args = args.select{ |arg| arg.is_a?(Hash) && arg.key?(:preparable)}
+      return [args, nil] if preparable_args.empty?
+
+      args -= preparable_args
+      return [args, preparable_args.first]
     end
   end
 end

@@ -30,10 +30,10 @@ describe Octopus::Proxy do
       config = proxy.config
       expect(config[:adapter]).to eq('mysql2')
       expect(config[:database]).to eq('octopus_shard_1')
-      expect(config[:username]).to eq("#{ENV['MYSQL_USER'] || 'root'}")
+      expect(config[:username]).to eq("#{ENV['MYSQL_USER'] || 'daniel'}")
     end
 
-    unless Octopus.rails50? || Octopus.rails51?|| Octopus.rails52?
+    unless Octopus.rails50? || Octopus.rails51?|| Octopus.rails52? || Octopus.rails60?
       it 'should respond correctly to respond_to?(:pk_and_sequence_for)' do
         expect(proxy.respond_to?(:pk_and_sequence_for)).to be true
       end

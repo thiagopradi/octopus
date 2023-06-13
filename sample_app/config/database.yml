@@ -2,7 +2,7 @@
 #   gem install sqlite3-ruby (not necessary on OS X Leopard)
 development:
   adapter: postgresql
-  username: postgres 
+  username: postgres
   password:
   database: octopus_sample_app_development
   encoding: unicode
@@ -13,7 +13,7 @@ development:
 # Do not set this db to the same as development or production.
 test: &test
   adapter: postgresql
-  username: postgres 
+  username: postgres
   password:
   database: octopus_sample_app_test
   encoding: unicode
@@ -21,7 +21,7 @@ test: &test
 
 production:
   adapter: postgresql
-  username: postgres 
+  username: postgres
   password:
   database: octopus_sample_app_production
   encoding: unicode

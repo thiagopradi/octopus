@@ -1,6 +1,7 @@
 require 'active_record'
 require 'active_support/version'
 require 'active_support/core_ext/class'
+require 'byebug'
 
 require 'yaml'
 require 'erb'
@@ -101,7 +102,7 @@ module Octopus
   def self.rails50?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0
   end
-  
+
   def self.atleast_rails50?
     ActiveRecord::VERSION::MAJOR >= 5
   end
@@ -112,6 +113,10 @@ module Octopus
 
   def self.rails52?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2
+  end
+
+  def self.rails60?
+    ActiveRecord::VERSION::MAJOR > 6 || ActiveRecord::VERSION::MAJOR == 6
   end
 
   def self.atleast_rails51?

@@ -3,10 +3,11 @@
 .bundle
 .rvmrc
 .ruby-version
-Gemfile.lock
 gemfiles/*.lock
 pkg/*
 *.rbc
 tmp/*
 .*.sw[a-z]
 database.log
+.byebug_history
+.env

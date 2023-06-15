@@ -67,20 +67,20 @@ module Octopus
 
         base.class_eval do
           class << self
-              alias_method :migrate_without_octopus, :migrate
-              alias_method :migrate, :migrate_with_octopus
-              
-              alias_method :up_without_octopus, :up
-              alias_method :up, :up_with_octopus
+            alias_method :migrate_without_octopus, :migrate
+            alias_method :migrate, :migrate_with_octopus
 
-              alias_method :down_without_octopus, :down
-              alias_method :down, :down_with_octopus
+            alias_method :up_without_octopus, :up
+            alias_method :up, :up_with_octopus
 
-              alias_method :run_without_octopus, :run
-              alias_method :run, :run_with_octopus
+            alias_method :down_without_octopus, :down
+            alias_method :down, :down_with_octopus
 
-              alias_method :rollback_without_octopus, :rollback
-              alias_method :rollback, :rollback_with_octopus
+            alias_method :run_without_octopus, :run
+            alias_method :run, :run_with_octopus
+
+            alias_method :rollback_without_octopus, :rollback
+            alias_method :rollback, :rollback_with_octopus
           end
         end
       end
@@ -96,25 +96,26 @@ module Octopus
     end
     if Octopus.atleast_rails52?
       ### Post RAILS 5.2 Migration methods
-      
       def run_with_octopus(&block)
         return run_without_octopus(&block) unless connection.is_a?(Octopus::Proxy)
+
         shards = migrations.map(&:shards).flatten.map(&:to_s)
         connection.send_queries_to_multiple_shards(shards) do
           run_without_octopus(&block)
         end
-        rescue ActiveRecord::UnknownMigrationVersionError => e
-          raise unless migrations(true).detect { |m| m.version == e.version }
+      rescue ActiveRecord::UnknownMigrationVersionError => e
+        raise unless migrations(true).detect { |m| m.version == e.version }
       end
 
       def migrate_with_octopus(&block)
         return migrate_without_octopus(&block) unless connection.is_a?(Octopus::Proxy)
+
         shards = migrations.map(&:shards).flatten.map(&:to_s)
         connection.send_queries_to_multiple_shards(shards) do
           migrate_without_octopus(&block)
         end
-        rescue ActiveRecord::UnknownMigrationVersionError => e
-          raise unless migrations(true).detect { |m| m.version == e.version }
+      rescue ActiveRecord::UnknownMigrationVersionError => e
+        raise unless migrations(true).detect { |m| m.version == e.version }
       end
 
       def migrations_with_octopus(shard_agnostic = true)
@@ -123,16 +124,15 @@ module Octopus
 
         migrations.select { |m| m.shards.include?(connection.current_shard.to_sym) }
       end
-      
-      private 
-      
+
+      private
+
       def connection
         ActiveRecord::Base.connection
       end
-      
-    else 
+
+    else
       ### Pre RAILS 5.2 Migration methods
-      
       def run_with_octopus(&block)
         run_without_octopus(&block)
       rescue ActiveRecord::UnknownMigrationVersionError => e
@@ -230,7 +230,7 @@ module Octopus
   end
 end
 
-ActiveRecord::Migration.send(:include, Octopus::Migration)
-ActiveRecord::Migrator.send(:include, Octopus::Migrator)
-ActiveRecord::MigrationProxy.send(:include, Octopus::MigrationProxy)
-ActiveRecord::UnknownMigrationVersionError.send(:include, Octopus::UnknownMigrationVersionError)
+ActiveRecord::Migration.include(Octopus::Migration)
+ActiveRecord::Migrator.include(Octopus::Migrator)
+ActiveRecord::MigrationProxy.include(Octopus::MigrationProxy)
+ActiveRecord::UnknownMigrationVersionError.include(Octopus::UnknownMigrationVersionError)

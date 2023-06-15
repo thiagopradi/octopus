@@ -13,4 +13,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Associations::CollectionProxy.send(:include, Octopus::CollectionProxy)
+ActiveRecord::Associations::CollectionProxy.include(Octopus::CollectionProxy)

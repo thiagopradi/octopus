@@ -42,4 +42,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Base.send(:include, Octopus::Persistence)
+ActiveRecord::Base.include(Octopus::Persistence)

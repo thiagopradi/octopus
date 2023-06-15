@@ -12,9 +12,9 @@ module Octopus
       def using(shard)
         if block_given?
           raise Octopus::Exception, <<-EOF
-#{name}.using is not allowed to receive a block, it works just like a regular scope.
+            #{name}.using is not allowed to receive a block, it works just like a regular scope.
 
-If you are trying to scope everything to a specific shard, use Octopus.using instead.
+            If you are trying to scope everything to a specific shard, use Octopus.using instead.
           EOF
         end
 
@@ -39,6 +39,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def set_current_shard
         return unless Octopus.enabled?
+
         shard = self.class.connection_proxy.current_shard
         self.current_shard = shard if self.class.allowed_shard?(shard)
       end
@@ -59,7 +60,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def should_set_current_shard?
-        self.respond_to?(:current_shard) && !current_shard.nil?
+        respond_to?(:current_shard) && !current_shard.nil?
       end
 
       def equality_with_octopus(comparison_object)
@@ -103,7 +104,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       def hijack_methods
         after_initialize :set_current_shard
 
-        around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
+        around_save :run_on_shard, :unless => -> { self.class.custom_octopus_connection }
 
         class_attribute :custom_octopus_connection
 

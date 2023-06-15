@@ -23,4 +23,4 @@ module Octopus
   end
 end
 
-ActiveRecord::LogSubscriber.send(:include, Octopus::LogSubscriber)
+ActiveRecord::LogSubscriber.include(Octopus::LogSubscriber)

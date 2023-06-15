@@ -43,7 +43,7 @@ module Octopus
       elsif ENUM_METHODS.include?(method) || block && ENUM_WITH_BLOCK_METHODS.include?(method)
         run_on_shard { @ar_relation.to_a }.public_send(method, *args, &block)
       elsif WHERE_CHAIN_METHODS.include?(method)
-        ::Octopus::ScopeProxy.new(@current_shard, run_on_shard { @ar_relation.public_send(method, *args) } )
+        ::Octopus::ScopeProxy.new(@current_shard, run_on_shard { @ar_relation.public_send(method, *args) })
       elsif block
         parsed_args = args.empty? ? {} : args.first
 

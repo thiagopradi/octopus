@@ -7,6 +7,7 @@ module Octopus
     class RoundRobin
       def initialize(slaves_list)
         raise Octopus::Exception.new("No slaves available") if slaves_list.empty?
+
         @slaves_list = slaves_list
         @slave_index = 0
       end

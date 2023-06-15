@@ -6,4 +6,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Associations::SingularAssociation.send(:include, Octopus::SingularAssociation)
+ActiveRecord::Associations::SingularAssociation.include(Octopus::SingularAssociation)

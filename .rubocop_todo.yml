@@ -10,7 +10,7 @@ Lint/AmbiguousRegexpLiteral:
   Enabled: false
 
 # Offense count: 1
-Lint/HandleExceptions:
+Lint/SuppressedException:
   Enabled: false
 
 # Offense count: 1

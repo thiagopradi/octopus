@@ -1,10 +1,7 @@
 inherit_from: .rubocop_todo.yml
 
-ActionFilter:
-  EnforcedStyle: filter
-
 CaseIndentation:
-  IndentWhenRelativeTo: end
+  EnforcedStyle: end
 
 CollectionMethods:
   PreferredMethods:
@@ -17,13 +14,10 @@ Encoding:
   Enabled: false
 
 EndAlignment:
-  AlignWith: variable
+  EnforcedStyleAlignWith: variable
 
 HashSyntax:
   EnforcedStyle: hash_rockets
-
-Style/IndentHash:
-  EnforcedStyle: consistent
 
 Loop:
   Enabled: false
@@ -37,7 +31,7 @@ RegexpLiteral:
 Semicolon:
   AllowAsExpressionSeparator: true
 
-Style/TrailingComma:
+Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
 
 Style/TrivialAccessors:

@@ -21,4 +21,4 @@ module Octopus
   end
 end
 
-ActiveRecord::ConnectionAdapters::ConnectionPool.send(:prepend, Octopus::ConnectionPool::QueryCacheForShards)
+ActiveRecord::ConnectionAdapters::ConnectionPool.prepend(Octopus::ConnectionPool::QueryCacheForShards)

@@ -11,4 +11,4 @@ module Octopus
   end
 end
 
-ActiveRecord::Associations::Association.send(:include, Octopus::Association)
+ActiveRecord::Associations::Association.include(Octopus::Association)

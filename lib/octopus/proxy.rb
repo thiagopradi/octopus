@@ -23,15 +23,15 @@ module Octopus
     # Rails Connection Methods - Those methods are overriden to add custom behavior that helps
     # Octopus introduce Sharding / Replication.
     delegate :adapter_name, :add_transaction_record, :case_sensitive_modifier,
-      :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
-      :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
-      :table_exists?, :in_clause_length, :supports_ddl_transactions?,
-      :sanitize_limit, :prefetch_primary_key?, :current_database,
-      :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
-      :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
-      :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
-      :release_advisory_lock, :prepare_binds_for_database, :cacheable_query, :column_name_for_operation,
-      :prepared_statements, :transaction_state, :create_table, to: :select_connection
+             :type_cast, :to_sql, :quote, :quote_column_name, :quote_table_name,
+             :quote_table_name_for_assignment, :supports_migrations?, :table_alias_for,
+             :table_exists?, :in_clause_length, :supports_ddl_transactions?,
+             :sanitize_limit, :prefetch_primary_key?, :current_database,
+             :combine_bind_parameters, :empty_insert_statement_value, :assume_migrated_upto_version,
+             :schema_cache, :substitute_at, :internal_string_options_for_primary_key, :lookup_cast_type_from_column,
+             :supports_advisory_locks?, :get_advisory_lock, :initialize_internal_metadata_table,
+             :release_advisory_lock, :prepare_binds_for_database, :cacheable_query, :column_name_for_operation,
+             :prepared_statements, :transaction_state, :create_table, to: :select_connection
 
     def execute(sql, name = nil)
       conn = select_connection
@@ -120,10 +120,10 @@ module Octopus
     def transaction(options = {}, &block)
       if !sharded && current_model_replicated?
         run_queries_on_shard(Octopus.master_shard) do
-          select_connection.transaction(options, &block)
+          select_connection.transaction(**options, &block)
         end
       else
-        select_connection.transaction(options, &block)
+        select_connection.transaction(**options, &block)
       end
     end
 
@@ -192,15 +192,15 @@ module Octopus
     def current_model_replicated?
       replicated && (current_model.try(:replicated) || fully_replicated?)
     end
-    
+
     def initialize_schema_migrations_table
       if Octopus.atleast_rails52?
         select_connection.transaction { ActiveRecord::SchemaMigration.create_table }
-      else 
+      else
         select_connection.initialize_schema_migrations_table
       end
     end
-    
+
     def initialize_metadata_table
       select_connection.transaction { ActiveRecord::InternalMetadata.create_table }
     end
@@ -212,9 +212,12 @@ module Octopus
     # We are planning to migrate to a much stable logic for the Proxy that doesn't require method missing.
     def legacy_method_missing_logic(method, *args, &block)
       if should_clean_connection_proxy?(method)
-        conn = select_connection
         clean_connection_proxy
-        conn.send(method, *args, &block)
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ?
+          select_connection.send(method, *args, &block) :
+          select_connection.send(method, *args, **preparable, &block)
       elsif should_send_queries_to_shard_slave_group?(method)
         send_queries_to_shard_slave_group(method, *args, &block)
       elsif should_send_queries_to_slave_group?(method)
@@ -222,7 +225,11 @@ module Octopus
       elsif should_send_queries_to_replicated_databases?(method)
         send_queries_to_selected_slave(method, *args, &block)
       else
-        val = select_connection.send(method, *args, &block)
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ?
+          select_connection.send(method, *args, &block) :
+          select_connection.send(method, *args, **preparable, &block)
 
         if val.instance_of? ActiveRecord::Result
           val.current_shard = shard_name
@@ -273,10 +280,10 @@ module Octopus
     end
 
     def send_queries_to_selected_slave(method, *args, &block)
-      if current_model.replicated || fully_replicated?
-        selected_slave = slaves_load_balancer.next current_load_balance_options
+      selected_slave = if current_model.replicated || fully_replicated?
+        slaves_load_balancer.next current_load_balance_options
       else
-        selected_slave = Octopus.master_shard
+        Octopus.master_shard
       end
 
       send_queries_to_slave(selected_slave, method, *args, &block)
@@ -309,10 +316,11 @@ module Octopus
     # while preserving `current_shard`
     def send_queries_to_slave(slave, method, *args, &block)
       using_shard(slave) do
-        val = select_connection.send(method, *args, &block)
-        if val.instance_of? ActiveRecord::Result
-          val.current_shard = slave
-        end
+        args, preparable = handle_args(args)
+
+        val = preparable.nil? ? select_connection.send(method, *args, &block) : select_connection.send(method, *args, **preparable, &block)
+        val.current_shard = slave if val.instance_of? ActiveRecord::Result
+
         val
       end
     end
@@ -339,9 +347,8 @@ module Octopus
       older_load_balance_options = current_load_balance_options
 
       begin
-        unless current_model && !current_model.allowed_shard?(shard)
-          self.current_shard = shard
-        end
+        self.current_shard = shard unless current_model && !current_model.allowed_shard?(shard)
+
         yield
       ensure
         self.current_shard = older_shard
@@ -360,6 +367,18 @@ module Octopus
       ensure
         self.current_group = older_group
       end
+    end
+
+    private
+
+    def handle_args(args)
+      return [[], nil] if args.empty?
+
+      preparable_args = args.select { |arg| arg.is_a?(Hash) && arg.key?(:preparable) }
+      return [args, nil] if preparable_args.empty?
+
+      args -= preparable_args
+      [args, preparable_args.first]
     end
   end
 end

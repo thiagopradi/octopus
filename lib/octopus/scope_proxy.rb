@@ -22,13 +22,14 @@ module Octopus
 
     def using(shard)
       fail "Nonexistent Shard Name: #{shard}" if @klass.connection.shards[shard].nil?
+
       @current_shard = shard
       self
     end
 
     # Transaction Method send all queries to a specified shard.
     def transaction(options = {}, &block)
-      run_on_shard { klass.transaction(options, &block) }
+      run_on_shard { klass.transaction(**options, &block) }
     end
 
     def connection
@@ -45,13 +46,9 @@ module Octopus
 
     def method_missing(method, *args, &block)
       result = run_on_shard { @klass.__send__(method, *args, &block) }
-      if result.respond_to?(:all)
-        return ::Octopus::ScopeProxy.new(current_shard, result)
-      end
+      return ::Octopus::ScopeProxy.new(current_shard, result) if result.respond_to?(:all)
 
-      if result.respond_to?(:current_shard)
-        result.current_shard = current_shard
-      end
+      result.current_shard = current_shard if result.respond_to?(:current_shard)
 
       result
     end

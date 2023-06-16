@@ -65,7 +65,7 @@ namespace :db do
       class BlankModel < ActiveRecord::Base; end
 
       BlankModel.using(shard_symbol).connection.initialize_schema_migrations_table
-      BlankModel.using(shard_symbol).connection.initialize_metadata_table if Octopus.atleast_rails50? 
+      BlankModel.using(shard_symbol).connection.initialize_metadata_table if Octopus.atleast_rails50?
 
       BlankModel.using(shard_symbol).connection.create_table(:users) do |u|
         u.string :name

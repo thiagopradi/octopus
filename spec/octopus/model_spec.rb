@@ -309,7 +309,7 @@ describe Octopus::Model do
       if Octopus.atleast_rails52?
         expect(User.using(:postgresql_shard).connection.adapter_name).to eq('PostgreSQL')
         expect(User.using(:alone_shard).connection.adapter_name).to eq('Mysql2')
-      else 
+      else
         expect(User.using(:postgresql_shard).arel_engine.connection.adapter_name).to eq('PostgreSQL')
         expect(User.using(:alone_shard).arel_engine.connection.adapter_name).to eq('Mysql2')
       end
@@ -497,7 +497,7 @@ describe Octopus::Model do
       end
 
       user = User.using(:brazil).where(:name => 'User1').first
-      expect(user.as_json(:except => [:created_at, :updated_at, :id])).to eq('admin' => nil, 'name' => 'User1', 'number' => nil)
+      expect(user.as_json(:except => [:created_at, :updated_at, :id, :current_shard])).to eq('admin' => nil, 'name' => 'User1', 'number' => nil)
     end
 
     describe 'transaction' do

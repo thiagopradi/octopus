@@ -199,10 +199,10 @@ module Octopus
 
     def initialize_replication(config)
       @replicated = true
-      if config.key?('fully_replicated')
-        @fully_replicated = config['fully_replicated']
+      @fully_replicated = if config.key?('fully_replicated')
+        config['fully_replicated']
       else
-        @fully_replicated = true
+        true
       end
 
       @slaves_list = shards.keys.map(&:to_s).sort
@@ -218,9 +218,9 @@ module Octopus
 
     def connection_pool_for(config, adapter)
       if Octopus.rails4?
-        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config.dup, adapter )
+        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config.dup, adapter)
       else
-        name = adapter["octopus_shard"]
+        name = adapter['octopus_shard']
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
       end
 
@@ -241,11 +241,9 @@ module Octopus
     end
 
     def initialize_adapter(adapter)
-      begin
-        require "active_record/connection_adapters/#{adapter}_adapter"
-      rescue LoadError
-        raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
-      end
+      require "active_record/connection_adapters/#{adapter}_adapter"
+    rescue LoadError
+      raise "Please install the #{adapter} adapter: `gem install activerecord-#{adapter}-adapter` (#{$ERROR_INFO})"
     end
   end
 end

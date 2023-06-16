@@ -93,7 +93,7 @@ end
 
 # This class sets its own connection
 class Advert < ActiveRecord::Base
-  establish_connection(:adapter => 'postgresql', :database => 'octopus_shard_1', :username => ENV['POSTGRES_USER'] || 'postgres', :password => '')
+  establish_connection(:adapter => 'postgresql', :database => 'octopus_shard_1', :username => ENV['POSTGRES_USER'] || 'root', :password => '')
 end
 
 class MmorpgPlayer < ActiveRecord::Base

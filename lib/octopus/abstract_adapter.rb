@@ -30,4 +30,4 @@ module Octopus
   end
 end
 
-ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:prepend, Octopus::AbstractAdapter::OctopusShard)
+ActiveRecord::ConnectionAdapters::AbstractAdapter.prepend(Octopus::AbstractAdapter::OctopusShard)

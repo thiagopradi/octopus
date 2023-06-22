@@ -40,8 +40,9 @@ module OctopusHelper
   
   def self.migrate_to_version(direction, root, version)
     if Octopus.atleast_rails52?
-      migrations = ActiveRecord::MigrationContext.new(root).migrations.select {|mig| version == mig.version }
-      ActiveRecord::Migrator.new(direction, migrations, version).run
+      schema = ActiveRecord::SchemaMigration
+      migrations = ActiveRecord::MigrationContext.new(root, schema).migrations.select {|mig| version == mig.version }
+      ActiveRecord::Migrator.new(direction, migrations, schema, version).run
     else 
       ActiveRecord::Migrator.run(direction, root, version)
     end

@@ -2,8 +2,9 @@ require 'spec_helper'
 
 def get_all_versions
   if Octopus.atleast_rails52?
+    schema = ActiveRecord::SchemaMigration
     migrations_root = File.expand_path(File.join(File.dirname(__FILE__), '..', 'migrations'))
-    ActiveRecord::MigrationContext.new(migrations_root).get_all_versions
+    ActiveRecord::MigrationContext.new(migrations_root, schema).get_all_versions
   else
     ActiveRecord::Migrator.get_all_versions
   end

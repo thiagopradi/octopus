@@ -19,12 +19,24 @@ module Octopus
       file_name = File.join(Octopus.directory, 'config/shards.yml').to_s
 
       if File.exist?(file_name) || File.symlink?(file_name)
-        config ||= HashWithIndifferentAccess.new(YAML.load(ERB.new(File.read(file_name)).result))[Octopus.env]
+        config ||= HashWithIndifferentAccess.new(load_yaml(file_name))[Octopus.env]
       else
         config ||= HashWithIndifferentAccess.new
       end
 
       config
+    end
+  end
+
+  # To support psych-4
+  # Copied from rails patch
+  # https://github.com/rails/rails/commit/179d0a1f474ada02e0030ac3bd062fc653765dbe
+  def self.load_yaml(file_name)
+    source = ERB.new(File.read(file_name)).result
+    begin
+      YAML.load(source, aliases: true) || {}
+    rescue ArgumentError
+      YAML.load(source) || {}
     end
   end
 
@@ -112,6 +124,10 @@ module Octopus
 
   def self.rails52?
     ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2
+  end
+
+  def self.rails60?
+    ActiveRecord::VERSION::MAJOR > 6 || ActiveRecord::VERSION::MAJOR == 6
   end
 
   def self.atleast_rails51?

@@ -12,6 +12,14 @@ module Octopus
       run_on_shard { super }
     end
 
+    def update(*args)
+      run_on_shard { super }
+    end
+
+    def update!(*args)
+      run_on_shard { super }
+    end
+
     def reload(*args)
       run_on_shard { super }
     end
@@ -32,8 +40,8 @@ module Octopus
       run_on_shard { super }
     end
 
-    def increment!(*args)
-      run_on_shard { super }
+    def increment!(...)
+      run_on_shard { super(...) }
     end
 
     def decrement!(*args)

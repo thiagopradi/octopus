@@ -171,6 +171,9 @@ module Octopus
 
     def connected?
       shards.any? { |_k, v| v.connected? }
+    rescue NoMethodError
+      proxy_config.reinitialize_shards
+      retry
     end
 
     def should_send_queries_to_shard_slave_group?(method)

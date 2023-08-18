@@ -99,7 +99,7 @@ module Octopus
       
       def run_with_octopus(&block)
         return run_without_octopus(&block) unless connection.is_a?(Octopus::Proxy)
-        shards = migrations.map(&:shards).flatten.map(&:to_s)
+        shards = migrations.map(&:shards).flatten.map(&:to_s).uniq
         connection.send_queries_to_multiple_shards(shards) do
           run_without_octopus(&block)
         end
@@ -109,7 +109,7 @@ module Octopus
 
       def migrate_with_octopus(&block)
         return migrate_without_octopus(&block) unless connection.is_a?(Octopus::Proxy)
-        shards = migrations.map(&:shards).flatten.map(&:to_s)
+        shards = migrations.map(&:shards).flatten.map(&:to_s).uniq
         connection.send_queries_to_multiple_shards(shards) do
           migrate_without_octopus(&block)
         end

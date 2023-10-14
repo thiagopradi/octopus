@@ -74,6 +74,9 @@ module Octopus
         connection_pool.connection.enable_query_cache!
       end
       connection_pool.connection
+    rescue NoMethodError
+      proxy_config.reinitialize_shards
+      retry
     end
 
     def select_connection

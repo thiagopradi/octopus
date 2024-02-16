@@ -138,7 +138,11 @@ module Octopus
       self.shards_slave_groups = HashWithIndifferentAccess.new
       self.slave_groups = HashWithIndifferentAccess.new
       self.groups = {}
-      self.config = ActiveRecord::Base.connection_pool_without_octopus.spec.config
+      self.config = if Octopus.atleast_rails61?
+                      ActiveRecord::Base.connection_pool_without_octopus.db_config.configuration_hash
+                    else
+                      ActiveRecord::Base.connection_pool_without_octopus.spec.config
+                    end
 
       unless config.nil?
         self.entire_sharded = config['entire_sharded']
@@ -217,14 +221,19 @@ module Octopus
     private
 
     def connection_pool_for(config, adapter)
-      if Octopus.rails4?
+      if Octopus.atleast_rails61?
+        name = config["octopus_shard"]
+        db_config = ActiveRecord::DatabaseConfigurations::HashConfig.new(Octopus.rails_env, name, config)
+        pool_config = ActiveRecord::ConnectionAdapters::PoolConfig.new(ActiveRecord::Base, db_config)
+        ActiveRecord::ConnectionAdapters::ConnectionPool.new(pool_config)
+      elsif Octopus.rails4?
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config.dup, adapter )
+        ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
       else
         name = adapter["octopus_shard"]
         spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(name, config.dup, adapter)
+        ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
       end
-
-      ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
 
     def resolve_string_connection(spec)
